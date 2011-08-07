@@ -37,6 +37,7 @@
 #include <libgusb/gusb-device.h>
 #include <libgusb/gusb-version.h>
 #include <libgusb/gusb-source.h>
+#include <libgusb/gusb-context.h>
 
 #undef __GUSB_INSIDE__
 

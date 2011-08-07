@@ -1,7 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
+ * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -20,26 +19,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __GUSB_SOURCE_H__
-#define __GUSB_SOURCE_H__
+#ifndef __GUSB_PRIVATE_H__
+#define __GUSB_PRIVATE_H__
 
-#include <glib.h>
+#define __GUSB_INSIDE__
 
-#include <gusb-context.h>
+#include <libgusb/gusb.h>
+#include <libgusb/gusb-context-private.h>
 
-G_BEGIN_DECLS
+#undef __GUSB_INSIDE__
 
-typedef struct _GUsbSource GUsbSource;
+#endif /* __GUSB_PRIVATE_H__ */
 
-GUsbSource	*g_usb_source_new		(GMainContext	*main_ctx,
-						 GUsbContext	*context);
-void		 g_usb_source_destroy		(GUsbSource	*source);
-
-void		 g_usb_source_set_callback	(GUsbSource	*source,
-						 GSourceFunc	 func,
-						 gpointer	 data,
-						 GDestroyNotify	 notify);
-
-G_END_DECLS
-
-#endif /* __GUSB_SOURCE_H__ */

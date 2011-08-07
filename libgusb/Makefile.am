@@ -13,15 +13,19 @@ lib_LTLIBRARIES =						\
 
 libgusb_includedir = $(includedir)/gusb-1
 libgusb_include_HEADERS =					\
+	gusb-private.h						\
 	gusb.h
 
 libgusbbase_includedir = $(libgusb_includedir)/gusb
 libgusbbase_include_HEADERS =					\
 	gusb-version.h						\
+	gusb-context.h						\
+	gusb-context-private.h					\
 	gusb-device.h						\
 	gusb-source.h
 
 libgusb_la_SOURCES =						\
+	gusb-context.c						\
 	gusb-device.c						\
 	gusb-source.c
 

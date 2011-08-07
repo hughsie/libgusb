@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #include "gusb-source.h"
+#include "gusb-context-private.h"
 
 /* libusb_strerror is in upstream */
 #define libusb_strerror(error) "unknown"
@@ -203,7 +204,7 @@ static GSourceFuncs usb_source_funcs = {
 };
 
 GUsbSource *
-g_usb_source_new (GMainContext *main_ctx, void *libusb_ctx)
+g_usb_source_new (GMainContext *main_ctx, GUsbContext *gusb_ctx)
 {
 	guint i;
 	const struct libusb_pollfd **pollfds;
@@ -212,7 +213,7 @@ g_usb_source_new (GMainContext *main_ctx, void *libusb_ctx)
 	gusb_source = (GUsbSource *)g_source_new (&usb_source_funcs,
 						  sizeof(GUsbSource));
 	gusb_source->pollfds = NULL;
-	gusb_source->ctx = libusb_ctx;
+	gusb_source->ctx = _g_usb_context_get_context (gusb_ctx);
 
 	g_source_attach ((GSource *)gusb_source, main_ctx);
 
