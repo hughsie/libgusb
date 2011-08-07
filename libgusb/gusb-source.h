@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef __USB_MAINLOOP_H__
-#define __USB_MAINLOOP_H__
+#ifndef __GUSB_SOURCE_H__
+#define __GUSB_SOURCE_H__
 
 #include <glib.h>
 
@@ -40,4 +40,4 @@ void		 g_usb_source_set_callback	(GUsbSource	*source,
 
 G_END_DECLS
 
-#endif /* __USB_MAINLOOP_H__ */
+#endif /* __GUSB_SOURCE_H__ */
