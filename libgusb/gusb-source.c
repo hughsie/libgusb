@@ -37,6 +37,22 @@
 #include "gusb-context-private.h"
 #include "gusb-source.h"
 
+/**
+ * g_usb_source_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.0.1
+ **/
+GQuark
+g_usb_source_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("g_usb_source_error");
+	return quark;
+}
+
 /* libusb_strerror is in upstream */
 #define libusb_strerror(error) "unknown"
 
@@ -205,7 +221,9 @@ static GSourceFuncs usb_source_funcs = {
 };
 
 GUsbSource *
-g_usb_source_new (GMainContext *main_ctx, GUsbContext *gusb_ctx)
+g_usb_source_new (GMainContext *main_ctx,
+		  GUsbContext *gusb_ctx,
+		  GError **error)
 {
 	guint i;
 	const struct libusb_pollfd **pollfds;
@@ -216,12 +234,17 @@ g_usb_source_new (GMainContext *main_ctx, GUsbContext *gusb_ctx)
 	gusb_source->pollfds = NULL;
 	gusb_source->ctx = _g_usb_context_get_context (gusb_ctx);
 
-	g_source_attach ((GSource *)gusb_source, main_ctx);
-
 	/* watch the fd's already created */
 	pollfds = libusb_get_pollfds (gusb_source->ctx);
-	if (pollfds == NULL)
-		g_error("libusb_get_pollfds failed to allocate memory");
+	if (pollfds == NULL) {
+		g_set_error_literal (error,
+				     GUSB_SOURCE_ERROR,
+				     GUSB_SOURCE_ERROR_INTERNAL,
+				     "failed to allocate memory");
+		g_free (gusb_source);
+		gusb_source = NULL;
+		goto out;
+	}
 	for (i=0; pollfds[i] != NULL; i++)
 		g_usb_source_pollfd_add (gusb_source,
 					 pollfds[i]->fd,
@@ -229,10 +252,12 @@ g_usb_source_new (GMainContext *main_ctx, GUsbContext *gusb_ctx)
 	free (pollfds);
 
 	/* watch for PollFD changes */
+	g_source_attach ((GSource *)gusb_source, main_ctx);
 	libusb_set_pollfd_notifiers (gusb_source->ctx,
 				     g_usb_source_pollfd_added_cb,
 				     g_usb_source_pollfd_removed_cb,
 				     gusb_source);
+out:
 	return gusb_source;
 }
 

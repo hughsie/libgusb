@@ -27,10 +27,23 @@
 
 G_BEGIN_DECLS
 
+#define GUSB_SOURCE_ERROR			(g_usb_source_error_quark ())
+
 typedef struct _GUsbSource GUsbSource;
 
+/**
+ * GUsbSourceError:
+ *
+ * The error code.
+ **/
+typedef enum {
+	GUSB_SOURCE_ERROR_INTERNAL
+} GUsbSourceError;
+
+GQuark		 g_usb_source_error_quark	(void);
 GUsbSource	*g_usb_source_new		(GMainContext	*main_ctx,
-						 GUsbContext	*context);
+						 GUsbContext	*context,
+						 GError		**error);
 void		 g_usb_source_destroy		(GUsbSource	*source);
 
 void		 g_usb_source_set_callback	(GUsbSource	*source,
