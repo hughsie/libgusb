@@ -24,8 +24,8 @@
 
 #define __GUSB_INSIDE__
 
-#include <libgusb/gusb.h>
-#include <libgusb/gusb-context-private.h>
+#include <gusb/gusb.h>
+#include <gusb/gusb-context-private.h>
 
 #undef __GUSB_INSIDE__
 

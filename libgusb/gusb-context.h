@@ -30,7 +30,7 @@ G_BEGIN_DECLS
 
 typedef enum {
 	GUSB_CONTEXT_ERROR_INTERNAL
-} CdUsbError;
+} GUsbContextError;
 
 typedef struct _GUsbContext GUsbContext;
 

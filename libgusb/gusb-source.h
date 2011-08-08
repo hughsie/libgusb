@@ -25,8 +25,6 @@
 
 #include <glib.h>
 
-#include <gusb-context.h>
-
 G_BEGIN_DECLS
 
 typedef struct _GUsbSource GUsbSource;

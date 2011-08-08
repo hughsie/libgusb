@@ -33,8 +33,9 @@
 #include <poll.h>
 #include <stdlib.h>
 
-#include "gusb-source.h"
+#include "gusb-context.h"
 #include "gusb-context-private.h"
+#include "gusb-source.h"
 
 /* libusb_strerror is in upstream */
 #define libusb_strerror(error) "unknown"

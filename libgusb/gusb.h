@@ -34,10 +34,10 @@
 
 #define __GUSB_INSIDE__
 
-#include <libgusb/gusb-device.h>
-#include <libgusb/gusb-version.h>
-#include <libgusb/gusb-source.h>
-#include <libgusb/gusb-context.h>
+#include <gusb/gusb-context.h>
+#include <gusb/gusb-source.h>
+#include <gusb/gusb-device.h>
+#include <gusb/gusb-version.h>
 
 #undef __GUSB_INSIDE__
 
