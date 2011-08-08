@@ -33,6 +33,22 @@ struct _GUsbContext {
 	libusb_context	*ctx;
 };
 
+/**
+ * g_usb_context_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.0.1
+ **/
+GQuark
+g_usb_context_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("g_usb_context_error");
+	return quark;
+}
+
 libusb_context *
 _g_usb_context_get_context (GUsbContext *context)
 {
