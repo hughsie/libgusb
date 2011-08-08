@@ -56,12 +56,36 @@ _g_usb_context_get_context (GUsbContext *context)
 	return context->ctx;
 }
 
+/**
+ * g_usb_context_set_debug:
+ * @context: a #GUsbContext
+ * @flags: a GLogLevelFlags such as %G_LOG_LEVEL_ERROR | %G_LOG_LEVEL_INFO, or 0
+ *
+ * Sets the debug flags which control what is logged to the console.
+ *
+ * Using %G_LOG_LEVEL_INFO will output to standard out, and everything
+ * else logs to standard error.
+ *
+ * Since: 0.0.1
+ **/
 void
-g_usb_context_set_debug (GUsbContext *context, guint flags)
+g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
 {
+	guint level = 0;
+
 	g_return_if_fail (context != NULL);
 	g_return_if_fail (context->ctx != NULL);
-	libusb_set_debug (context->ctx, flags);
+
+	if ((flags & G_LOG_LEVEL_ERROR) > 0)
+		level = 4;
+	else if ((flags & G_LOG_LEVEL_WARNING) > 0)
+		level = 3;
+	else if ((flags & G_LOG_LEVEL_INFO) > 0)
+		level = 2;
+	else if ((flags & G_LOG_LEVEL_DEBUG) > 0)
+		level = 1;
+
+	libusb_set_debug (context->ctx, level);
 }
 
 GUsbContext *

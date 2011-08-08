@@ -38,7 +38,7 @@ GUsbContext	*g_usb_context_new		(GError		**error);
 GQuark		 g_usb_context_error_quark	(void);
 void		 g_usb_context_destroy		(GUsbContext	*context);
 void		 g_usb_context_set_debug	(GUsbContext	*context,
-						 guint		 flags);
+						 GLogLevelFlags	 flags);
 
 G_END_DECLS
 
