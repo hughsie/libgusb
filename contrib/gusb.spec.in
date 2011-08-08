@@ -1,0 +1,57 @@
+%define alphatag                #ALPHATAG#
+
+Summary:   GLib wrapper around libusb1
+Name:      gusb
+Version:   #VERSION#
+Release:   0.#BUILD#%{?alphatag}%{?dist}
+License:   LGPLv2+
+URL:       https://gitorious.org/gusb/
+Source0:   http://www.packagekit.org/releases/lib%{name}-%{version}.tar.xz
+
+BuildRequires: glib2-devel >= 2.16.1
+BuildRequires: libtool
+
+%description
+GUsb is a higher level wrapper around libusb1 that uses GLib and GObject.
+
+%package devel
+Summary: Libraries and headers for gusb
+Requires: %{name} = %{version}-%{release}
+
+%description devel
+GLib headers and libraries for gusb.
+
+%prep
+%setup -q -n lib%{name}-%{version}
+
+%build
+%configure \
+        --disable-static \
+        --disable-dependency-tracking
+
+make %{?_smp_mflags}
+
+%install
+make install DESTDIR=$RPM_BUILD_ROOT
+
+rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
+
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
+
+%files
+%defattr(-,root,root,-)
+%doc README AUTHORS NEWS COPYING
+%{_libdir}/libgusb.so.1
+%{_libdir}/libgusb.so.1.0.0
+
+%files devel
+%defattr(-,root,root,-)
+#%dir %{_includedir}/gusb-1
+%{_includedir}/gusb-1
+%{_libdir}/libgusb.so
+%{_libdir}/pkgconfig/gusb.pc
+
+%changelog
+* #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#
+- Update from git
