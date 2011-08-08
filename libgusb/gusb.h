@@ -19,16 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-/**
- * SECTION:gusb
- * @short_description: Client objects for accessing gusb
- *
- * These objects allow client programs to get access to devices that can
- * be color managed and profiles for changing them.
- *
- * See also: #CdClient, #CdDevice
- */
-
 #ifndef __GUSB_H__
 #define __GUSB_H__
 

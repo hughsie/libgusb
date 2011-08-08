@@ -51,6 +51,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 %{_includedir}/gusb-1
 %{_libdir}/libgusb.so
 %{_libdir}/pkgconfig/gusb.pc
+%{_datadir}/gtk-doc/html/gusb
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#

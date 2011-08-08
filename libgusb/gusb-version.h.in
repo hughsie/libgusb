@@ -20,13 +20,11 @@
  */
 
 /**
- * SECTION:cd-version
+ * SECTION:gusb-version
  * @short_description: Obtains the version for the installed libgusb
  *
  * These compile time macros allow the user to enable parts of client code
  * depending on the version of libgusb installed.
- *
- * See also: #CdClient, #CdDevice
  */
 
 #if !defined (__GUSB_INSIDE__) && !defined (GUSB_COMPILATION)

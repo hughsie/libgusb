@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN" "http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
+
+<chapter id="faq">
+  <title>FAQ</title>
+  <para>
+    The following sections explain frequently asked questions from people.
+  </para>
+
+  <sect1 id="faq-why">
+    <title>Why wrap libusb1?</title>
+    <para>
+      libusb1 is a pain in the arse to use in GLib.
+    </para>
+
+  </sect1>
+
+</chapter>
+

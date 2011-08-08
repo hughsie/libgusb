@@ -19,6 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+/**
+ * SECTION:gusb-context
+ * @short_description: Per-thread instance integration for libusb
+ *
+ * This object is used to get a context that is thread safe.
+ */
+
 #include "config.h"
 
 #include <libusb-1.0/libusb.h>
@@ -49,6 +56,16 @@ g_usb_context_error_quark (void)
 	return quark;
 }
 
+/**
+ * _g_usb_context_get_context:
+ * @context: a #GUsbContext
+ *
+ * Gets the internal libusb_context.
+ *
+ * Return value: (transfer none): the libusb_context
+ *
+ * Since: 0.0.1
+ **/
 libusb_context *
 _g_usb_context_get_context (GUsbContext *context)
 {
@@ -88,6 +105,16 @@ g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
 	libusb_set_debug (context->ctx, level);
 }
 
+/**
+ * g_usb_context_new:
+ * @error: a #GError, or %NULL
+ *
+ * Creates a new context for accessing USB devices.
+ *
+ * Return value: (transfer none): the %GUsbContext. Use g_usb_context_destroy() to unref.
+ *
+ * Since: 0.0.1
+ **/
 GUsbContext *
 g_usb_context_new (GError **error)
 {
@@ -108,6 +135,14 @@ g_usb_context_new (GError **error)
 	return context;
 }
 
+/**
+ * g_usb_context_destroy:
+ * @context: a #GUsbContext
+ *
+ * Destroys a context.
+ *
+ * Since: 0.0.1
+ **/
 void
 g_usb_context_destroy (GUsbContext *context)
 {

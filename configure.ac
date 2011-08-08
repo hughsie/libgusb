@@ -131,6 +131,9 @@ dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
 AC_CONFIG_FILES([
 Makefile
+docs/Makefile
+docs/api/Makefile
+docs/api/version.xml
 libgusb/gusb-version.h
 libgusb/gusb.pc
 libgusb/Makefile

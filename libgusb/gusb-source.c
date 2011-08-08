@@ -21,7 +21,7 @@
  */
 
 /**
- * SECTION:usb-source
+ * SECTION:gusb-source
  * @short_description: GSource integration for libusb
  *
  * This object can be used to integrate libusb into the GLib main loop.
@@ -220,6 +220,18 @@ static GSourceFuncs usb_source_funcs = {
 	NULL, NULL
 };
 
+/**
+ * g_usb_source_new:
+ * @main_ctx: a #GMainContext, or %NULL
+ * @gusb_ctx: a #GUsbContext
+ * @error: a #GError, or %NULL
+ *
+ * Creates a source for integration into libusb1.
+ *
+ * Return value: (transfer none): the #GUsbSource, or %NULL. Use g_usb_source_destroy() to unref.
+ *
+ * Since: 0.0.1
+ **/
 GUsbSource *
 g_usb_source_new (GMainContext *main_ctx,
 		  GUsbContext *gusb_ctx,
@@ -261,6 +273,14 @@ out:
 	return gusb_source;
 }
 
+/**
+ * g_usb_source_destroy:
+ * @source: a #GUsbSource
+ *
+ * Destroys a #GUsbSource
+ *
+ * Since: 0.0.1
+ **/
 void
 g_usb_source_destroy (GUsbSource *source)
 {
@@ -269,6 +289,17 @@ g_usb_source_destroy (GUsbSource *source)
 	g_source_destroy ((GSource *)source);
 }
 
+/**
+ * g_usb_source_set_callback:
+ * @source: a #GUsbSource
+ * @func: a function to call
+ * @data: data to pass to @func
+ * @notify: a #GDestroyNotify
+ *
+ * Set a callback to be called when the source is dispatched.
+ *
+ * Since: 0.0.1
+ **/
 void
 g_usb_source_set_callback (GUsbSource *source,
 			   GSourceFunc func,

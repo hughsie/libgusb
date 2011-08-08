@@ -1,7 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = 						\
-	libgusb
+	libgusb						\
+	docs
 
 EXTRA_DIST =						\
 	COPYING						\
@@ -21,6 +22,8 @@ MAINTAINERCLEANFILES =					\
 	config.h.in					\
 	gtk-doc.make
 
+DISTCHECK_CONFIGURE_FLAGS = 				\
+	--enable-gtk-doc
 
 distclean-local:
 	if test $(srdcir) = .; then :; else \
