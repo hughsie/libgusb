@@ -58,6 +58,23 @@ enum {
 
 G_DEFINE_TYPE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
 
+
+/**
+ * g_usb_device_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.0.1
+ **/
+GQuark
+g_usb_device_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("g_usb_device_error");
+	return quark;
+}
+
 /**
  * usb_device_get_handle:
  * @usb:  a #GUsbDevice instance

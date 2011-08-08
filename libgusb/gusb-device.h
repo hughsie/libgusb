@@ -31,13 +31,11 @@ G_BEGIN_DECLS
 #define GUSB_TYPE_DEVICE		(g_usb_device_get_type ())
 #define GUSB_DEVICE(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), GUSB_TYPE_DEVICE, GUsbDevice))
 #define GUSB_IS_DEVICE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), GUSB_TYPE_DEVICE))
+#define GUSB_DEVICE_ERROR		(g_usb_device_error_quark ())
 
 typedef struct _GUsbDevicePrivate	GUsbDevicePrivate;
 typedef struct _GUsbDevice		GUsbDevice;
 typedef struct _GUsbDeviceClass	GUsbDeviceClass;
-
-/* dummy */
-#define GUSB_DEVICE_ERROR	1
 
 /* only libusb > 1.0.8 has libusb_strerror */
 #ifndef HAVE_NEW_USB
@@ -45,7 +43,7 @@ typedef struct _GUsbDeviceClass	GUsbDeviceClass;
 #endif
 
 /**
- * CdSensorError:
+ * GUsbDeviceError:
  *
  * The error code.
  **/
@@ -65,6 +63,7 @@ struct _GUsbDeviceClass
 };
 
 GType			 g_usb_device_get_type		(void);
+GQuark			 g_usb_device_error_quark	(void);
 
 gboolean		 g_usb_device_connect		(GUsbDevice	*usb,
 							 guint		 vendor_id,
