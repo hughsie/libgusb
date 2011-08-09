@@ -22,6 +22,10 @@
 #ifndef __GUSB_H__
 #define __GUSB_H__
 
+#ifndef G_USB_API_IS_SUBJECT_TO_CHANGE
+#error You have to define G_USB_API_IS_SUBJECT_TO_CHANGE
+#endif
+
 #define __GUSB_INSIDE__
 
 #include <gusb/gusb-context.h>
