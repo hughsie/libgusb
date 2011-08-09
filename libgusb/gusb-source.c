@@ -250,8 +250,8 @@ g_usb_source_new (GMainContext *main_ctx,
 	pollfds = libusb_get_pollfds (gusb_source->ctx);
 	if (pollfds == NULL) {
 		g_set_error_literal (error,
-				     GUSB_SOURCE_ERROR,
-				     GUSB_SOURCE_ERROR_INTERNAL,
+				     G_USB_SOURCE_ERROR,
+				     G_USB_SOURCE_ERROR_INTERNAL,
 				     "failed to allocate memory");
 		g_free (gusb_source);
 		gusb_source = NULL;

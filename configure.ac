@@ -20,13 +20,13 @@ AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-xz tar-ustar])
 GTK_DOC_CHECK(1.9)
 
 # use this in cd-version.h
-GUSB_MAJOR_VERSION=gusb_major_version
-GUSB_MINOR_VERSION=gusb_minor_version
-GUSB_MICRO_VERSION=gusb_micro_version
+G_USB_MAJOR_VERSION=gusb_major_version
+G_USB_MINOR_VERSION=gusb_minor_version
+G_USB_MICRO_VERSION=gusb_micro_version
 AC_SUBST(VERSION)
-AC_SUBST(GUSB_MAJOR_VERSION)
-AC_SUBST(GUSB_MINOR_VERSION)
-AC_SUBST(GUSB_MICRO_VERSION)
+AC_SUBST(G_USB_MAJOR_VERSION)
+AC_SUBST(G_USB_MINOR_VERSION)
+AC_SUBST(G_USB_MICRO_VERSION)
 
 # libtool versioning - this applies to libgusb
 #

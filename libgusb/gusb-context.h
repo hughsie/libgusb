@@ -26,10 +26,10 @@
 
 G_BEGIN_DECLS
 
-#define GUSB_CONTEXT_ERROR			(g_usb_context_error_quark ())
+#define G_USB_CONTEXT_ERROR			(g_usb_context_error_quark ())
 
 typedef enum {
-	GUSB_CONTEXT_ERROR_INTERNAL
+	G_USB_CONTEXT_ERROR_INTERNAL
 } GUsbContextError;
 
 typedef struct _GUsbContext GUsbContext;

@@ -127,8 +127,8 @@ g_usb_context_new (GError **error)
 		g_free (context);
 		context = NULL;
 		g_set_error (error,
-			     GUSB_CONTEXT_ERROR,
-			     GUSB_CONTEXT_ERROR_INTERNAL,
+			     G_USB_CONTEXT_ERROR,
+			     G_USB_CONTEXT_ERROR_INTERNAL,
 			     "failed to init libusb: %s [%i]",
 			     libusb_strerror (rc), rc);
 	}

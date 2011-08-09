@@ -27,7 +27,7 @@
 
 G_BEGIN_DECLS
 
-#define GUSB_SOURCE_ERROR			(g_usb_source_error_quark ())
+#define G_USB_SOURCE_ERROR			(g_usb_source_error_quark ())
 
 typedef struct _GUsbSource GUsbSource;
 
@@ -37,7 +37,7 @@ typedef struct _GUsbSource GUsbSource;
  * The error code.
  **/
 typedef enum {
-	GUSB_SOURCE_ERROR_INTERNAL
+	G_USB_SOURCE_ERROR_INTERNAL
 } GUsbSourceError;
 
 GQuark		 g_usb_source_error_quark	(void);
