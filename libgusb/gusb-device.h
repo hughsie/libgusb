@@ -58,6 +58,9 @@ struct _GUsbDeviceClass
 GType			 g_usb_device_get_type		(void);
 GQuark			 g_usb_device_error_quark	(void);
 
+guint8			 g_usb_device_get_bus		(GUsbDevice      *device);
+guint8			 g_usb_device_get_address	(GUsbDevice      *device);
+
 #if 0 /* TODO */
 GUsbDeviceHandle 	*g_usb_device_get_device_handle	(GUsbDevice	 *device,
 							 GError		**err);

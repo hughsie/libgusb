@@ -214,7 +214,19 @@ _g_usb_device_new (libusb_device	*device)
  * Return value: The #libusb_device or %NULL. Do not unref this value.
  **/
 libusb_device *
-_g_usb_device_get_device (GUsbDevice *device)
+_g_usb_device_get_device (GUsbDevice	*device)
 {
 	return device->priv->device;
+}
+
+guint8
+g_usb_device_get_bus (GUsbDevice	*device)
+{
+	return libusb_get_bus_number (device->priv->device);
+}
+
+guint8
+g_usb_device_get_address (GUsbDevice	*device)
+{
+	return libusb_get_device_address (device->priv->device);
 }
