@@ -127,6 +127,13 @@ else
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl - Build self tests
+dnl ---------------------------------------------------------------------------
+AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
+	      enable_tests=$enableval,enable_tests=yes)
+AM_CONDITIONAL(GUSB_BUILD_TESTS, test x$enable_tests = xyes)
+
+dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
 AC_CONFIG_FILES([
@@ -150,5 +157,6 @@ echo "
         compiler:                  ${CC}
         cflags:                    ${CFLAGS}
         cppflags:                  ${CPPFLAGS}
+        Building unit tests:       ${enable_tests}
         GUDEV support:             ${enable_gudev}
 "

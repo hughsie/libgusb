@@ -45,6 +45,23 @@ libgusb_la_CFLAGS =						\
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = gusb.pc
 
+if GUSB_BUILD_TESTS
+check_PROGRAMS =						\
+	gusb-self-test
+
+gusb_self_test_SOURCES =					\
+	gusb-self-test.c
+
+gusb_self_test_LDADD =						\
+	$(GLIB_LIBS)						\
+	$(USB_LIBS)						\
+	$(lib_LTLIBRARIES)
+
+gusb_self_test_CFLAGS = $(AM_CFLAGS) $(WARNINGFLAGS_C)
+
+TESTS = gusb-self-test
+endif
+
 EXTRA_DIST =							\
 	gusb-version.h.in					\
 	gusb.pc.in
