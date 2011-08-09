@@ -247,13 +247,11 @@ g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
 {
 	GUsbContextPrivate *priv = context->priv;
 
-	if ((flags & G_LOG_LEVEL_ERROR) > 0)
-		priv->debug_level = 4;
-	else if ((flags & G_LOG_LEVEL_WARNING) > 0)
+	if (flags & (G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_INFO))
 		priv->debug_level = 3;
-	else if ((flags & G_LOG_LEVEL_INFO) > 0)
+	else if (flags & (G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_WARNING))
 		priv->debug_level = 2;
-	else if ((flags & G_LOG_LEVEL_DEBUG) > 0)
+	else if (flags & (G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_ERROR))
 		priv->debug_level = 1;
 	else
 		priv->debug_level = 0;
