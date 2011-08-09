@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -15,16 +16,13 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef __GUSB_DEVICE_H__
 #define __GUSB_DEVICE_H__
 
 #include <glib-object.h>
-
-#include <libusb-1.0/libusb.h>
 
 G_BEGIN_DECLS
 
@@ -35,12 +33,7 @@ G_BEGIN_DECLS
 
 typedef struct _GUsbDevicePrivate	GUsbDevicePrivate;
 typedef struct _GUsbDevice		GUsbDevice;
-typedef struct _GUsbDeviceClass	GUsbDeviceClass;
-
-/* only libusb > 1.0.8 has libusb_strerror */
-#ifndef HAVE_NEW_USB
-#define	libusb_strerror(f1)		"unknown"
-#endif
+typedef struct _GUsbDeviceClass		GUsbDeviceClass;
 
 /**
  * GUsbDeviceError:
@@ -65,19 +58,11 @@ struct _GUsbDeviceClass
 GType			 g_usb_device_get_type		(void);
 GQuark			 g_usb_device_error_quark	(void);
 
-gboolean		 g_usb_device_connect		(GUsbDevice	*usb,
-							 guint		 vendor_id,
-							 guint		 product_id,
-							 guint		 configuration,
-							 guint		 interface,
-							 GError		**error);
-gboolean		 g_usb_device_disconnect	(GUsbDevice	*usb,
-							 GError		**error);
-
-libusb_device_handle	*g_usb_device_get_handle	(GUsbDevice	*usb);
-GUsbDevice		*g_usb_device_new		(void);
+#if 0 /* TODO */
+GUsbDeviceHandle 	*g_usb_device_get_device_handle	(GUsbDevice	 *device,
+							 GError		**err);
+#endif
 
 G_END_DECLS
 
 #endif /* __GUSB_DEVICE_H__ */
-

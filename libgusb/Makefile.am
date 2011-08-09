@@ -22,6 +22,7 @@ libgusbbase_include_HEADERS =					\
 	gusb-context.h						\
 	gusb-context-private.h					\
 	gusb-device.h						\
+	gusb-device-private.h					\
 	gusb-source.h
 
 libgusb_la_SOURCES =						\
