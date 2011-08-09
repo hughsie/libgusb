@@ -22,7 +22,7 @@
 #ifndef __GUSB_CONTEXT_PRIVATE_H__
 #define __GUSB_CONTEXT_PRIVATE_H__
 
-#include <glib.h>
+#include <libusb-1.0/libusb.h>
 
 #include "gusb-context.h"
 
