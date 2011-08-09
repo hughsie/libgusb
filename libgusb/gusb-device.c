@@ -36,7 +36,7 @@
 
 static void     g_usb_device_finalize	(GObject     *object);
 
-#define GUSB_DEVICE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GUSB_TYPE_DEVICE, GUsbDevicePrivate))
+#define G_USB_DEVICE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), G_USB_TYPE_DEVICE, GUsbDevicePrivate))
 
 /**
  * GUsbDevicePrivate:
@@ -116,8 +116,8 @@ g_usb_device_connect (GUsbDevice *usb,
 
 	/* already connected */
 	if (priv->handle != NULL) {
-		g_set_error_literal (error, GUSB_DEVICE_ERROR,
-				     GUSB_DEVICE_ERROR_INTERNAL,
+		g_set_error_literal (error, G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_INTERNAL,
 				     "already connected to a device");
 		goto out;
 	}
@@ -127,8 +127,8 @@ g_usb_device_connect (GUsbDevice *usb,
 							vendor_id,
 							product_id);
 	if (priv->handle == NULL) {
-		g_set_error (error, GUSB_DEVICE_ERROR,
-			     GUSB_DEVICE_ERROR_INTERNAL,
+		g_set_error (error, G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_INTERNAL,
 			     "failed to find device %04x:%04x",
 			     vendor_id, product_id);
 		ret = FALSE;
@@ -138,8 +138,8 @@ g_usb_device_connect (GUsbDevice *usb,
 	/* set configuration and interface */
 	rc = libusb_set_configuration (priv->handle, configuration);
 	if (rc < 0) {
-		g_set_error (error, GUSB_DEVICE_ERROR,
-			     GUSB_DEVICE_ERROR_INTERNAL,
+		g_set_error (error, G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_INTERNAL,
 			     "failed to set configuration 0x%02x: %s [%i]",
 			     configuration,
 			     libusb_strerror (rc), rc);
@@ -148,8 +148,8 @@ g_usb_device_connect (GUsbDevice *usb,
 	}
 	rc = libusb_claim_interface (priv->handle, interface);
 	if (rc < 0) {
-		g_set_error (error, GUSB_DEVICE_ERROR,
-			     GUSB_DEVICE_ERROR_INTERNAL,
+		g_set_error (error, G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_INTERNAL,
 			     "failed to claim interface 0x%02x: %s [%i]",
 			     interface,
 			     libusb_strerror (rc), rc);
@@ -178,8 +178,8 @@ g_usb_device_disconnect (GUsbDevice *usb,
 
 	/* already connected */
 	if (priv->handle == NULL) {
-		g_set_error_literal (error, GUSB_DEVICE_ERROR,
-				     GUSB_DEVICE_ERROR_INTERNAL,
+		g_set_error_literal (error, G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_INTERNAL,
 				     "not connected to a device");
 		goto out;
 	}
@@ -203,7 +203,7 @@ g_usb_device_get_property (GObject *object,
 			   GValue *value,
 			   GParamSpec *pspec)
 {
-	GUsbDevice *usb = GUSB_DEVICE (object);
+	GUsbDevice *usb = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv = usb->priv;
 
 	switch (prop_id) {
@@ -261,7 +261,7 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 static void
 g_usb_device_init (GUsbDevice *usb)
 {
-	usb->priv = GUSB_DEVICE_GET_PRIVATE (usb);
+	usb->priv = G_USB_DEVICE_GET_PRIVATE (usb);
 }
 
 /**
@@ -270,7 +270,7 @@ g_usb_device_init (GUsbDevice *usb)
 static void
 g_usb_device_finalize (GObject *object)
 {
-	GUsbDevice *usb = GUSB_DEVICE (object);
+	GUsbDevice *usb = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv = usb->priv;
 
 	if (priv->handle != NULL)
@@ -288,7 +288,7 @@ GUsbDevice *
 g_usb_device_new (void)
 {
 	GUsbDevice *usb;
-	usb = g_object_new (GUSB_TYPE_DEVICE, NULL);
-	return GUSB_DEVICE (usb);
+	usb = g_object_new (G_USB_TYPE_DEVICE, NULL);
+	return G_USB_DEVICE (usb);
 }
 

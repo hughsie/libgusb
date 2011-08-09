@@ -28,10 +28,10 @@
 
 G_BEGIN_DECLS
 
-#define GUSB_TYPE_DEVICE		(g_usb_device_get_type ())
-#define GUSB_DEVICE(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), GUSB_TYPE_DEVICE, GUsbDevice))
-#define GUSB_IS_DEVICE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), GUSB_TYPE_DEVICE))
-#define GUSB_DEVICE_ERROR		(g_usb_device_error_quark ())
+#define G_USB_TYPE_DEVICE		(g_usb_device_get_type ())
+#define G_USB_DEVICE(o)			(G_TYPE_CHECK_INSTANCE_CAST ((o), G_USB_TYPE_DEVICE, GUsbDevice))
+#define G_USB_IS_DEVICE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), G_USB_TYPE_DEVICE))
+#define G_USB_DEVICE_ERROR		(g_usb_device_error_quark ())
 
 typedef struct _GUsbDevicePrivate	GUsbDevicePrivate;
 typedef struct _GUsbDevice		GUsbDevice;
@@ -48,7 +48,7 @@ typedef struct _GUsbDeviceClass	GUsbDeviceClass;
  * The error code.
  **/
 typedef enum {
-	GUSB_DEVICE_ERROR_INTERNAL
+	G_USB_DEVICE_ERROR_INTERNAL
 } GUsbDeviceError;
 
 struct _GUsbDevice
