@@ -35,36 +35,36 @@
 #define __CD_VERSION_H
 
 /**
- * LIBGUSB_MAJOR_VERSION:
+ * GUSB_MAJOR_VERSION:
  *
  * The compile-time major version
  */
-#define LIBGUSB_MAJOR_VERSION		(@LIBUSB_MAJOR_VERSION@)
+#define GUSB_MAJOR_VERSION		(@LIBUSB_MAJOR_VERSION@)
 
 /**
- * LIBGUSB_MINOR_VERSION:
+ * GUSB_MINOR_VERSION:
  *
  * The compile-time minor version
  */
-#define LIBGUSB_MINOR_VERSION		(@LIBGUSB_MINOR_VERSION@)
+#define GUSB_MINOR_VERSION		(@GUSB_MINOR_VERSION@)
 
 /**
- * LIBGUSB_MICRO_VERSION:
+ * GUSB_MICRO_VERSION:
  *
  * The compile-time micro version
  */
-#define LIBGUSB_MICRO_VERSION		(@LIBGUSB_MICRO_VERSION@)
+#define GUSB_MICRO_VERSION		(@GUSB_MICRO_VERSION@)
 
 /**
- * LIBGUSB_CHECK_VERSION:
+ * GUSB_CHECK_VERSION:
  *
  * Check whether a gusb version equal to or greater than
  * major.minor.micro.
  */
-#define LIBGUSB_CHECK_VERSION(major,minor,micro)    \
-    (LIBGUSB_MAJOR_VERSION > (major) || \
-     (LIBGUSB_MAJOR_VERSION == (major) && LIBGUSB_MINOR_VERSION > (minor)) || \
-     (LIBGUSB_MAJOR_VERSION == (major) && LIBGUSB_MINOR_VERSION == (minor) && \
-      LIBGUSB_MICRO_VERSION >= (micro)))
+#define GUSB_CHECK_VERSION(major,minor,micro)    \
+    (GUSB_MAJOR_VERSION > (major) || \
+     (GUSB_MAJOR_VERSION == (major) && GUSB_MINOR_VERSION > (minor)) || \
+     (GUSB_MAJOR_VERSION == (major) && GUSB_MINOR_VERSION == (minor) && \
+      GUSB_MICRO_VERSION >= (micro)))
 
 #endif /* __CD_VERSION_H */

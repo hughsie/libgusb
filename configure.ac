@@ -1,13 +1,13 @@
 # Copyright (C) 2010 Richard Hughes <richard@hughsie.com>
 AC_PREREQ(2.63)
 
-m4_define([libgusb_major_version], [0])
-m4_define([libgusb_minor_version], [0])
-m4_define([libgusb_micro_version], [1])
-m4_define([libgusb_version],
-          [libgusb_major_version.libgusb_minor_version.libgusb_micro_version])
+m4_define([gusb_major_version], [0])
+m4_define([gusb_minor_version], [0])
+m4_define([gusb_micro_version], [1])
+m4_define([gusb_version],
+          [gusb_major_version.gusb_minor_version.gusb_micro_version])
 
-AC_INIT([libgusb],[libgusb_version],[http://www.hughsie.com])
+AC_INIT([libgusb],[gusb_version],[http://www.hughsie.com])
 AC_CONFIG_SRCDIR(libgusb)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -20,13 +20,13 @@ AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-xz tar-ustar])
 GTK_DOC_CHECK(1.9)
 
 # use this in cd-version.h
-LIBGUSB_MAJOR_VERSION=libgusb_major_version
-LIBGUSB_MINOR_VERSION=libgusb_minor_version
-LIBGUSB_MICRO_VERSION=libgusb_micro_version
+GUSB_MAJOR_VERSION=gusb_major_version
+GUSB_MINOR_VERSION=gusb_minor_version
+GUSB_MICRO_VERSION=gusb_micro_version
 AC_SUBST(VERSION)
-AC_SUBST(LIBGUSB_MAJOR_VERSION)
-AC_SUBST(LIBGUSB_MINOR_VERSION)
-AC_SUBST(LIBGUSB_MICRO_VERSION)
+AC_SUBST(GUSB_MAJOR_VERSION)
+AC_SUBST(GUSB_MINOR_VERSION)
+AC_SUBST(GUSB_MICRO_VERSION)
 
 # libtool versioning - this applies to libgusb
 #
