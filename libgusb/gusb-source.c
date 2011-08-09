@@ -53,12 +53,13 @@ g_usb_source_error_quark (void)
 	return quark;
 }
 
-/* libusb_strerror is in upstream */
+/* libusb_strerror is awaiting merging upstream */
 #define libusb_strerror(error) "unknown"
 
 struct _GUsbSource {
 	GSource		 source;
 	GSList		*pollfds;
+	GUsbContext	*usbcontext;
 	libusb_context	*ctx;
 };
 
@@ -209,6 +210,7 @@ static void
 g_usb_source_finalize (GSource *source)
 {
 	GUsbSource *usb_source = (GUsbSource *)source;
+	g_object_unref (usb_source->usbcontext);
 	g_slist_free (usb_source->pollfds);
 }
 
@@ -244,6 +246,7 @@ g_usb_source_new (GMainContext *main_ctx,
 	gusb_source = (GUsbSource *)g_source_new (&usb_source_funcs,
 						  sizeof(GUsbSource));
 	gusb_source->pollfds = NULL;
+	gusb_source->usbcontext = g_object_ref (gusb_ctx);
 	gusb_source->ctx = _g_usb_context_get_context (gusb_ctx);
 
 	/* watch the fd's already created */
