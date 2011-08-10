@@ -1,6 +1,7 @@
 
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
+	$(GUDEV_CFLAGS)						\
 	-I$(top_srcdir)						\
 	-I$(top_srcdir)/gusb					\
 	-DGUSB_COMPILATION					\
@@ -23,15 +24,20 @@ libgusbbase_include_HEADERS =					\
 	gusb-context-private.h					\
 	gusb-device.h						\
 	gusb-device-private.h					\
+	gusb-device-list.h					\
 	gusb-source.h
 
 libgusb_la_SOURCES =						\
 	gusb-context.c						\
 	gusb-device.c						\
+	gusb-device-list.c					\
+	gusb-marshal.c						\
+	gusb-marshal.h						\
 	gusb-source.c
 
 libgusb_la_LIBADD =						\
-	$(GLIB_LIBS)
+	$(GLIB_LIBS)						\
+	$(GUDEV_LIBS)
 
 libgusb_la_LDFLAGS =						\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
@@ -63,10 +69,20 @@ TESTS = gusb-self-test
 endif
 
 EXTRA_DIST =							\
+	gusb-marshal.txt					\
 	gusb-version.h.in					\
 	gusb.pc.in
 
-CLEANFILES = $(BUILT_SOURCES)
+CLEANFILES = $(BUILT_SOURCES) gusb-marshal.c gusb-marshal.h
+
+gusb-device-list.c: gusb-marshal.h
+
+gusb-marshal.c: gusb-marshal.txt
+	$(AM_V_GEN)echo "#include \"gusb-marshal.h\"" > $@ && \
+		glib-genmarshal --body $< >> $@ || (rm -f $@ && exit 1)
+
+gusb-marshal.h: gusb-marshal.txt
+	$(AM_V_GEN)glib-genmarshal --header $< > $@ || (rm -f $@ && exit 1)
 
 clean-local:
 	rm -f *~
