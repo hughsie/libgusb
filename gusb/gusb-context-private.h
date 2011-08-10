@@ -24,7 +24,7 @@
 
 #include <libusb-1.0/libusb.h>
 
-#include "gusb-context.h"
+#include <gusb/gusb-context.h>
 
 G_BEGIN_DECLS
 

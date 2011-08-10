@@ -25,6 +25,8 @@
 
 #include <glib.h>
 
+#include <gusb/gusb-context.h>
+
 G_BEGIN_DECLS
 
 #define G_USB_SOURCE_ERROR			(g_usb_source_error_quark ())

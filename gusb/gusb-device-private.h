@@ -21,7 +21,7 @@
 #ifndef __GUSB_DEVICE_PRIVATE_H__
 #define __GUSB_DEVICE_PRIVATE_H__
 
-#include "gusb-device.h"
+#include <gusb/gusb-device.h>
 
 G_BEGIN_DECLS
 
