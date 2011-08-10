@@ -8,7 +8,7 @@ m4_define([gusb_version],
           [gusb_major_version.gusb_minor_version.gusb_micro_version])
 
 AC_INIT([libgusb],[gusb_version],[http://www.hughsie.com])
-AC_CONFIG_SRCDIR(libgusb)
+AC_CONFIG_SRCDIR(gusb)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -141,9 +141,9 @@ Makefile
 docs/Makefile
 docs/api/Makefile
 docs/api/version.xml
-libgusb/gusb-version.h
-libgusb/gusb.pc
-libgusb/Makefile
+gusb/gusb-version.h
+gusb/gusb.pc
+gusb/Makefile
 ])
 AC_OUTPUT
 

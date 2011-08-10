@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = 						\
-	libgusb						\
+	gusb						\
 	docs
 
 EXTRA_DIST =						\

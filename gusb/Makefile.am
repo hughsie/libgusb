@@ -2,7 +2,7 @@
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
 	-I$(top_srcdir)						\
-	-I$(top_srcdir)/libgusb					\
+	-I$(top_srcdir)/gusb					\
 	-DGUSB_COMPILATION					\
 	-DG_LOG_DOMAIN=\"libgusb\"				\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"		\
