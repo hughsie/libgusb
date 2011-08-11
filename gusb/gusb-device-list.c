@@ -233,7 +233,7 @@ g_usb_device_list_get_bus_n_address (GUdevDevice	*udev,
 	return *bus && *address;
 }
 
-static void
+static gboolean
 g_usb_device_list_add_dev (GUsbDeviceList *list, GUdevDevice *udev)
 {
 	GUsbDeviceListPrivate *priv = list->priv;
@@ -246,16 +246,16 @@ g_usb_device_list_add_dev (GUsbDeviceList *list, GUdevDevice *udev)
 	devtype = g_udev_device_get_property (udev, "DEVTYPE");
 	/* Check if this is a usb device (and not an interface) */
 	if (!devtype || strcmp(devtype, "usb_device"))
-		return;
+		return FALSE;
 
 	/* Skip hubs */
 	devclass = g_udev_device_get_sysfs_attr(udev, "bDeviceClass");
 	if (!devclass || !strcmp(devclass, "09"))
-		return;
+		return FALSE;
 
 	if (!g_usb_device_list_get_bus_n_address (udev, &bus, &address)) {
 		g_warning ("usb-device without bus number or device address");
-		return;
+		return FALSE;
 	}
 
 	if (priv->coldplug_list)
@@ -277,11 +277,12 @@ g_usb_device_list_add_dev (GUsbDeviceList *list, GUdevDevice *udev)
 	if (!device) {
 		g_warning ("Could not find usb dev at busnum %d devaddr %d",
 			   bus, address);
-		return;
+		return FALSE;
 	}
 
 	g_ptr_array_add (priv->devices, device);
 	g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device, udev);
+	return TRUE;
 }
 
 static void
@@ -324,7 +325,7 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	GList *devices, *elem;
 	libusb_context *ctx = _g_usb_context_get_context (priv->context);
 
-	libusb_get_device_list(ctx, &priv->coldplug_list);
+	libusb_get_device_list (ctx, &priv->coldplug_list);
 	devices = g_udev_client_query_by_subsystem (priv->udev, "usb");
 	for (elem = g_list_first (devices); elem; elem = g_list_next (elem)) {
 		g_usb_device_list_add_dev (list, elem->data);
