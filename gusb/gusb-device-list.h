@@ -61,6 +61,8 @@ GUsbDeviceList		*g_usb_device_list_new (GUsbContext *context);
 
 void			 g_usb_device_list_coldplug (GUsbDeviceList *list);
 
+GPtrArray		*g_usb_device_list_get_devices (GUsbDeviceList *list);
+
 GUsbDevice		*g_usb_device_list_get_dev_by_bus_n_address (
 					GUsbDeviceList	*list,
 					guint8		 bus,

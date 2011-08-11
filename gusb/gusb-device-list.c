@@ -215,6 +215,19 @@ g_usb_device_list_init (GUsbDeviceList *list)
 	list->priv = G_USB_DEVICE_LIST_GET_PRIVATE (list);
 }
 
+/**
+ * g_usb_device_list_get_devices:
+ * @list: a #GUsbDeviceList
+ *
+ * Return value: (transfer full): a new #GPtrArray of #GUsbDevice's.
+ **/
+GPtrArray *
+g_usb_device_list_get_devices (GUsbDeviceList *list)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE_LIST (list), NULL);
+	return g_ptr_array_ref (list->priv->devices);
+}
+
 static gboolean
 g_usb_device_list_get_bus_n_address (GUdevDevice	*udev,
 				     gint		*bus,
