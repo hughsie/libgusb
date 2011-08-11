@@ -65,6 +65,50 @@ gusb_source_func (void)
 }
 
 static void
+gusb_device_func (void)
+{
+	gboolean ret;
+	GError *error = NULL;
+	GPtrArray *array;
+	GUsbContext *ctx;
+	GUsbDevice *device;
+	GUsbDeviceList *list;
+
+	ctx = g_usb_context_new (&error);
+	g_assert_no_error (error);
+	g_assert (ctx != NULL);
+
+	g_usb_context_set_debug (ctx, G_LOG_LEVEL_ERROR);
+
+	list = g_usb_device_list_new (ctx);
+	g_assert (list != NULL);
+
+	g_usb_device_list_coldplug (list);
+	array = g_usb_device_list_get_devices (list);
+	g_assert (array != NULL);
+	g_assert_cmpint (array->len, >, 0);
+	device = G_USB_DEVICE (g_ptr_array_index (array, 0));
+
+	g_assert_cmpint (g_usb_device_get_vid (device), ==, 0x0000);
+	g_assert_cmpint (g_usb_device_get_pid (device), ==, 0x0000);
+
+	/* get descriptor once */
+	ret = g_usb_device_get_descriptor (device, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* get descriptor again */
+	ret = g_usb_device_get_descriptor (device, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	g_assert_cmpint (g_usb_device_get_vid (device), >, 0x0000);
+	g_assert_cmpint (g_usb_device_get_pid (device), >, 0x0000);
+
+	g_ptr_array_unref (array);
+}
+
+static void
 gusb_device_list_func (void)
 {
 	GUsbContext *ctx;
@@ -134,6 +178,7 @@ main (int argc, char **argv)
 	/* tests go here */
 	g_test_add_func ("/gusb/context", gusb_context_func);
 	g_test_add_func ("/gusb/source", gusb_source_func);
+	g_test_add_func ("/gusb/device", gusb_device_func);
 	g_test_add_func ("/gusb/device-list", gusb_device_list_func);
 
 	return g_test_run ();
