@@ -144,6 +144,7 @@ docs/api/version.xml
 gusb/gusb-version.h
 gusb/gusb.pc
 gusb/Makefile
+tools/Makefile
 ])
 AC_OUTPUT
 

@@ -2,6 +2,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = 						\
 	gusb						\
+	tools						\
 	docs
 
 EXTRA_DIST =						\
