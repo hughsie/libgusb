@@ -20,7 +20,7 @@
  */
 
 /**
- * SECTION:usb-device
+ * SECTION:gusb-device
  * @short_description: GLib device integration for libusb
  *
  * This object is a thin glib wrapper around a libusb_device

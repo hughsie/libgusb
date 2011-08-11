@@ -48,6 +48,8 @@
     </partintro>
     <xi:include href="xml/gusb-context.xml"/>
     <xi:include href="xml/gusb-source.xml"/>
+    <xi:include href="xml/gusb-device.xml"/>
+    <xi:include href="xml/gusb-device-list.xml"/>
   </reference>
 
   <reference id="libgusb-helpers">
