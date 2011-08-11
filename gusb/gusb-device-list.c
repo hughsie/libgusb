@@ -325,8 +325,10 @@ g_usb_device_list_remove_dev (GUsbDeviceList *list, GUdevDevice *udev)
 	if (!g_usb_device_list_get_bus_n_address (udev, &bus, &address))
 		return;
 
-	device = g_usb_device_list_get_dev_by_bus_n_address (list, bus,
-							     address);
+	device = g_usb_device_list_find_by_bus_address (list,
+							bus,
+							address,
+							NULL);
 	if (!device)
 		return;
 
@@ -379,19 +381,21 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 }
 
 /**
- * g_usb_device_list_get_dev_by_bus_n_address:
+ * g_usb_device_list_find_by_bus_address:
  * @list: a #GUsbDeviceList
  * @bus: a bus number
  * @address: a bus address
+ * @error: A #GError or %NULL
  *
  * Finds a device based on its bus and address values.
  *
  * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
  **/
 GUsbDevice *
-g_usb_device_list_get_dev_by_bus_n_address (GUsbDeviceList	*list,
-					    guint8		 bus,
-					    guint8		 address)
+g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
+				       guint8		 bus,
+				       guint8		 address,
+				       GError		**error)
 {
 	GUsbDeviceListPrivate *priv = list->priv;
 	GUsbDevice *device = NULL;
@@ -402,10 +406,15 @@ g_usb_device_list_get_dev_by_bus_n_address (GUsbDeviceList	*list,
 		if (g_usb_device_get_bus (curr) == bus &&
 		    g_usb_device_get_address (curr) == address) {
 			device = g_object_ref (curr);
-			break;
-                }
+			goto out;
+		}
 	}
-
+	g_set_error (error,
+		     G_USB_DEVICE_ERROR,
+		     G_USB_DEVICE_ERROR_INTERNAL,
+		     "Failed to find device %x:%x",
+		     bus, address);
+out:
 	return device;
 }
 

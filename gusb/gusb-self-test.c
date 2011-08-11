@@ -153,9 +153,11 @@ gusb_device_list_func (void)
 	g_ptr_array_unref (array);
 
 	/* ensure we can search for the same device */
-	device = g_usb_device_list_get_dev_by_bus_n_address (list,
-							     bus,
-							     address);
+	device = g_usb_device_list_find_by_bus_address (list,
+							bus,
+							address,
+							&error);
+	g_assert_no_error (error);
 	g_assert (device != NULL);
 	g_assert_cmpint (bus, ==, g_usb_device_get_bus (device));
 	g_assert_cmpint (address, ==, g_usb_device_get_address (device));
