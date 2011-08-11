@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
+ * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -68,6 +69,10 @@ GUsbDevice		*g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
 								guint8		 address,
 								GError		**error);
 
+GUsbDevice		*g_usb_device_list_find_by_vid_pid	(GUsbDeviceList	*list,
+								 guint16	 vid,
+								 guint16	 pid,
+								 GError		**error);
 
 G_END_DECLS
 

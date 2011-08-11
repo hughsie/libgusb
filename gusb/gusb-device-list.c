@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
+ * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -414,6 +415,44 @@ g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
 		     G_USB_DEVICE_ERROR_INTERNAL,
 		     "Failed to find device %x:%x",
 		     bus, address);
+out:
+	return device;
+}
+
+/**
+ * g_usb_device_list_find_by_bus_address:
+ * @list: a #GUsbDeviceList
+ * @vid: a vendor ID
+ * @pid: a product ID
+ * @error: A #GError or %NULL
+ *
+ * Finds a device based on its bus and address values.
+ *
+ * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
+ **/
+GUsbDevice *
+g_usb_device_list_find_by_vid_pid (GUsbDeviceList	*list,
+				   guint16		 vid,
+				   guint16		 pid,
+				   GError		**error)
+{
+	GUsbDeviceListPrivate *priv = list->priv;
+	GUsbDevice *device = NULL;
+	guint i;
+
+	for (i = 0; i < priv->devices->len; i++) {
+		GUsbDevice *curr = g_ptr_array_index (priv->devices, i);
+		if (g_usb_device_get_vid (curr) == vid &&
+		    g_usb_device_get_pid (curr) == pid) {
+			device = g_object_ref (curr);
+			goto out;
+		}
+	}
+	g_set_error (error,
+		     G_USB_DEVICE_ERROR,
+		     G_USB_DEVICE_ERROR_INTERNAL,
+		     "Failed to find device %x:%x",
+		     vid, pid);
 out:
 	return device;
 }
