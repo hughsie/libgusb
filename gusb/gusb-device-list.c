@@ -57,6 +57,7 @@ struct _GUsbDeviceListPrivate {
 	GUdevClient	 *udev;
 	GPtrArray	 *devices;
 	libusb_device	**coldplug_list;
+	gboolean	  done_coldplug;
 };
 
 static void g_usb_device_list_uevent_cb (GUdevClient	*client,
@@ -325,6 +326,8 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	GList *devices, *elem;
 	libusb_context *ctx = _g_usb_context_get_context (priv->context);
 
+	if (priv->done_coldplug)
+		return;
 	libusb_get_device_list (ctx, &priv->coldplug_list);
 	devices = g_udev_client_query_by_subsystem (priv->udev, "usb");
 	for (elem = g_list_first (devices); elem; elem = g_list_next (elem)) {
@@ -334,6 +337,7 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	g_list_free (devices);
 	libusb_free_device_list (priv->coldplug_list, 1);
 	priv->coldplug_list = NULL;
+	priv->done_coldplug = TRUE;
 }
 
 GUsbDevice *
