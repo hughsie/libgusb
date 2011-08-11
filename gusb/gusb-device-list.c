@@ -353,6 +353,14 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	priv->done_coldplug = TRUE;
 }
 
+/**
+ * g_usb_device_list_get_dev_by_bus_n_address:
+ * @list: a #GUsbDeviceList
+ * @bus: a bus number
+ * @address: a bus address
+ *
+ * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
+ **/
 GUsbDevice *
 g_usb_device_list_get_dev_by_bus_n_address (GUsbDeviceList	*list,
 					    guint8		 bus,
@@ -366,7 +374,7 @@ g_usb_device_list_get_dev_by_bus_n_address (GUsbDeviceList	*list,
 		GUsbDevice *curr = g_ptr_array_index (priv->devices, i);
 		if (g_usb_device_get_bus (curr) == bus &&
 		    g_usb_device_get_address (curr) == address) {
-			device = curr;
+			device = g_object_ref (curr);
 			break;
                 }
 	}
