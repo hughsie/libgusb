@@ -182,7 +182,15 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_CONTEXT, pspec);
 
-	signals[DEVICE_ADDED_SIGNAL] = g_signal_new ("device_added",
+	/**
+	 * GUsbDeviceList::device-added:
+	 * @list: the #GUsbDeviceList instance that emitted the signal
+	 * @device: A #GUsbDevice
+	 * @udev: A #GUdevDevice
+	 *
+	 * This signal is emitted when a USB device is added.
+	 **/
+	signals[DEVICE_ADDED_SIGNAL] = g_signal_new ("device-added",
 			G_TYPE_FROM_CLASS (klass),
 			G_SIGNAL_RUN_LAST,
 			G_STRUCT_OFFSET (GUsbDeviceListClass, device_added),
@@ -194,7 +202,15 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			G_USB_TYPE_DEVICE,
 			G_UDEV_TYPE_DEVICE);
 
-	signals[DEVICE_REMOVED_SIGNAL] = g_signal_new ("device_removed",
+	/**
+	 * GUsbDeviceList::device-removed:
+	 * @list: the #GUsbDeviceList instance that emitted the signal
+	 * @device: A #GUsbDevice
+	 * @udev: A #GUdevDevice
+	 *
+	 * This signal is emitted when a USB device is removed.
+	 **/
+	signals[DEVICE_REMOVED_SIGNAL] = g_signal_new ("device-removed",
 			G_TYPE_FROM_CLASS (klass),
 			G_SIGNAL_RUN_LAST,
 			G_STRUCT_OFFSET (GUsbDeviceListClass, device_removed),
@@ -332,6 +348,15 @@ g_usb_device_list_uevent_cb (GUdevClient		*client,
 		g_usb_device_list_remove_dev (list, udevice);
 }
 
+/**
+ * g_usb_device_list_coldplug:
+ * @list: a #GUsbDeviceList
+ *
+ * Finds all the USB devices and adds them to the list.
+ *
+ * You only need to call this function once, and any subsequent calls
+ * are silently ignored.
+ **/
 void
 g_usb_device_list_coldplug (GUsbDeviceList *list)
 {
@@ -359,6 +384,8 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
  * @bus: a bus number
  * @address: a bus address
  *
+ * Finds a device based on its bus and address values.
+ *
  * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
  **/
 GUsbDevice *
@@ -382,6 +409,17 @@ g_usb_device_list_get_dev_by_bus_n_address (GUsbDeviceList	*list,
 	return device;
 }
 
+/**
+ * g_usb_device_list_new:
+ * @context: a #GUsbContext
+ *
+ * Creates a new device list.
+ *
+ * You will need to call g_usb_device_list_coldplug() to coldplug the
+ * list of devices after creating a device list.
+ *
+ * Return value: a new #GUsbDeviceList
+ **/
 GUsbDeviceList *
 g_usb_device_list_new (GUsbContext *context)
 {

@@ -161,8 +161,8 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 	 * GUsbDevice:libusb_device:
 	 */
 	pspec = g_param_spec_pointer ("libusb_device", NULL, NULL,
-				     G_PARAM_CONSTRUCT_ONLY|
-				     G_PARAM_READWRITE);
+				      G_PARAM_CONSTRUCT_ONLY|
+				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_LIBUSB_DEVICE,
 					 pspec);
 
@@ -219,14 +219,30 @@ _g_usb_device_get_device (GUsbDevice	*device)
 	return device->priv->device;
 }
 
+/**
+ * g_usb_device_get_bus:
+ * @device: a #GUsbDevice
+ *
+ * Gets the USB bus number for the device.
+ *
+ * Return value: The 8-bit bus number
+ **/
 guint8
-g_usb_device_get_bus (GUsbDevice	*device)
+g_usb_device_get_bus (GUsbDevice *device)
 {
 	return libusb_get_bus_number (device->priv->device);
 }
 
+/**
+ * g_usb_device_get_address:
+ * @device: a #GUsbDevice
+ *
+ * Gets the USB address for the device.
+ *
+ * Return value: The 8-bit address
+ **/
 guint8
-g_usb_device_get_address (GUsbDevice	*device)
+g_usb_device_get_address (GUsbDevice *device)
 {
 	return libusb_get_device_address (device->priv->device);
 }
