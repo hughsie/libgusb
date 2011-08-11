@@ -191,8 +191,8 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			g_cclosure_user_marshal_VOID__OBJECT_OBJECT,
 			G_TYPE_NONE,
 			2,
-			G_TYPE_OBJECT,
-			G_TYPE_OBJECT);
+			G_USB_TYPE_DEVICE,
+			G_UDEV_TYPE_DEVICE);
 
 	signals[DEVICE_REMOVED_SIGNAL] = g_signal_new ("device_removed",
 			G_TYPE_FROM_CLASS (klass),
@@ -203,8 +203,8 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			g_cclosure_user_marshal_VOID__OBJECT_OBJECT,
 			G_TYPE_NONE,
 			2,
-			G_TYPE_OBJECT,
-			G_TYPE_OBJECT);
+			G_USB_TYPE_DEVICE,
+			G_UDEV_TYPE_DEVICE);
 
 	g_type_class_add_private (klass, sizeof (GUsbDeviceListPrivate));
 }
