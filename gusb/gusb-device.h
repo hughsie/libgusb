@@ -37,6 +37,40 @@ typedef struct _GUsbDevice		GUsbDevice;
 typedef struct _GUsbDeviceClass		GUsbDeviceClass;
 
 /**
+ * GUsbDeviceDirection:
+ *
+ * The message direction.
+ **/
+typedef enum {
+	G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST, /* IN */
+	G_USB_DEVICE_DIRECTION_HOST_TO_DEVICE  /* OUT */
+} GUsbDeviceDirection;
+
+/**
+ * GUsbDeviceRequestType:
+ *
+ * The message request type.
+ **/
+typedef enum {
+	G_USB_DEVICE_REQUEST_TYPE_STANDARD,
+	G_USB_DEVICE_REQUEST_TYPE_CLASS,
+	G_USB_DEVICE_REQUEST_TYPE_VENDOR,
+	G_USB_DEVICE_REQUEST_TYPE_RESERVED
+} GUsbDeviceRequestType;
+
+/**
+ * GUsbDeviceRecipient:
+ *
+ * The message recipient.
+ **/
+typedef enum {
+	G_USB_DEVICE_RECIPIENT_DEVICE,
+	G_USB_DEVICE_RECIPIENT_INTERFACE,
+	G_USB_DEVICE_RECIPIENT_ENDPOINT,
+	G_USB_DEVICE_RECIPIENT_OTHER
+} GUsbDeviceRecipient;
+
+/**
  * GUsbDeviceError:
  *
  * The error code.
@@ -78,6 +112,39 @@ gboolean		 g_usb_device_open		(GUsbDevice	*device,
 							 GCancellable	*cancellable,
 							 GError		**error);
 gboolean		 g_usb_device_close		(GUsbDevice	*device,
+							 GError		**error);
+
+/* sync -- TODO: use GCancellable and GUsbSource */
+gboolean		 g_usb_device_control_transfer	(GUsbDevice	*device,
+							 GUsbDeviceDirection direction,
+							 GUsbDeviceRequestType request_type,
+							 GUsbDeviceRecipient recipient,
+							 guint8		 request,
+							 guint16	 value,
+							 guint16	 index,
+							 guint8		*data,
+							 gsize		 length,
+							 gsize		*actual_length,
+							 guint		 timeout,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+gboolean		 g_usb_device_bulk_transfer	(GUsbDevice	*device,
+							 guint8		 endpoint,
+							 guint8		*data,
+							 gsize		 length,
+							 gsize		*actual_length,
+							 guint		 timeout,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+gboolean		 g_usb_device_interrupt_transfer (GUsbDevice	*device,
+							 guint8		 endpoint,
+							 guint8		*data,
+							 gsize		 length,
+							 gsize		*actual_length,
+							 guint		 timeout,
+							 GCancellable	*cancellable,
 							 GError		**error);
 
 G_END_DECLS

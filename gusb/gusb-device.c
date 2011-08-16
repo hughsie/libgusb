@@ -278,6 +278,199 @@ out:
 }
 
 /**
+ * g_usb_device_control_transfer:
+ * @device: a #GUsbDevice
+ * @request_type: the request type field for the setup packet
+ * @request: the request field for the setup packet
+ * @value: the value field for the setup packet
+ * @index: the index field for the setup packet
+ * @data: a suitably-sized data buffer for either input or output
+ * @length: the length field for the setup packet.
+ * @actual_length: the actual number of bytes sent, or %NULL
+ * @timeout: timeout timeout (in millseconds) that this function should wait
+ * before giving up due to no response being received. For an unlimited
+ * timeout, use 0.
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Perform a USB control transfer.
+ *
+ * Warning: this function is syncronous, and cannot be cancelled.
+ *
+ * Return value: %TRUE on success
+ **/
+gboolean
+g_usb_device_control_transfer	(GUsbDevice	*device,
+				 GUsbDeviceDirection direction,
+				 GUsbDeviceRequestType request_type,
+				 GUsbDeviceRecipient recipient,
+				 guint8		 request,
+				 guint16	 value,
+				 guint16	 index,
+				 guint8		*data,
+				 gsize		 length,
+				 gsize		*actual_length,
+				 guint		 timeout,
+				 GCancellable	*cancellable,
+				 GError		**error)
+{
+	gboolean ret = TRUE;
+	gint rc;
+	guint8 request_type_raw = 0;
+
+	/* munge back to flags */
+	if (direction == G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST)
+		request_type_raw |= 0x80;
+	request_type_raw |= (request_type << 5);
+	request_type_raw |= recipient;
+
+	if (device->priv->handle == NULL) {
+		ret = FALSE;
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NOT_OPEN,
+				     "The device has not been opened");
+		goto out;
+	}
+
+	/* TODO: setup an async transfer so we can cancel it */
+	rc = libusb_control_transfer (device->priv->handle,
+				      request_type_raw,
+				      request,
+				      value,
+				      index,
+				      data,
+				      length,
+				      timeout);
+	if (rc < 0) {
+		ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
+		goto out;
+	}
+	if (actual_length != NULL)
+		*actual_length = rc;
+out:
+	return ret;
+}
+
+/**
+ * g_usb_device_bulk_transfer:
+ * @device: a #GUsbDevice
+ * @endpoint: the address of a valid endpoint to communicate with
+ * @data: a suitably-sized data buffer for either input or output
+ * @length: the length field for the setup packet.
+ * @actual_length: the actual number of bytes sent, or %NULL
+ * @timeout: timeout timeout (in millseconds) that this function should wait
+ * before giving up due to no response being received. For an unlimited
+ * timeout, use 0.
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Perform a USB bulk transfer.
+ *
+ * Warning: this function is syncronous, and cannot be cancelled.
+ *
+ * Return value: %TRUE on success
+ **/
+gboolean
+g_usb_device_bulk_transfer	(GUsbDevice	*device,
+				 guint8		 endpoint,
+				 guint8		*data,
+				 gsize		 length,
+				 gsize		*actual_length,
+				 guint		 timeout,
+				 GCancellable	*cancellable,
+				 GError		**error)
+{
+	gboolean ret = TRUE;
+	gint rc;
+	gint transferred;
+
+	if (device->priv->handle == NULL) {
+		ret = FALSE;
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NOT_OPEN,
+				     "The device has not been opened");
+		goto out;
+	}
+
+	/* TODO: setup an async transfer so we can cancel it */
+	rc = libusb_bulk_transfer (device->priv->handle,
+				   endpoint,
+				   data,
+				   length,
+				   &transferred,
+				   timeout);
+	if (rc < 0) {
+		ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
+		goto out;
+	}
+	if (actual_length != NULL)
+		*actual_length = transferred;
+out:
+	return ret;
+}
+
+/**
+ * g_usb_device_interrupt_transfer:
+ * @device: a #GUsbDevice
+ * @endpoint: the address of a valid endpoint to communicate with
+ * @data: a suitably-sized data buffer for either input or output
+ * @length: the length field for the setup packet.
+ * @actual_length: the actual number of bytes sent, or %NULL
+ * @timeout: timeout timeout (in millseconds) that this function should wait
+ * before giving up due to no response being received. For an unlimited
+ * timeout, use 0.
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Perform a USB interrupt transfer.
+ *
+ * Warning: this function is syncronous, and cannot be cancelled.
+ *
+ * Return value: %TRUE on success
+ **/
+gboolean
+g_usb_device_interrupt_transfer	(GUsbDevice	*device,
+				 guint8		 endpoint,
+				 guint8		*data,
+				 gsize		 length,
+				 gsize		*actual_length,
+				 guint		 timeout,
+				 GCancellable	*cancellable,
+				 GError		**error)
+{
+	gboolean ret = TRUE;
+	gint rc;
+	gint transferred;
+
+	if (device->priv->handle == NULL) {
+		ret = FALSE;
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NOT_OPEN,
+				     "The device has not been opened");
+		goto out;
+	}
+
+	/* TODO: setup an async transfer so we can cancel it */
+	rc = libusb_interrupt_transfer (device->priv->handle,
+					endpoint,
+					data,
+					length,
+					&transferred,
+					timeout);
+	if (rc < 0) {
+		ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
+		goto out;
+	}
+	if (actual_length != NULL)
+		*actual_length = transferred;
+out:
+	return ret;
+}
+
+/**
  * usb_device_set_property:
  **/
 static void

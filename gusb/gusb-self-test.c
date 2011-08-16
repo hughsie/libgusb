@@ -178,6 +178,104 @@ gusb_device_list_func (void)
 	g_object_unref (ctx);
 }
 
+static void
+gusb_device_huey_func (void)
+{
+	GUsbContext *ctx;
+	GUsbDeviceList *list;
+	GError *error = NULL;
+	GUsbDevice *device;
+	gboolean ret;
+	GCancellable *cancellable = NULL;
+	const gchar request[8] = { 0x0e, 'G', 'r', 'M', 'b', 'k', 'e', 'd' };
+
+	ctx = g_usb_context_new (&error);
+	g_assert_no_error (error);
+	g_assert (ctx != NULL);
+
+	g_usb_context_set_debug (ctx, G_LOG_LEVEL_ERROR);
+
+	list = g_usb_device_list_new (ctx);
+	g_assert (list != NULL);
+
+	/* coldplug, and get the huey */
+	g_usb_device_list_coldplug (list);
+	device = g_usb_device_list_find_by_vid_pid (list,
+						    0x0971,
+						    0x2005,
+						    &error);
+	g_assert_no_error (error);
+	g_assert (device != NULL);
+
+	/* close not opened */
+	ret = g_usb_device_close (device, &error);
+	g_assert_error (error,
+			G_USB_DEVICE_ERROR,
+			G_USB_DEVICE_ERROR_NOT_OPEN);
+	g_assert (!ret);
+	g_clear_error (&error);
+
+	/* open */
+	ret = g_usb_device_open (device, 0x01, 0x00, cancellable, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* open opened */
+	ret = g_usb_device_open (device, 0x01, 0x00, cancellable, &error);
+	g_assert_error (error,
+			G_USB_DEVICE_ERROR,
+			G_USB_DEVICE_ERROR_ALREADY_OPEN);
+	g_assert (!ret);
+	g_clear_error (&error);
+
+	/* do a request (unlock) */
+	ret = g_usb_device_control_transfer (device,
+					     G_USB_DEVICE_DIRECTION_HOST_TO_DEVICE,
+					     G_USB_DEVICE_REQUEST_TYPE_CLASS,
+					     G_USB_DEVICE_RECIPIENT_INTERFACE,
+					     0x09, /* request */
+					     0x0200, /* value */
+					     0, /* index */
+					     (guint8*) request,
+					     8,
+					     NULL,
+					     2000,
+					     cancellable,
+					     &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* do a request we know is going to fail */
+	ret = g_usb_device_control_transfer (device,
+					     G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST,
+					     G_USB_DEVICE_REQUEST_TYPE_CLASS,
+					     G_USB_DEVICE_RECIPIENT_INTERFACE,
+					     0x09, /* request */
+					     0x0200, /* value */
+					     0, /* index */
+					     (guint8*) request,
+					     8,
+					     NULL,
+					     2000,
+					     cancellable,
+					     &error);
+	g_assert_error (error,
+			G_USB_DEVICE_ERROR,
+			G_USB_DEVICE_ERROR_NOT_SUPPORTED);
+	g_assert (!ret);
+	g_clear_error (&error);
+
+	/* close */
+	ret = g_usb_device_close (device, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	g_object_unref (device);
+
+	g_object_unref (list);
+	g_object_unref (ctx);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -193,6 +291,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/gusb/source", gusb_source_func);
 	g_test_add_func ("/gusb/device", gusb_device_func);
 	g_test_add_func ("/gusb/device-list", gusb_device_list_func);
+	g_test_add_func ("/gusb/device[huey]", gusb_device_huey_func);
 
 	return g_test_run ();
 }
