@@ -163,6 +163,17 @@ gusb_device_list_func (void)
 	g_assert_cmpint (address, ==, g_usb_device_get_address (device));
 	g_object_unref (device);
 
+	/* get a device that can't exist */
+	device = g_usb_device_list_find_by_vid_pid (list,
+						    0xffff,
+						    0xffff,
+						    &error);
+	g_assert_error (error,
+			G_USB_DEVICE_ERROR,
+			G_USB_DEVICE_ERROR_NO_DEVICE);
+	g_assert (device == NULL);
+	g_clear_error (&error);
+
 	g_object_unref (list);
 	g_object_unref (ctx);
 }

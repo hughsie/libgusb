@@ -412,8 +412,8 @@ g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
 	}
 	g_set_error (error,
 		     G_USB_DEVICE_ERROR,
-		     G_USB_DEVICE_ERROR_INTERNAL,
-		     "Failed to find device %x:%x",
+		     G_USB_DEVICE_ERROR_NO_DEVICE,
+		     "Failed to find device %04x:%04x",
 		     bus, address);
 out:
 	return device;
@@ -456,8 +456,8 @@ g_usb_device_list_find_by_vid_pid (GUsbDeviceList	*list,
 	}
 	g_set_error (error,
 		     G_USB_DEVICE_ERROR,
-		     G_USB_DEVICE_ERROR_INTERNAL,
-		     "Failed to find device %x:%x",
+		     G_USB_DEVICE_ERROR_NO_DEVICE,
+		     "Failed to find device %04x:%04x",
 		     vid, pid);
 out:
 	return device;
