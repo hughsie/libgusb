@@ -23,6 +23,7 @@
 #define __GUSB_DEVICE_H__
 
 #include <glib-object.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
@@ -64,17 +65,20 @@ struct _GUsbDeviceClass
 GType			 g_usb_device_get_type		(void);
 GQuark			 g_usb_device_error_quark	(void);
 
-guint8			 g_usb_device_get_bus		(GUsbDevice      *device);
-guint8			 g_usb_device_get_address	(GUsbDevice      *device);
-gboolean		 g_usb_device_get_descriptor	(GUsbDevice      *device,
+guint8			 g_usb_device_get_bus		(GUsbDevice	*device);
+guint8			 g_usb_device_get_address	(GUsbDevice	*device);
+gboolean		 g_usb_device_get_descriptor	(GUsbDevice	*device,
 							 GError		**error);
-guint16			 g_usb_device_get_vid		(GUsbDevice      *device);
-guint16			 g_usb_device_get_pid		(GUsbDevice      *device);
+guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
+guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
 
-#if 0 /* TODO */
-GUsbDeviceHandle 	*g_usb_device_get_device_handle	(GUsbDevice	 *device,
-							 GError		**err);
-#endif
+gboolean		 g_usb_device_open		(GUsbDevice	*device,
+							 guint		 configuration,
+							 guint		 interface,
+							 GCancellable	*cancellable,
+							 GError		**error);
+gboolean		 g_usb_device_close		(GUsbDevice	*device,
+							 GError		**error);
 
 G_END_DECLS
 

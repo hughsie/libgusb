@@ -48,6 +48,7 @@ static void     g_usb_device_finalize	(GObject     *object);
 struct _GUsbDevicePrivate
 {
 	libusb_device		*device;
+	libusb_device_handle	*handle;
 	gboolean		 has_descriptor;
 	struct libusb_device_descriptor desc;
 };
@@ -131,6 +132,147 @@ g_usb_device_get_descriptor (GUsbDevice *device, GError **error)
 		goto out;
 	}
 	priv->has_descriptor = TRUE;
+out:
+	return ret;
+}
+
+static gboolean
+g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
+				     gint rc,
+				     GError **error)
+{
+	gboolean ret = FALSE;
+
+	switch (rc) {
+	case LIBUSB_SUCCESS:
+		ret = TRUE;
+		break;
+	case LIBUSB_ERROR_TIMEOUT:
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_TIMED_OUT,
+			     "the request timed out on %04x:%04x",
+			     g_usb_device_get_vid (device),
+			     g_usb_device_get_pid (device));
+		break;
+	case LIBUSB_ERROR_PIPE:
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+			     "not supported on %04x:%04x",
+			     g_usb_device_get_vid (device),
+			     g_usb_device_get_pid (device));
+		break;
+	case LIBUSB_ERROR_NO_DEVICE:
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_NO_DEVICE,
+			     "device %04x:%04x has been disconnected",
+			     g_usb_device_get_vid (device),
+			     g_usb_device_get_pid (device));
+		break;
+	case LIBUSB_ERROR_ACCESS:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NO_DEVICE,
+				     "no permissions to open device");
+		break;
+	case LIBUSB_ERROR_BUSY:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NO_DEVICE,
+				     "device is busy");
+		break;
+	default:
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_INTERNAL,
+			     "unknown failure: %s [%i]",
+			     libusb_strerror (rc), rc);
+	}
+	return ret;
+}
+
+/**
+ * g_usb_device_open:
+ * @device: a #GUsbDevice
+ * @configuration: the configuration index to use, usually '1'
+ * @interface: the configuration interface to use, usually '0'
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Opens the device for use.
+ *
+ * Warning: this function is syncronous.
+ *
+ * Return value: %TRUE on success
+ **/
+gboolean
+g_usb_device_open (GUsbDevice *device,
+		   guint configuration,
+		   guint interface,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	gboolean ret = FALSE;
+	gint rc;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+
+	if (device->priv->handle != NULL) {
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_ALREADY_OPEN,
+				     "The device is already open");
+		goto out;
+	}
+
+	/* open device */
+	rc = libusb_open (device->priv->device, &device->priv->handle);
+	ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
+	if (!ret)
+		goto out;
+
+	/* set configuration */
+	rc = libusb_set_configuration (device->priv->handle, configuration);
+	ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
+	if (!ret)
+		goto out;
+
+	/* claim interface */
+	rc = libusb_claim_interface (device->priv->handle, interface);
+	ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
+	if (!ret)
+		goto out;
+out:
+	return ret;
+}
+
+/**
+ * g_usb_device_close:
+ * @device: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Closes the device when it is no longer required.
+ *
+ * Return value: %TRUE on success
+ **/
+gboolean
+g_usb_device_close (GUsbDevice *device, GError **error)
+{
+	gboolean ret = FALSE;
+
+	if (device->priv->handle == NULL) {
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NOT_OPEN,
+				     "The device has not been opened");
+		goto out;
+	}
+
+	libusb_close (device->priv->handle);
+	device->priv->handle = NULL;
+	ret = TRUE;
 out:
 	return ret;
 }
