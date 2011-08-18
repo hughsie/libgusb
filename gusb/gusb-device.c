@@ -31,6 +31,7 @@
 #include <libusb-1.0/libusb.h>
 
 #include "gusb-context.h"
+#include "gusb-source.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
 
@@ -472,6 +473,167 @@ g_usb_device_interrupt_transfer	(GUsbDevice	*device,
 out:
 	return ret;
 }
+
+/**********************************************************************/
+
+/**
+ * g_usb_device_interrupt_transfer_finish:
+ * @device: a #GUsbDevice instance.
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: success
+ *
+ * Since: 0.0.1
+ **/
+gboolean
+g_usb_device_interrupt_transfer_finish (GUsbDevice *device,
+					GAsyncResult *res,
+					GError **error)
+{
+	GSimpleAsyncResult *simple;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	simple = G_SIMPLE_ASYNC_RESULT (res);
+	if (g_simple_async_result_propagate_error (simple, error))
+		return FALSE;
+
+	return g_simple_async_result_get_op_res_gboolean (simple);
+}
+
+typedef struct {
+	GCancellable		*cancellable;
+	gulong			 cancellable_id;
+	GUsbSource		*source;
+	struct libusb_transfer	*transfer;
+	GSimpleAsyncResult	*res;
+} GcmDeviceReq;
+
+static void
+g_usb_device_req_free (GcmDeviceReq *req)
+{
+	if (req->cancellable_id > 0) {
+		g_cancellable_disconnect (req->cancellable,
+					  req->cancellable_id);
+		g_object_unref (req->cancellable);
+	}
+	if (req->source != NULL)
+		g_usb_source_destroy (req->source);
+	libusb_free_transfer (req->transfer);
+	g_object_unref (req->res);
+	g_free (req);
+}
+
+static void
+g_usb_device_interrupt_transfer_cb (struct libusb_transfer *transfer)
+{
+	GcmDeviceReq *req = transfer->user_data;
+
+	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
+		g_simple_async_result_set_error (req->res,
+						 G_USB_DEVICE_ERROR,
+						 G_USB_DEVICE_ERROR_TIMED_OUT,
+						 "Failed to complete");
+		goto out;
+	}
+
+	/* success */
+	g_simple_async_result_set_op_res_gboolean (req->res, TRUE);
+out:
+	g_usb_device_req_free (req);
+	g_simple_async_result_complete_in_idle (req->res);
+	g_object_unref (req->res);
+}
+
+static void
+g_usb_device_cancelled_cb (GCancellable *cancellable,
+			   GcmDeviceReq *req)
+{
+	libusb_cancel_transfer (req->transfer);
+}
+
+/**
+ * g_usb_device_interrupt_transfer_async:
+ * @device: a #GUsbDevice instance.
+ * @cancellable: a #GCancellable, or %NULL
+ * @callback: the function to run on completion
+ * @user_data: the data to pass to @callback
+ *
+ * Do an async interrupt transfer
+ *
+ * Since: 0.0.1
+ **/
+void
+g_usb_device_interrupt_transfer_async (GUsbDevice *device,
+				       guint8 endpoint,
+				       guint8 *data,
+				       gsize length,
+				       guint timeout,
+				       GCancellable *cancellable,
+				       GAsyncReadyCallback callback,
+				       gpointer user_data)
+{
+	GcmDeviceReq *req;
+	GError *error = NULL;
+	gint rc;
+	GSimpleAsyncResult *res;
+
+	g_return_if_fail (G_USB_IS_DEVICE (device));
+
+	res = g_simple_async_result_new (G_OBJECT (device),
+					 callback,
+					 user_data,
+					 g_usb_device_interrupt_transfer_async);
+
+	req = g_new0 (GcmDeviceReq, 1);
+	req->res = g_object_ref (res);
+	req->transfer = libusb_alloc_transfer (0);
+
+	/* setup cancellation */
+	if (cancellable != NULL) {
+		req->cancellable = g_object_ref (cancellable);
+		req->cancellable_id = g_cancellable_connect (req->cancellable,
+							     G_CALLBACK (g_usb_device_cancelled_cb),
+							     req,
+							     NULL);
+	}
+
+	/* fill in transfer details */
+	libusb_fill_interrupt_transfer (req->transfer,
+					device->priv->handle,
+					endpoint,
+					data,
+					length,
+					g_usb_device_interrupt_transfer_cb,
+					req,
+					timeout);
+
+	/* submit transfer */
+	rc = libusb_submit_transfer (req->transfer);
+	if (rc < 0) {
+		g_usb_device_libusb_error_to_gerror (device, rc, &error);
+		g_simple_async_result_set_from_error (req->res,
+						      error);
+		g_error_free (error);
+	}
+
+	/* setup with the default mainloop */
+	req->source = g_usb_source_new (NULL,
+					device->priv->context,
+					&error);
+	if (req->source == NULL) {
+		g_simple_async_result_set_from_error (req->res,
+						      error);
+		g_error_free (error);
+	}
+}
+
+/**********************************************************************/
 
 /**
  * usb_device_set_property:

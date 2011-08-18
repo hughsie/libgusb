@@ -147,6 +147,19 @@ gboolean		 g_usb_device_interrupt_transfer (GUsbDevice	*device,
 							 GCancellable	*cancellable,
 							 GError		**error);
 
+/* async */
+void		 g_usb_device_interrupt_transfer_async	(GUsbDevice	*device,
+							 guint8		 endpoint,
+							 guint8		*data,
+							 gsize		 length,
+							 guint		 timeout,
+							 GCancellable	*cancellable,
+							 GAsyncReadyCallback callback,
+							 gpointer	 user_data);
+gboolean	 g_usb_device_interrupt_transfer_finish	(GUsbDevice	*device,
+							 GAsyncResult	*res,
+							 GError		**error);
+
 G_END_DECLS
 
 #endif /* __GUSB_DEVICE_H__ */
