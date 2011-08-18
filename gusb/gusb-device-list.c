@@ -297,7 +297,7 @@ g_usb_device_list_add_dev (GUsbDeviceList *list, GUdevDevice *udev)
 	for (i = 0; dev_list && dev_list[i]; i++) {
 		if (libusb_get_bus_number (dev_list[i]) == bus &&
 		    libusb_get_device_address (dev_list[i]) == address) {
-			device = _g_usb_device_new (dev_list[i]);
+			device = _g_usb_device_new (priv->context, dev_list[i]);
 			break;
 		}
 	}

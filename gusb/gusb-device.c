@@ -30,6 +30,7 @@
 
 #include <libusb-1.0/libusb.h>
 
+#include "gusb-context.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
 
@@ -47,6 +48,7 @@ static void     g_usb_device_finalize	(GObject     *object);
  **/
 struct _GUsbDevicePrivate
 {
+	GUsbContext		*context;
 	libusb_device		*device;
 	libusb_device_handle	*handle;
 	gboolean		 has_descriptor;
@@ -56,6 +58,7 @@ struct _GUsbDevicePrivate
 enum {
 	PROP_0,
 	PROP_LIBUSB_DEVICE,
+	PROP_CONTEXT,
 };
 
 G_DEFINE_TYPE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
@@ -486,6 +489,9 @@ g_usb_device_set_property (GObject		*object,
 	case PROP_LIBUSB_DEVICE:
 		priv->device = g_value_get_pointer (value);
 		break;
+	case PROP_CONTEXT:
+		priv->context = g_value_dup_object (value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -537,10 +543,20 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 	/**
 	 * GUsbDevice:libusb_device:
 	 */
-	pspec = g_param_spec_pointer ("libusb_device", NULL, NULL,
+	pspec = g_param_spec_pointer ("libusb-device", NULL, NULL,
 				      G_PARAM_CONSTRUCT_ONLY|
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_LIBUSB_DEVICE,
+					 pspec);
+
+	/**
+	 * GUsbDevice:context:
+	 */
+	pspec = g_param_spec_object ("context", NULL, NULL,
+				     G_USB_TYPE_CONTEXT,
+				     G_PARAM_CONSTRUCT_ONLY|
+				     G_PARAM_WRITABLE);
+	g_object_class_install_property (object_class, PROP_CONTEXT,
 					 pspec);
 
 	g_type_class_add_private (klass, sizeof (GUsbDevicePrivate));
@@ -564,7 +580,8 @@ g_usb_device_finalize (GObject *object)
 	GUsbDevice *device = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv = device->priv;
 
-	libusb_unref_device(priv->device);
+	libusb_unref_device (priv->device);
+	g_object_unref (priv->context);
 
 	G_OBJECT_CLASS (g_usb_device_parent_class)->finalize (object);
 }
@@ -575,10 +592,13 @@ g_usb_device_finalize (GObject *object)
  * Return value: a new #GUsbDevice object.
  **/
 GUsbDevice *
-_g_usb_device_new (libusb_device	*device)
+_g_usb_device_new (GUsbContext *context, libusb_device *device)
 {
 	GObject *obj;
-	obj = g_object_new (G_USB_TYPE_DEVICE, "libusb_device", device, NULL);
+	obj = g_object_new (G_USB_TYPE_DEVICE,
+			    "context", context,
+			    "libusb-device", device,
+			    NULL);
 	return G_USB_DEVICE (obj);
 }
 
