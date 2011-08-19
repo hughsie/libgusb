@@ -78,6 +78,8 @@ g_usb_device_list_finalize (GObject *object)
 
 	g_object_unref (priv->udev);
 	g_ptr_array_unref (priv->devices);
+
+	G_OBJECT_CLASS (g_usb_device_list_parent_class)->finalize (object);
 }
 
 /**
