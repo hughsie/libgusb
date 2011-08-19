@@ -26,18 +26,19 @@
  * A device list that is updated as devices are pluged in and unplugged.
  */
 
+#include "config.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <gudev/gudev.h>
 #include <libusb-1.0/libusb.h>
 
-#include "gusb-marshal.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-device.h"
-#include "gusb-device-private.h"
-
 #include "gusb-device-list.h"
+#include "gusb-device-private.h"
+#include "gusb-marshal.h"
 
 #define G_USB_DEVICE_LIST_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), G_USB_TYPE_DEVICE_LIST, GUsbDeviceListPrivate))
 
