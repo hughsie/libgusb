@@ -240,6 +240,8 @@ g_usb_device_list_init (GUsbDeviceList *list)
  * @list: a #GUsbDeviceList
  *
  * Return value: (transfer full): a new #GPtrArray of #GUsbDevice's.
+ *
+ * Since: 0.1.0
  **/
 GPtrArray *
 g_usb_device_list_get_devices (GUsbDeviceList *list)
@@ -362,6 +364,8 @@ g_usb_device_list_uevent_cb (GUdevClient		*client,
  *
  * You only need to call this function once, and any subsequent calls
  * are silently ignored.
+ *
+ * Since: 0.1.0
  **/
 void
 g_usb_device_list_coldplug (GUsbDeviceList *list)
@@ -394,6 +398,8 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
  * Finds a device based on its bus and address values.
  *
  * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
+ *
+ * Since: 0.1.0
  **/
 GUsbDevice *
 g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
@@ -432,6 +438,8 @@ out:
  * Finds a device based on its bus and address values.
  *
  * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
+ *
+ * Since: 0.1.0
  **/
 GUsbDevice *
 g_usb_device_list_find_by_vid_pid (GUsbDeviceList	*list,
@@ -476,6 +484,8 @@ out:
  * list of devices after creating a device list.
  *
  * Return value: a new #GUsbDeviceList
+ *
+ * Since: 0.1.0
  **/
 GUsbDeviceList *
 g_usb_device_list_new (GUsbContext *context)

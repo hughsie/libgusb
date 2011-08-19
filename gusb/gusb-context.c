@@ -203,7 +203,7 @@ g_usb_context_finalize (GObject *object)
  *
  * Return value: Our personal error quark.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 GQuark
 g_usb_context_error_quark (void)
@@ -222,7 +222,7 @@ g_usb_context_error_quark (void)
  *
  * Return value: (transfer none): the libusb_context
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 libusb_context *
 _g_usb_context_get_context (GUsbContext *context)
@@ -240,7 +240,7 @@ _g_usb_context_get_context (GUsbContext *context)
  * Using %G_LOG_LEVEL_INFO will output to standard out, and everything
  * else logs to standard error.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 void
 g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
@@ -267,7 +267,7 @@ g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
  *
  * Return value: a new %GUsbContext object or %NULL on error.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 GUsbContext *
 g_usb_context_new (GError **error)

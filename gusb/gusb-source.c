@@ -42,7 +42,7 @@
  *
  * Return value: Our personal error quark.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 GQuark
 g_usb_source_error_quark (void)
@@ -232,7 +232,7 @@ static GSourceFuncs usb_source_funcs = {
  *
  * Return value: (transfer none): the #GUsbSource, or %NULL. Use g_usb_source_destroy() to unref.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 GUsbSource *
 g_usb_source_new (GMainContext *main_ctx,
@@ -282,7 +282,7 @@ out:
  *
  * Destroys a #GUsbSource
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 void
 g_usb_source_destroy (GUsbSource *source)
@@ -301,7 +301,7 @@ g_usb_source_destroy (GUsbSource *source)
  *
  * Set a callback to be called when the source is dispatched.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 void
 g_usb_source_set_callback (GUsbSource *source,

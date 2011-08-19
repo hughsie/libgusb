@@ -1,18 +1,22 @@
 %define alphatag                #ALPHATAG#
 
 Summary:   GLib wrapper around libusb1
-Name:      gusb
+Name:      libgusb
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
 License:   LGPLv2+
 URL:       https://gitorious.org/gusb/
-Source0:   http://www.packagekit.org/releases/lib%{name}-%{version}.tar.xz
+Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.xz
 
 BuildRequires: glib2-devel >= 2.16.1
 BuildRequires: libtool
+BuildRequires: libgudev1-devel
+BuildRequires: libusb1-devel
 
 %description
-GUsb is a higher level wrapper around libusb1 that uses GLib and GObject.
+GUsb is a GObject wrapper for libusb1 that makes it easy to do
+asynchronous control, bulk and interrupt transfers with proper
+cancellation and integration into a mainloop.
 
 %package devel
 Summary: Libraries and headers for gusb
@@ -22,7 +26,7 @@ Requires: %{name} = %{version}-%{release}
 GLib headers and libraries for gusb.
 
 %prep
-%setup -q -n lib%{name}-%{version}
+%setup -q
 
 %build
 %configure \
@@ -47,7 +51,6 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 
 %files devel
 %defattr(-,root,root,-)
-#%dir %{_includedir}/gusb-1
 %{_includedir}/gusb-1
 %{_libdir}/libgusb.so
 %{_libdir}/pkgconfig/gusb.pc

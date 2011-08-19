@@ -58,16 +58,16 @@ struct _GUsbDeviceListClass
 
 GType			 g_usb_device_list_get_type (void);
 
-GUsbDeviceList		*g_usb_device_list_new (GUsbContext *context);
+GUsbDeviceList		*g_usb_device_list_new			(GUsbContext	*context);
 
-void			 g_usb_device_list_coldplug (GUsbDeviceList *list);
+void			 g_usb_device_list_coldplug		(GUsbDeviceList	*list);
 
-GPtrArray		*g_usb_device_list_get_devices (GUsbDeviceList *list);
+GPtrArray		*g_usb_device_list_get_devices		(GUsbDeviceList	*list);
 
-GUsbDevice		*g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
-								guint8		 bus,
-								guint8		 address,
-								GError		**error);
+GUsbDevice		*g_usb_device_list_find_by_bus_address	(GUsbDeviceList	*list,
+								 guint8		 bus,
+								 guint8		 address,
+								 GError		**error);
 
 GUsbDevice		*g_usb_device_list_find_by_vid_pid	(GUsbDeviceList	*list,
 								 guint16	 vid,

@@ -70,7 +70,7 @@ G_DEFINE_TYPE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
  *
  * Return value: Our personal error quark.
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 GQuark
 g_usb_device_error_quark (void)
@@ -111,6 +111,8 @@ g_usb_device_get_property (GObject		*object,
  * Gets the USB descriptor for the device.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_get_descriptor (GUsbDevice *device, GError **error)
@@ -210,6 +212,8 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
  * Warning: this function is syncronous.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_open (GUsbDevice *device,
@@ -302,6 +306,8 @@ out:
  * Warning: this function is syncronous, and cannot be cancelled.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_control_transfer	(GUsbDevice	*device,
@@ -374,6 +380,8 @@ out:
  * Warning: this function is syncronous, and cannot be cancelled.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_bulk_transfer	(GUsbDevice	*device,
@@ -433,6 +441,8 @@ out:
  * Warning: this function is syncronous, and cannot be cancelled.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_interrupt_transfer	(GUsbDevice	*device,
@@ -486,7 +496,7 @@ out:
  *
  * Return value: success
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_interrupt_transfer_finish (GUsbDevice *device,
@@ -566,7 +576,7 @@ g_usb_device_cancelled_cb (GCancellable *cancellable,
  *
  * Do an async interrupt transfer
  *
- * Since: 0.0.1
+ * Since: 0.1.0
  **/
 void
 g_usb_device_interrupt_transfer_async (GUsbDevice *device,
@@ -752,6 +762,8 @@ g_usb_device_finalize (GObject *object)
  * _g_usb_device_new:
  *
  * Return value: a new #GUsbDevice object.
+ *
+ * Since: 0.1.0
  **/
 GUsbDevice *
 _g_usb_device_new (GUsbContext *context, libusb_device *device)
@@ -785,6 +797,8 @@ _g_usb_device_get_device (GUsbDevice	*device)
  * Gets the USB bus number for the device.
  *
  * Return value: The 8-bit bus number
+ *
+ * Since: 0.1.0
  **/
 guint8
 g_usb_device_get_bus (GUsbDevice *device)
@@ -799,6 +813,8 @@ g_usb_device_get_bus (GUsbDevice *device)
  * Gets the USB address for the device.
  *
  * Return value: The 8-bit address
+ *
+ * Since: 0.1.0
  **/
 guint8
 g_usb_device_get_address (GUsbDevice *device)
@@ -816,6 +832,8 @@ g_usb_device_get_address (GUsbDevice *device)
  * function will return with 0x0000.
  *
  * Return value: an ID.
+ *
+ * Since: 0.1.0
  **/
 guint16
 g_usb_device_get_vid (GUsbDevice *device)
@@ -835,6 +853,8 @@ g_usb_device_get_vid (GUsbDevice *device)
  * function will return with 0x0000.
  *
  * Return value: an ID.
+ *
+ * Since: 0.1.0
  **/
 guint16
 g_usb_device_get_pid (GUsbDevice *device)
