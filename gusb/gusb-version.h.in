@@ -31,8 +31,8 @@
 #error "Only <gusb.h> can be included directly."
 #endif
 
-#ifndef __CD_VERSION_H
-#define __CD_VERSION_H
+#ifndef __GUSB_VERSION_H
+#define __GUSB_VERSION_H
 
 /**
  * G_USB_MAJOR_VERSION:
@@ -67,4 +67,4 @@
      (G_USB_MAJOR_VERSION == (major) && G_USB_MINOR_VERSION == (minor) && \
       G_USB_MICRO_VERSION >= (micro)))
 
-#endif /* __CD_VERSION_H */
+#endif /* __GUSB_VERSION_H */
