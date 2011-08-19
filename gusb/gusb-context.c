@@ -43,7 +43,7 @@ static void g_usb_context_finalize (GObject *object);
 enum {
 	PROP_0,
 	PROP_LIBUSB_CONTEXT,
-	PROP_DEBUG_LEVEL,
+	PROP_DEBUG_LEVEL
 };
 
 /**

@@ -43,14 +43,14 @@
 
 enum {
 	PROP_0,
-	PROP_CONTEXT,
+	PROP_CONTEXT
 };
 
 enum
 {
 	DEVICE_ADDED_SIGNAL,
 	DEVICE_REMOVED_SIGNAL,
-	LAST_SIGNAL,
+	LAST_SIGNAL
 };
 
 struct _GUsbDeviceListPrivate {
@@ -66,7 +66,7 @@ static void g_usb_device_list_uevent_cb (GUdevClient	*client,
 					GUdevDevice	*udevice,
 					gpointer	 user_data);
 
-static guint signals[LAST_SIGNAL] = { 0, };
+static guint signals[LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (GUsbDeviceList, g_usb_device_list, G_TYPE_OBJECT);
 

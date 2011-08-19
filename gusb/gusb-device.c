@@ -59,7 +59,7 @@ struct _GUsbDevicePrivate
 enum {
 	PROP_0,
 	PROP_LIBUSB_DEVICE,
-	PROP_CONTEXT,
+	PROP_CONTEXT
 };
 
 G_DEFINE_TYPE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
