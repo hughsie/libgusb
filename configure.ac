@@ -12,7 +12,6 @@ AC_CONFIG_SRCDIR(gusb)
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
-AC_PROG_LIBTOOL
 
 AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-xz tar-ustar])
 
@@ -46,10 +45,14 @@ AC_SUBST(LT_AGE)
 # enable nice build output on automake1.11
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
+# Check for programs
 AC_PROG_CC
 AC_PROG_INSTALL
-LT_INIT
 AC_PATH_PROG(XSLTPROC, xsltproc)
+
+# Initialize libtool
+LT_PREREQ([2.2])
+LT_INIT
 
 dnl ---------------------------------------------------------------------------
 dnl - Use strict options (default enabled for devs, disabled in releases)
