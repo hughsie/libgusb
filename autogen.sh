@@ -28,7 +28,7 @@ if test -z $AUTORECONF; then
 fi
 
 gtkdocize || exit $?
-ACLOCAL="${ACLOCAL-aclocal} $ACLOCAL_FLAGS"  AUTOPOINT='intltoolize --automake --copy' autoreconf --force --install --verbose
+AUTOPOINT='intltoolize --automake --copy' autoreconf --force --install --verbose
 
 cd "$olddir"
 test -n "$NOCONFIGURE" || "$srcdir/configure" "$@"
