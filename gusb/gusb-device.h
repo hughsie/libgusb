@@ -148,6 +148,19 @@ gboolean		 g_usb_device_interrupt_transfer (GUsbDevice	*device,
 							 GError		**error);
 
 /* async */
+
+void		 g_usb_device_bulk_transfer_async	(GUsbDevice	*device,
+							 guint8		 endpoint,
+							 guint8		*data,
+							 gsize		 length,
+							 guint		 timeout,
+							 GCancellable	*cancellable,
+							 GAsyncReadyCallback callback,
+							 gpointer	 user_data);
+gboolean	 g_usb_device_bulk_transfer_finish	(GUsbDevice	*device,
+							 GAsyncResult	*res,
+							 GError		**error);
+
 void		 g_usb_device_interrupt_transfer_async	(GUsbDevice	*device,
 							 guint8		 endpoint,
 							 guint8		*data,
