@@ -527,9 +527,9 @@ g_usb_device_async_transfer_cb (struct libusb_transfer *transfer)
 	/* success */
 	g_simple_async_result_set_op_res_gboolean (req->res, TRUE);
 out:
-	g_usb_device_req_free (req);
 	g_simple_async_result_complete_in_idle (req->res);
 	g_object_unref (req->res);
+	g_usb_device_req_free (req);
 }
 
 static void
@@ -593,9 +593,9 @@ g_usb_device_control_transfer_cb (struct libusb_transfer *transfer)
 		 transfer->buffer + LIBUSB_CONTROL_SETUP_SIZE,
 		 (gsize) transfer->actual_length);
 out:
-	g_usb_device_req_free (req);
 	g_simple_async_result_complete_in_idle (req->res);
 	g_object_unref (req->res);
+	g_usb_device_req_free (req);
 }
 
 /**
