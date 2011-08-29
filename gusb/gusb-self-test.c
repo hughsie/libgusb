@@ -204,6 +204,13 @@ gusb_device_huey_func (void)
 						    0x0971,
 						    0x2005,
 						    &error);
+	if (device == NULL &&
+	    error->domain == G_USB_DEVICE_ERROR &&
+	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
+		g_print ("No device detected!\n");
+		g_error_free (error);
+		goto out;
+	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
 
@@ -271,7 +278,7 @@ gusb_device_huey_func (void)
 	g_assert (ret);
 
 	g_object_unref (device);
-
+out:
 	g_object_unref (list);
 	g_object_unref (ctx);
 }
@@ -350,12 +357,19 @@ gusb_device_munki_func (void)
 	list = g_usb_device_list_new (ctx);
 	g_assert (list != NULL);
 
-	/* coldplug, and get the huey */
+	/* coldplug, and get the ColorMunki */
 	g_usb_device_list_coldplug (list);
 	device = g_usb_device_list_find_by_vid_pid (list,
 						    0x0971,
 						    0x2007,
 						    &error);
+	if (device == NULL &&
+	    error->domain == G_USB_DEVICE_ERROR &&
+	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
+		g_print ("No device detected!\n");
+		g_error_free (error);
+		goto out;
+	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
 
@@ -439,7 +453,7 @@ gusb_device_munki_func (void)
 	g_assert (ret);
 
 	g_object_unref (device);
-
+out:
 	g_object_unref (list);
 	g_object_unref (ctx);
 }
