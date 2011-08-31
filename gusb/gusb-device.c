@@ -548,11 +548,11 @@ g_usb_device_cancelled_cb (GCancellable *cancellable,
  *
  * Gets the result from the asynchronous function.
  *
- * Return value: success
+ * Return value: the actual number of bytes sent, or -1 on error.
  *
  * Since: 0.1.0
  **/
-gboolean
+gssize
 g_usb_device_control_transfer_finish (GUsbDevice *device,
 				      GAsyncResult *res,
 				      GError **error)
@@ -568,9 +568,9 @@ g_usb_device_control_transfer_finish (GUsbDevice *device,
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))
-		return FALSE;
+		return -1;
 
-	return g_simple_async_result_get_op_res_gboolean (simple);
+	return g_simple_async_result_get_op_res_gssize (simple);
 }
 
 static void
@@ -587,7 +587,7 @@ g_usb_device_control_transfer_cb (struct libusb_transfer *transfer)
 	}
 
 	/* success */
-	g_simple_async_result_set_op_res_gboolean (req->res, TRUE);
+	g_simple_async_result_set_op_res_gssize (req->res, transfer->actual_length);
 	memmove (req->data,
 		 transfer->buffer + LIBUSB_CONTROL_SETUP_SIZE,
 		 (gsize) transfer->actual_length);

@@ -162,7 +162,7 @@ void		 g_usb_device_control_transfer_async	(GUsbDevice	*device,
 							 GCancellable	*cancellable,
 							 GAsyncReadyCallback callback,
 							 gpointer	 user_data);
-gboolean	 g_usb_device_control_transfer_finish	(GUsbDevice	*device,
+gssize		 g_usb_device_control_transfer_finish	(GUsbDevice	*device,
 							 GAsyncResult	*res,
 							 GError		**error);
 
