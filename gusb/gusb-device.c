@@ -502,16 +502,70 @@ g_usb_device_req_free (GcmDeviceReq *req)
 	g_free (req);
 }
 
+static gboolean
+g_usb_device_libusb_status_to_gerror (gint status,
+				      GError **error)
+{
+	gboolean ret = FALSE;
+
+	switch (status) {
+	case LIBUSB_TRANSFER_COMPLETED:
+		ret = TRUE;
+		break;
+	case LIBUSB_TRANSFER_TIMED_OUT:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_TIMED_OUT,
+				     "transfer timed out");
+		break;
+	case LIBUSB_TRANSFER_CANCELLED:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_CANCELLED,
+				     "transfer cancelled");
+		break;
+	case LIBUSB_TRANSFER_STALL:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+				     "endpoint stalled or request not supported");
+		break;
+	case LIBUSB_TRANSFER_NO_DEVICE:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_NO_DEVICE,
+				     "device was disconnected");
+		break;
+	case LIBUSB_TRANSFER_OVERFLOW:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_INTERNAL,
+				     "device sent more data than requested");
+		break;
+	default:
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_INTERNAL,
+			     "unknown status [%i]", status);
+	}
+	return ret;
+}
+
+
+
 static void
 g_usb_device_async_transfer_cb (struct libusb_transfer *transfer)
 {
+	gboolean ret;
+	GError *error = NULL;
 	GcmDeviceReq *req = transfer->user_data;
 
-	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		g_simple_async_result_set_error (req->res,
-						 G_USB_DEVICE_ERROR,
-						 G_USB_DEVICE_ERROR_TIMED_OUT,
-						 "Failed to complete");
+	/* did request fail? */
+	ret = g_usb_device_libusb_status_to_gerror (transfer->status,
+						    &error);
+	if (!ret) {
+		g_simple_async_result_set_from_error (req->res, error);
+		g_error_free (error);
 		goto out;
 	}
 
@@ -567,13 +621,16 @@ g_usb_device_control_transfer_finish (GUsbDevice *device,
 static void
 g_usb_device_control_transfer_cb (struct libusb_transfer *transfer)
 {
+	gboolean ret;
+	GError *error = NULL;
 	GcmDeviceReq *req = transfer->user_data;
 
-	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		g_simple_async_result_set_error (req->res,
-						 G_USB_DEVICE_ERROR,
-						 G_USB_DEVICE_ERROR_TIMED_OUT,
-						 "Failed to complete");
+	/* did request fail? */
+	ret = g_usb_device_libusb_status_to_gerror (transfer->status,
+						    &error);
+	if (!ret) {
+		g_simple_async_result_set_from_error (req->res, error);
+		g_error_free (error);
 		goto out;
 	}
 
