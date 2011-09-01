@@ -288,6 +288,24 @@ out:
 	return ret;
 }
 
+typedef gssize (GUsbDeviceTransferFinishFunc) (GUsbDevice *device, GAsyncResult *res, GError **error);
+
+typedef struct {
+	GError				**error;
+	GMainLoop			*loop;
+	GUsbDeviceTransferFinishFunc	*finish_func;
+	gssize				 ret;
+} GUsbSyncHelper;
+
+static void
+g_usb_device_sync_transfer_cb (GUsbDevice *device,
+				  GAsyncResult *res,
+				  GUsbSyncHelper *helper)
+{
+	helper->ret = (*helper->finish_func) (device, res, helper->error);
+	g_main_loop_quit (helper->loop);
+}
+
 /**
  * g_usb_device_control_transfer:
  * @device: a #GUsbDevice
@@ -327,42 +345,31 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
 				 GCancellable	*cancellable,
 				 GError		**error)
 {
-	gboolean ret = TRUE;
-	gint rc;
-	guint8 request_type_raw = 0;
+	GUsbSyncHelper helper;
 
-	/* munge back to flags */
-	if (direction == G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST)
-		request_type_raw |= 0x80;
-	request_type_raw |= (request_type << 5);
-	request_type_raw |= recipient;
+	helper.loop = g_main_loop_new (NULL, FALSE);
+	helper.error = error;
+	helper.finish_func = g_usb_device_control_transfer_finish;
 
-	if (device->priv->handle == NULL) {
-		ret = FALSE;
-		g_set_error_literal (error,
-				     G_USB_DEVICE_ERROR,
-				     G_USB_DEVICE_ERROR_NOT_OPEN,
-				     "The device has not been opened");
-		goto out;
-	}
+	g_usb_device_control_transfer_async (device,
+					     direction,
+					     request_type,
+					     recipient,
+					     request,
+					     value,
+					     idx,
+					     data,
+					     length,
+					     timeout,
+					     cancellable,
+					     (GAsyncReadyCallback) g_usb_device_sync_transfer_cb,
+					     &helper);
+	g_main_loop_run (helper.loop);
 
-	/* TODO: setup an async transfer so we can cancel it */
-	rc = libusb_control_transfer (device->priv->handle,
-				      request_type_raw,
-				      request,
-				      value,
-				      idx,
-				      data,
-				      length,
-				      timeout);
-	if (rc < 0) {
-		ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
-		goto out;
-	}
 	if (actual_length != NULL)
-		*actual_length = rc;
-out:
-	return ret;
+		*actual_length = (gsize) helper.ret;
+
+	return helper.ret != -1;
 }
 
 /**
