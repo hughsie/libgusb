@@ -403,34 +403,26 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
 				 GCancellable	*cancellable,
 				 GError		**error)
 {
-	gboolean ret = TRUE;
-	gint rc;
-	gint transferred;
+	GUsbSyncHelper helper;
 
-	if (device->priv->handle == NULL) {
-		ret = FALSE;
-		g_set_error_literal (error,
-				     G_USB_DEVICE_ERROR,
-				     G_USB_DEVICE_ERROR_NOT_OPEN,
-				     "The device has not been opened");
-		goto out;
-	}
+	helper.loop = g_main_loop_new (NULL, FALSE);
+	helper.error = error;
+	helper.finish_func = g_usb_device_bulk_transfer_finish;
 
-	/* TODO: setup an async transfer so we can cancel it */
-	rc = libusb_bulk_transfer (device->priv->handle,
-				   endpoint,
-				   data,
-				   length,
-				   &transferred,
-				   timeout);
-	if (rc < 0) {
-		ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
-		goto out;
-	}
+	g_usb_device_bulk_transfer_async (device,
+					  endpoint,
+					  data,
+					  length,
+					  timeout,
+					  cancellable,
+					  (GAsyncReadyCallback) g_usb_device_sync_transfer_cb,
+					  &helper);
+	g_main_loop_run (helper.loop);
+
 	if (actual_length != NULL)
-		*actual_length = transferred;
-out:
-	return ret;
+		*actual_length = (gsize) helper.ret;
+
+	return helper.ret != -1;
 }
 
 /**
