@@ -847,9 +847,13 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
 	rc = libusb_submit_transfer (req->transfer);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
-		g_simple_async_result_set_from_error (req->res,
+		g_simple_async_report_gerror_in_idle (G_OBJECT (device),
+						      callback,
+						      user_data,
 						      error);
 		g_error_free (error);
+		g_usb_device_req_free (req);
+		return;
 	}
 
 	/* setup with the default mainloop */
@@ -957,9 +961,13 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 	rc = libusb_submit_transfer (req->transfer);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
-		g_simple_async_result_set_from_error (req->res,
+		g_simple_async_report_gerror_in_idle (G_OBJECT (device),
+						      callback,
+						      user_data,
 						      error);
 		g_error_free (error);
+		g_usb_device_req_free (req);
+		return;
 	}
 
 	/* setup with the default mainloop */
@@ -1067,9 +1075,13 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 	rc = libusb_submit_transfer (req->transfer);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
-		g_simple_async_result_set_from_error (req->res,
+		g_simple_async_report_gerror_in_idle (G_OBJECT (device),
+						      callback,
+						      user_data,
 						      error);
 		g_error_free (error);
+		g_usb_device_req_free (req);
+		return;
 	}
 
 	/* setup with the default mainloop */
