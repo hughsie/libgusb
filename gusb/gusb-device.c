@@ -811,6 +811,16 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
+	if (device->priv->handle == NULL) {
+		g_simple_async_report_error_in_idle (G_OBJECT (device),
+						     callback,
+						     user_data,
+						     G_USB_DEVICE_ERROR,
+						     G_USB_DEVICE_ERROR_NOT_OPEN,
+						     "The device has not been opened");
+		return;
+	}
+
 	res = g_simple_async_result_new (G_OBJECT (device),
 					 callback,
 					 user_data,
