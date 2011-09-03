@@ -947,7 +947,7 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 					 user_data,
 					 g_usb_device_interrupt_transfer_async);
 
-	req = g_new_slice0 (GcmDeviceReq);
+	req = g_slice_new0 (GcmDeviceReq);
 	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 
