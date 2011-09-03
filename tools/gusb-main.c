@@ -84,7 +84,7 @@ gusb_cmd_item_free (GUsbCmdItem *item)
 {
 	g_free (item->name);
 	g_free (item->description);
-	g_free (item);
+	g_slice_free (GUsbCmdItem, item);
 }
 
 /*
@@ -109,7 +109,7 @@ gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUs
 	/* add each one */
 	names = g_strsplit (name, ",", -1);
 	for (i=0; names[i] != NULL; i++) {
-		item = g_new0 (GUsbCmdItem, 1);
+		item = g_slice_new0 (GUsbCmdItem);
 		item->name = g_strdup (names[i]);
 		if (i == 0) {
 			item->description = g_strdup (description);
@@ -309,7 +309,7 @@ main (int argc, char *argv[])
 	};
 
 	/* create helper object */
-	priv = g_new0 (GUsbCmdPrivate, 1);
+	priv = g_slice_new0 (GUsbCmdPrivate);
 
 	if (! g_thread_supported ())
 		g_thread_init (NULL);
@@ -376,7 +376,7 @@ out:
 		if (priv->usb_ctx != NULL)
 			g_object_unref (priv->usb_ctx);
 		g_option_context_free (priv->context);
-		g_free (priv);
+		g_slice_free (GUsbCmdPrivate, priv);
 	}
 
 	/* free state */

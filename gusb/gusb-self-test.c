@@ -432,7 +432,7 @@ gusb_device_munki_func (void)
 	g_clear_error (&error);
 
 	/* do async read of button event */
-	helper = g_new0 (GUsbDeviceAsyncHelper, 1);
+	helper = g_slice_new0 (GUsbDeviceAsyncHelper);
 	helper->buffer_len = 8;
 	helper->buffer = g_new0 (guint8, helper->buffer_len);
 	helper->loop = g_main_loop_new (NULL, FALSE);

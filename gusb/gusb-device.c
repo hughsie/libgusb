@@ -499,7 +499,7 @@ g_usb_device_req_free (GcmDeviceReq *req)
 		g_usb_source_destroy (req->source);
 	libusb_free_transfer (req->transfer);
 	g_object_unref (req->res);
-	g_free (req);
+	g_slice_free (GcmDeviceReq, req);
 }
 
 static gboolean
@@ -694,7 +694,7 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
 					 user_data,
 					 g_usb_device_control_transfer_async);
 
-	req = g_new0 (GcmDeviceReq, 1);
+	req = g_slice_new0 (GcmDeviceReq);
 	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 	req->data = data;
@@ -826,7 +826,7 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 					 user_data,
 					 g_usb_device_bulk_transfer_async);
 
-	req = g_new0 (GcmDeviceReq, 1);
+	req = g_slice_new0 (GcmDeviceReq);
 	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 
@@ -947,7 +947,7 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 					 user_data,
 					 g_usb_device_interrupt_transfer_async);
 
-	req = g_new0 (GcmDeviceReq, 1);
+	req = g_new_slice0 (GcmDeviceReq);
 	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 
