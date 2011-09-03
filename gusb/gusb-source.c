@@ -228,14 +228,13 @@ static GSourceFuncs usb_source_funcs = {
  *
  * Creates a source for integration into libusb1.
  *
- * Return value: (transfer none): the #GUsbSource, or %NULL. Use g_usb_source_destroy() to unref.
+ * Return value: (transfer none): the #GUsbSource. Use g_usb_source_destroy() to unref.
  *
  * Since: 0.1.0
  **/
 GUsbSource *
 g_usb_source_new (GMainContext *main_ctx,
-		  GUsbContext *gusb_ctx,
-		  GError **error)
+		  GUsbContext *gusb_ctx)
 {
 	guint i;
 	const struct libusb_pollfd **pollfds;
@@ -249,15 +248,6 @@ g_usb_source_new (GMainContext *main_ctx,
 
 	/* watch the fd's already created */
 	pollfds = libusb_get_pollfds (gusb_source->ctx);
-	if (pollfds == NULL) {
-		g_set_error_literal (error,
-				     G_USB_SOURCE_ERROR,
-				     G_USB_SOURCE_ERROR_INTERNAL,
-				     "failed to allocate memory");
-		g_free (gusb_source);
-		gusb_source = NULL;
-		goto out;
-	}
 	for (i=0; pollfds[i] != NULL; i++)
 		g_usb_source_pollfd_add (gusb_source,
 					 pollfds[i]->fd,
@@ -270,7 +260,7 @@ g_usb_source_new (GMainContext *main_ctx,
 				     g_usb_source_pollfd_added_cb,
 				     g_usb_source_pollfd_removed_cb,
 				     gusb_source);
-out:
+
 	return gusb_source;
 }
 

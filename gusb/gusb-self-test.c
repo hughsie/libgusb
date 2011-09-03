@@ -54,8 +54,7 @@ gusb_source_func (void)
 	g_assert_no_error (error);
 	g_assert (ctx != NULL);
 
-	source = g_usb_source_new (NULL, ctx, &error);
-	g_assert_no_error (error);
+	source = g_usb_source_new (NULL, ctx);
 	g_assert (ctx != NULL);
 
 	/* TODO: test callback? */

@@ -44,8 +44,7 @@ typedef enum {
 
 GQuark		 g_usb_source_error_quark	(void);
 GUsbSource	*g_usb_source_new		(GMainContext	*main_ctx,
-						 GUsbContext	*gusb_ctx,
-						 GError		**error);
+						 GUsbContext	*gusb_ctx);
 void		 g_usb_source_destroy		(GUsbSource	*source);
 
 void		 g_usb_source_set_callback	(GUsbSource	*source,

@@ -615,8 +615,8 @@ g_usb_device_req_free (GcmDeviceReq *req)
 					  req->cancellable_id);
 		g_object_unref (req->cancellable);
 	}
-	if (req->source != NULL)
-		g_usb_source_destroy (req->source);
+
+	g_usb_source_destroy (req->source);
 	libusb_free_transfer (req->transfer);
 	g_object_unref (req->res);
 	g_slice_free (GcmDeviceReq, req);
@@ -854,13 +854,7 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
 
 	/* setup with the default mainloop */
 	req->source = g_usb_source_new (NULL,
-					device->priv->context,
-					&error);
-	if (req->source == NULL) {
-		g_simple_async_result_set_from_error (req->res,
-						      error);
-		g_error_free (error);
-	}
+					device->priv->context);
 }
 
 /**********************************************************************/
@@ -970,13 +964,7 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 
 	/* setup with the default mainloop */
 	req->source = g_usb_source_new (NULL,
-					device->priv->context,
-					&error);
-	if (req->source == NULL) {
-		g_simple_async_result_set_from_error (req->res,
-						      error);
-		g_error_free (error);
-	}
+					device->priv->context);
 }
 
 /**********************************************************************/
@@ -1086,13 +1074,7 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 
 	/* setup with the default mainloop */
 	req->source = g_usb_source_new (NULL,
-					device->priv->context,
-					&error);
-	if (req->source == NULL) {
-		g_simple_async_result_set_from_error (req->res,
-						      error);
-		g_error_free (error);
-	}
+					device->priv->context);
 }
 
 /**********************************************************************/
