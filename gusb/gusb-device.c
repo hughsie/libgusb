@@ -185,6 +185,30 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
 	return FALSE;
 }
 
+static gboolean g_usb_device_not_open_error(GUsbDevice *device, GError **error)
+{
+	g_set_error (error,
+		     G_USB_DEVICE_ERROR,
+		     G_USB_DEVICE_ERROR_NOT_OPEN,
+		     "Device %04x:%04x has not been opened",
+		     g_usb_device_get_vid (device),
+		     g_usb_device_get_pid (device));
+	return FALSE;
+}
+
+static void g_usb_device_async_not_open_error(GUsbDevice	  *device,
+					      GAsyncReadyCallback  callback,
+					      gpointer		   user_data)
+{
+	g_simple_async_report_error_in_idle (G_OBJECT (device),
+				callback, user_data,
+				G_USB_DEVICE_ERROR,
+				G_USB_DEVICE_ERROR_NOT_OPEN,
+				"Device %04x:%04x has not been opened",
+				g_usb_device_get_vid (device),
+				g_usb_device_get_pid (device));
+}
+
 /**
  * g_usb_device_open:
  * @device: a #GUsbDevice
@@ -214,10 +238,12 @@ g_usb_device_open (GUsbDevice *device,
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
 
 	if (device->priv->handle != NULL) {
-		g_set_error_literal (error,
-				     G_USB_DEVICE_ERROR,
-				     G_USB_DEVICE_ERROR_ALREADY_OPEN,
-				     "The device is already open");
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_ALREADY_OPEN,
+			     "Device %04x:%04x is already open",
+			     g_usb_device_get_vid (device),
+			     g_usb_device_get_pid (device));
 		goto out;
 	}
 
@@ -254,21 +280,14 @@ out:
 gboolean
 g_usb_device_close (GUsbDevice *device, GError **error)
 {
-	gboolean ret = FALSE;
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
 
-	if (device->priv->handle == NULL) {
-		g_set_error_literal (error,
-				     G_USB_DEVICE_ERROR,
-				     G_USB_DEVICE_ERROR_NOT_OPEN,
-				     "The device has not been opened");
-		goto out;
-	}
+	if (device->priv->handle == NULL)
+		return g_usb_device_not_open_error (device, error);
 
 	libusb_close (device->priv->handle);
 	device->priv->handle = NULL;
-	ret = TRUE;
-out:
-	return ret;
+	return TRUE;
 }
 
 typedef gssize (GUsbDeviceTransferFinishFunc) (GUsbDevice *device, GAsyncResult *res, GError **error);
@@ -663,12 +682,7 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
 	if (device->priv->handle == NULL) {
-		g_simple_async_report_error_in_idle (G_OBJECT (device),
-						     callback,
-						     user_data,
-						     G_USB_DEVICE_ERROR,
-						     G_USB_DEVICE_ERROR_NOT_OPEN,
-						     "The device has not been opened");
+		g_usb_device_async_not_open_error (device, callback, user_data);
 		return;
 	}
 
@@ -795,12 +809,7 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
 	if (device->priv->handle == NULL) {
-		g_simple_async_report_error_in_idle (G_OBJECT (device),
-						     callback,
-						     user_data,
-						     G_USB_DEVICE_ERROR,
-						     G_USB_DEVICE_ERROR_NOT_OPEN,
-						     "The device has not been opened");
+		g_usb_device_async_not_open_error (device, callback, user_data);
 		return;
 	}
 
@@ -916,12 +925,7 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
 	if (device->priv->handle == NULL) {
-		g_simple_async_report_error_in_idle (G_OBJECT (device),
-						     callback,
-						     user_data,
-						     G_USB_DEVICE_ERROR,
-						     G_USB_DEVICE_ERROR_NOT_OPEN,
-						     "The device has not been opened");
+		g_usb_device_async_not_open_error (device, callback, user_data);
 		return;
 	}
 
