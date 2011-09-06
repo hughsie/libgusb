@@ -87,6 +87,16 @@ typedef enum {
 	G_USB_DEVICE_ERROR_LAST
 } GUsbDeviceError;
 
+/**
+ * GUsbDeviceClaimInterfaceFlags:
+ *
+ * Flags for the g_usb_device_claim_interface and
+ * g_usb_device_release_interface methods flags parameters.
+ **/
+typedef enum {
+	G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER		= 1 << 0,
+} GUsbDeviceClaimInterfaceFlags;
+
 struct _GUsbDevice
 {
 	 GObject			 parent;
@@ -109,11 +119,23 @@ guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
 
 gboolean		 g_usb_device_open		(GUsbDevice	*device,
-							 guint		 configuration,
-							 guint		 interface,
-							 GCancellable	*cancellable,
 							 GError		**error);
 gboolean		 g_usb_device_close		(GUsbDevice	*device,
+							 GError		**error);
+
+gint			 g_usb_device_get_configuration (GUsbDevice	*device,
+							 GError		**error);
+gboolean		 g_usb_device_set_configuration (GUsbDevice	*device,
+							 gint		 configuration,
+							 GError		**error);
+
+gboolean		 g_usb_device_claim_interface	(GUsbDevice	*device,
+							 gint		 interface,
+							 GUsbDeviceClaimInterfaceFlags flags,
+							 GError		**error);
+gboolean		 g_usb_device_release_interface	(GUsbDevice	*device,
+							 gint		 interface,
+							 GUsbDeviceClaimInterfaceFlags flags,
 							 GError		**error);
 
 /* sync -- TODO: use GCancellable and GUsbSource */

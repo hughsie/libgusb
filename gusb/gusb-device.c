@@ -212,9 +212,6 @@ static void g_usb_device_async_not_open_error(GUsbDevice	  *device,
 /**
  * g_usb_device_open:
  * @device: a #GUsbDevice
- * @configuration: the configuration index to use, usually '1'
- * @interface: the configuration interface to use, usually '0'
- * @cancellable: a #GCancellable, or %NULL
  * @error: a #GError, or %NULL
  *
  * Opens the device for use.
@@ -227,12 +224,8 @@ static void g_usb_device_async_not_open_error(GUsbDevice	  *device,
  **/
 gboolean
 g_usb_device_open (GUsbDevice *device,
-		   guint configuration,
-		   guint interface,
-		   GCancellable *cancellable,
 		   GError **error)
 {
-	gboolean ret = FALSE;
 	gint rc;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
@@ -244,28 +237,12 @@ g_usb_device_open (GUsbDevice *device,
 			     "Device %04x:%04x is already open",
 			     g_usb_device_get_vid (device),
 			     g_usb_device_get_pid (device));
-		goto out;
+		return FALSE;
 	}
 
 	/* open device */
 	rc = libusb_open (device->priv->device, &device->priv->handle);
-	ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
-	if (!ret)
-		goto out;
-
-	/* set configuration */
-	rc = libusb_set_configuration (device->priv->handle, configuration);
-	ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
-	if (!ret)
-		goto out;
-
-	/* claim interface */
-	rc = libusb_claim_interface (device->priv->handle, interface);
-	ret = g_usb_device_libusb_error_to_gerror (device, rc, error);
-	if (!ret)
-		goto out;
-out:
-	return ret;
+	return g_usb_device_libusb_error_to_gerror (device, rc, error);
 }
 
 /**
@@ -287,6 +264,150 @@ g_usb_device_close (GUsbDevice *device, GError **error)
 
 	libusb_close (device->priv->handle);
 	device->priv->handle = NULL;
+	return TRUE;
+}
+
+/**
+ * g_usb_device_get_configuration:
+ * @device: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Get the bConfigurationValue for the active configuration of the device.
+ *
+ * Warning: this function is synchronous.
+ *
+ * Return value: The bConfigurationValue of the active config, or -1 on error
+ *
+ * Since: 0.1.0
+ **/
+gint g_usb_device_get_configuration (GUsbDevice		 *device,
+				     GError		**error)
+{
+	gint rc;
+	int config;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
+
+	if (device->priv->handle == NULL) {
+		g_usb_device_not_open_error (device, error);
+		return -1;
+	}
+
+	rc = libusb_get_configuration (device->priv->handle, &config);
+	if (rc != LIBUSB_SUCCESS) {
+		g_usb_device_libusb_error_to_gerror (device, rc, error);
+		return -1;
+	}
+
+	return config;
+}
+
+/**
+ * g_usb_device_set_configuration:
+ * @device: a #GUsbDevice
+ * @configuration: the configuration value to set
+ * @error: a #GError, or %NULL
+ *
+ * Set the active bConfigurationValue for the device.
+ *
+ * Warning: this function is synchronous.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
+ **/
+gboolean g_usb_device_set_configuration (GUsbDevice	 *device,
+					 gint		  configuration,
+					 GError		**error)
+{
+	gint rc;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+
+	if (device->priv->handle == NULL)
+		return g_usb_device_not_open_error (device, error);
+
+	rc = libusb_set_configuration (device->priv->handle, configuration);
+	return g_usb_device_libusb_error_to_gerror (device, rc, error);
+}
+
+/**
+ * g_usb_device_claim_interface:
+ * @device: a #GUsbDevice
+ * @interface: bInterfaceNumber of the interface you wish to claim
+ * @flags: #GUsbDeviceClaimInterfaceFlags
+ * @error: a #GError, or %NULL
+ *
+ * Claim an interface of the device.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
+ **/
+gboolean g_usb_device_claim_interface (GUsbDevice		    *device,
+				       gint			     interface,
+				       GUsbDeviceClaimInterfaceFlags flags,
+				       GError			   **error)
+{
+	gint rc;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+
+	if (device->priv->handle == NULL)
+		return g_usb_device_not_open_error (device, error);
+
+	if (flags & G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER) {
+		rc = libusb_detach_kernel_driver (device->priv->handle,
+						  interface);
+		if (rc != LIBUSB_SUCCESS &&
+		    rc != LIBUSB_ERROR_NOT_FOUND /* No driver attached */)
+			return g_usb_device_libusb_error_to_gerror (device, rc,
+								    error);
+	}
+
+	rc = libusb_claim_interface (device->priv->handle, interface);
+	return g_usb_device_libusb_error_to_gerror (device, rc, error);
+}
+
+/**
+ * g_usb_device_release_interface:
+ * @device: a #GUsbDevice
+ * @interface: bInterfaceNumber of the interface you wish to release
+ * @flags: #GUsbDeviceClaimInterfaceFlags
+ * @error: a #GError, or %NULL
+ *
+ * Release an interface of the device.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
+ **/
+gboolean g_usb_device_release_interface (GUsbDevice		      *device,
+					 gint                          interface,
+					 GUsbDeviceClaimInterfaceFlags flags,
+					 GError			     **error)
+{
+	gint rc;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+
+	if (device->priv->handle == NULL)
+		return g_usb_device_not_open_error (device, error);
+
+	rc = libusb_release_interface (device->priv->handle, interface);
+	if (rc != LIBUSB_SUCCESS)
+		return g_usb_device_libusb_error_to_gerror (device, rc, error);
+
+	if (flags & G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER) {
+		rc = libusb_attach_kernel_driver (device->priv->handle,
+						  interface);
+		if (rc != LIBUSB_SUCCESS &&
+		    rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
+		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
+			return g_usb_device_libusb_error_to_gerror (device, rc,
+								    error);
+	}
+
 	return TRUE;
 }
 

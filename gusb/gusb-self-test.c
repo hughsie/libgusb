@@ -223,17 +223,24 @@ gusb_device_huey_func (void)
 	g_clear_error (&error);
 
 	/* open */
-	ret = g_usb_device_open (device, 0x01, 0x00, cancellable, &error);
+	ret = g_usb_device_open (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* open opened */
-	ret = g_usb_device_open (device, 0x01, 0x00, cancellable, &error);
+	ret = g_usb_device_open (device, &error);
 	g_assert_error (error,
 			G_USB_DEVICE_ERROR,
 			G_USB_DEVICE_ERROR_ALREADY_OPEN);
 	g_assert (!ret);
 	g_clear_error (&error);
+
+	/* claim interface 0 */
+	ret = g_usb_device_claim_interface (device, 0x00,
+					    G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER,
+					    &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* do a request (unlock) */
 	ret = g_usb_device_control_transfer (device,
@@ -271,6 +278,13 @@ gusb_device_huey_func (void)
 			G_USB_DEVICE_ERROR_NOT_SUPPORTED);
 	g_assert (!ret);
 	g_clear_error (&error);
+
+	/* release interface 0 */
+	ret = g_usb_device_release_interface (device, 0x00,
+					      G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER,
+					      &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* close */
 	ret = g_usb_device_close (device, &error);
@@ -382,17 +396,24 @@ gusb_device_munki_func (void)
 	g_clear_error (&error);
 
 	/* open */
-	ret = g_usb_device_open (device, 0x01, 0x00, cancellable, &error);
+	ret = g_usb_device_open (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
 
 	/* open opened */
-	ret = g_usb_device_open (device, 0x01, 0x00, cancellable, &error);
+	ret = g_usb_device_open (device, &error);
 	g_assert_error (error,
 			G_USB_DEVICE_ERROR,
 			G_USB_DEVICE_ERROR_ALREADY_OPEN);
 	g_assert (!ret);
 	g_clear_error (&error);
+
+	/* claim interface 0 */
+	ret = g_usb_device_claim_interface (device, 0x00,
+					    G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER,
+					    &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* do a request (get chip id) */
 	ret = g_usb_device_control_transfer (device,
@@ -446,6 +467,13 @@ gusb_device_munki_func (void)
 					       helper);
 	g_main_loop_run (helper->loop);
 	g_main_loop_unref (helper->loop);
+
+	/* release interface 0 */
+	ret = g_usb_device_release_interface (device, 0x00,
+					      G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER,
+					      &error);
+	g_assert_no_error (error);
+	g_assert (ret);
 
 	/* close */
 	ret = g_usb_device_close (device, &error);
