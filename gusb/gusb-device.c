@@ -53,7 +53,6 @@ struct _GUsbDevicePrivate
 	GUsbContext		*context;
 	libusb_device		*device;
 	libusb_device_handle	*handle;
-	gboolean		 has_descriptor;
 	struct libusb_device_descriptor desc;
 };
 
@@ -102,45 +101,6 @@ g_usb_device_get_property (GObject		*object,
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
-}
-
-/**
- * g_usb_device_get_descriptor:
- * @device: a #GUsbDevice
- * @error: a #GError, or %NULL
- *
- * Gets the USB descriptor for the device.
- *
- * Return value: %TRUE on success
- *
- * Since: 0.1.0
- **/
-gboolean
-g_usb_device_get_descriptor (GUsbDevice *device, GError **error)
-{
-	int r;
-	gboolean ret = TRUE;
-	GUsbDevicePrivate *priv = device->priv;
-
-	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
-
-	/* already got */
-	if (priv->has_descriptor)
-		goto out;
-
-	r = libusb_get_device_descriptor (priv->device, &priv->desc);
-	if (r < 0) {
-		ret = FALSE;
-		g_set_error (error,
-			     G_USB_DEVICE_ERROR,
-			     G_USB_DEVICE_ERROR_INTERNAL,
-			     "Failed to get USB descriptor for device: %s",
-			     gusb_strerror (r));
-		goto out;
-	}
-	priv->has_descriptor = TRUE;
-out:
-	return ret;
 }
 
 static gboolean
@@ -1133,6 +1093,7 @@ g_usb_device_constructor (GType			 gtype,
 	GObject *obj;
 	GUsbDevice *device;
 	GUsbDevicePrivate *priv;
+	gint rc;
 
 	{
 		/* Always chain up to the parent constructor */
@@ -1149,6 +1110,11 @@ g_usb_device_constructor (GType			 gtype,
 		g_error("constructed without a libusb_device");
 
 	libusb_ref_device(priv->device);
+
+	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
+	if (rc != LIBUSB_SUCCESS)
+		g_warning ("Failed to get USB descriptor for device: %s",
+			   gusb_strerror (rc));
 
 	return obj;
 }
@@ -1283,9 +1249,6 @@ g_usb_device_get_address (GUsbDevice *device)
  *
  * Gets the vendor ID for the device.
  *
- * If g_usb_device_get_descriptor() has never been called, then this
- * function will return with 0x0000.
- *
  * Return value: an ID.
  *
  * Since: 0.1.0
@@ -1293,8 +1256,6 @@ g_usb_device_get_address (GUsbDevice *device)
 guint16
 g_usb_device_get_vid (GUsbDevice *device)
 {
-	if (!device->priv->has_descriptor)
-		return 0x0000;
 	return device->priv->desc.idVendor;
 }
 
@@ -1304,9 +1265,6 @@ g_usb_device_get_vid (GUsbDevice *device)
  *
  * Gets the product ID for the device.
  *
- * If g_usb_device_get_descriptor() has never been called, then this
- * function will return with 0x0000.
- *
  * Return value: an ID.
  *
  * Since: 0.1.0
@@ -1314,7 +1272,5 @@ g_usb_device_get_vid (GUsbDevice *device)
 guint16
 g_usb_device_get_pid (GUsbDevice *device)
 {
-	if (!device->priv->has_descriptor)
-		return 0x0000;
 	return device->priv->desc.idProduct;
 }

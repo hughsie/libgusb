@@ -449,16 +449,11 @@ g_usb_device_list_find_by_vid_pid (GUsbDeviceList	*list,
 {
 	GUsbDeviceListPrivate *priv = list->priv;
 	GUsbDevice *device = NULL;
-	gboolean ret;
 	guint i;
 
 	for (i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *curr = g_ptr_array_index (priv->devices, i);
 
-		/* get descriptor details */
-		ret = g_usb_device_get_descriptor (curr, error);
-		if (!ret)
-			goto out;
 		if (g_usb_device_get_vid (curr) == vid &&
 		    g_usb_device_get_pid (curr) == pid) {
 			device = g_object_ref (curr);

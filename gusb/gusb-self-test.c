@@ -67,7 +67,6 @@ gusb_source_func (void)
 static void
 gusb_device_func (void)
 {
-	gboolean ret;
 	GError *error = NULL;
 	GPtrArray *array;
 	GUsbContext *ctx;
@@ -88,19 +87,6 @@ gusb_device_func (void)
 	g_assert (array != NULL);
 	g_assert_cmpint (array->len, >, 0);
 	device = G_USB_DEVICE (g_ptr_array_index (array, 0));
-
-	g_assert_cmpint (g_usb_device_get_vid (device), ==, 0x0000);
-	g_assert_cmpint (g_usb_device_get_pid (device), ==, 0x0000);
-
-	/* get descriptor once */
-	ret = g_usb_device_get_descriptor (device, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-
-	/* get descriptor again */
-	ret = g_usb_device_get_descriptor (device, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
 
 	g_assert_cmpint (g_usb_device_get_vid (device), >, 0x0000);
 	g_assert_cmpint (g_usb_device_get_pid (device), >, 0x0000);
