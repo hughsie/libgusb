@@ -35,11 +35,9 @@
 
 #include "gusb-context.h"
 #include "gusb-source.h"
+#include "gusb-util.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
-
-/* libusb_strerror is awaiting merging upstream */
-#define libusb_strerror(error) "unknown"
 
 static void     g_usb_device_finalize	(GObject     *object);
 
@@ -137,7 +135,7 @@ g_usb_device_get_descriptor (GUsbDevice *device, GError **error)
 			     G_USB_DEVICE_ERROR,
 			     G_USB_DEVICE_ERROR_INTERNAL,
 			     "Failed to get USB descriptor for device: %s",
-			     libusb_strerror (r));
+			     gusb_strerror (r));
 		goto out;
 	}
 	priv->has_descriptor = TRUE;
@@ -150,56 +148,41 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
 				     gint rc,
 				     GError **error)
 {
-	gboolean ret = FALSE;
+	gint error_code = G_USB_DEVICE_ERROR_INTERNAL;
+	/* Put the rc in libusb's error enum so that gcc warns us if we're
+	   missing an error code */
+	enum libusb_error result = rc;
 
-	switch (rc) {
+	switch (result) {
 	case LIBUSB_SUCCESS:
-		ret = TRUE;
-		break;
-	case LIBUSB_ERROR_TIMEOUT:
-		g_set_error (error,
-			     G_USB_DEVICE_ERROR,
-			     G_USB_DEVICE_ERROR_TIMED_OUT,
-			     "the request timed out on %04x:%04x",
-			     g_usb_device_get_vid (device),
-			     g_usb_device_get_pid (device));
-		break;
+		return TRUE;
+	case LIBUSB_ERROR_INVALID_PARAM:
+	case LIBUSB_ERROR_NOT_FOUND:
+	case LIBUSB_ERROR_NO_MEM:
+	case LIBUSB_ERROR_OTHER:
+	case LIBUSB_ERROR_INTERRUPTED:
+		error_code = G_USB_DEVICE_ERROR_INTERNAL; break;
+	case LIBUSB_ERROR_IO:
+	case LIBUSB_ERROR_OVERFLOW:
 	case LIBUSB_ERROR_PIPE:
-		g_set_error (error,
-			     G_USB_DEVICE_ERROR,
-			     G_USB_DEVICE_ERROR_NOT_SUPPORTED,
-			     "not supported on %04x:%04x",
-			     g_usb_device_get_vid (device),
-			     g_usb_device_get_pid (device));
-		break;
+		error_code = G_USB_DEVICE_ERROR_IO; break;
+	case LIBUSB_ERROR_TIMEOUT:
+		error_code = G_USB_DEVICE_ERROR_TIMED_OUT; break;
+	case LIBUSB_ERROR_NOT_SUPPORTED:
+		error_code = G_USB_DEVICE_ERROR_NOT_SUPPORTED; break;
 	case LIBUSB_ERROR_NO_DEVICE:
-		g_set_error (error,
-			     G_USB_DEVICE_ERROR,
-			     G_USB_DEVICE_ERROR_NO_DEVICE,
-			     "device %04x:%04x has been disconnected",
-			     g_usb_device_get_vid (device),
-			     g_usb_device_get_pid (device));
-		break;
 	case LIBUSB_ERROR_ACCESS:
-		g_set_error_literal (error,
-				     G_USB_DEVICE_ERROR,
-				     G_USB_DEVICE_ERROR_NO_DEVICE,
-				     "no permissions to open device");
-		break;
 	case LIBUSB_ERROR_BUSY:
-		g_set_error_literal (error,
-				     G_USB_DEVICE_ERROR,
-				     G_USB_DEVICE_ERROR_NO_DEVICE,
-				     "device is busy");
-		break;
-	default:
-		g_set_error (error,
-			     G_USB_DEVICE_ERROR,
-			     G_USB_DEVICE_ERROR_INTERNAL,
-			     "unknown failure: %s [%i]",
-			     libusb_strerror (rc), rc);
+		error_code = G_USB_DEVICE_ERROR_NO_DEVICE; break;
 	}
-	return ret;
+
+	g_set_error (error, G_USB_DEVICE_ERROR, error_code,
+		     "USB error on device %04x:%04x : %s [%i]",
+		     g_usb_device_get_vid (device),
+		     g_usb_device_get_pid (device),
+		     gusb_strerror (rc), rc);
+
+	return FALSE;
 }
 
 /**

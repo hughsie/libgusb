@@ -30,11 +30,9 @@
 
 #include <libusb-1.0/libusb.h>
 
+#include "gusb-util.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
-
-/* libusb_strerror is awaiting merging upstream */
-#define libusb_strerror(error) "unknown"
 
 static void g_usb_context_finalize (GObject *object);
 
@@ -282,7 +280,7 @@ g_usb_context_new (GError **error)
 			     G_USB_CONTEXT_ERROR,
 			     G_USB_CONTEXT_ERROR_INTERNAL,
 			     "failed to init libusb: %s [%i]",
-			     libusb_strerror (rc), rc);
+			     gusb_strerror (rc), rc);
 		return NULL;
 	}
 

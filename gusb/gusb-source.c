@@ -35,6 +35,7 @@
 
 #include "gusb-context.h"
 #include "gusb-context-private.h"
+#include "gusb-util.h"
 #include "gusb-source.h"
 
 /**
@@ -52,9 +53,6 @@ g_usb_source_error_quark (void)
 		quark = g_quark_from_static_string ("g_usb_source_error");
 	return quark;
 }
-
-/* libusb_strerror is awaiting merging upstream */
-#define libusb_strerror(error) "unknown"
 
 struct _GUsbSource {
 	GSource		 source;
@@ -197,7 +195,7 @@ g_usb_source_dispatch (GSource *source,
 	rc = libusb_handle_events_timeout (usb_source->ctx, &tv);
 	if (rc < 0) {
 		g_warning ("failed to handle event: %s [%i]",
-			   libusb_strerror (rc), rc);
+			   gusb_strerror (rc), rc);
 	}
 
 	if (callback)
