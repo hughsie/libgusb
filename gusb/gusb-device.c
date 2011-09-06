@@ -219,7 +219,7 @@ static void g_usb_device_async_not_open_error(GUsbDevice	  *device,
  *
  * Opens the device for use.
  *
- * Warning: this function is syncronous.
+ * Warning: this function is synchronous.
  *
  * Return value: %TRUE on success
  *
@@ -326,7 +326,7 @@ g_usb_device_sync_transfer_cb (GUsbDevice *device,
  *
  * Perform a USB control transfer.
  *
- * Warning: this function is syncronous, and cannot be cancelled.
+ * Warning: this function is synchronous, and cannot be cancelled.
  *
  * Return value: %TRUE on success
  *
@@ -389,7 +389,7 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
  *
  * Perform a USB bulk transfer.
  *
- * Warning: this function is syncronous, and cannot be cancelled.
+ * Warning: this function is synchronous, and cannot be cancelled.
  *
  * Return value: %TRUE on success
  *
@@ -442,7 +442,7 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
  *
  * Perform a USB interrupt transfer.
  *
- * Warning: this function is syncronous, and cannot be cancelled.
+ * Warning: this function is synchronous, and cannot be cancelled.
  *
  * Return value: %TRUE on success
  *
