@@ -104,6 +104,9 @@ gusb_device_list_func (void)
 	guint old_number_of_devices;
 	guint8 bus, address;
 	GUsbDevice *device;
+	gchar *manufacturer;
+	gchar *product;
+	guint i;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -126,6 +129,42 @@ gusb_device_list_func (void)
 	g_assert (array != NULL);
 	g_assert_cmpint (array->len, >, 0);
 	old_number_of_devices = array->len;
+
+	/* Print a list (also excercising various bits of g_usb_device) */
+	g_print ("\n");
+	for (i = 0; i < array->len; i++) {
+		device = G_USB_DEVICE (g_ptr_array_index (array, i));
+
+		g_assert_cmpint (g_usb_device_get_vid (device), >, 0x0000);
+		g_assert_cmpint (g_usb_device_get_pid (device), >, 0x0000);
+
+		/* Needed for g_usb_device_get_string_descriptor below,
+		   not error checked to allow running basic tests without
+		   needing r/w rights on /dev/bus/usb nodes */
+		g_usb_context_set_debug (ctx, 0);
+		g_usb_device_open (device, NULL);
+		g_usb_context_set_debug (ctx, G_LOG_LEVEL_ERROR);
+
+		/* We don't error check these as not all devices have these
+		   (and the device_open may have failed). */
+		manufacturer = g_usb_device_get_string_descriptor (device,
+				g_usb_device_get_manufacturer_index (device),
+				NULL);
+		product = g_usb_device_get_string_descriptor (device,
+				g_usb_device_get_product_index (device),
+				NULL);
+
+		g_usb_device_close (device, NULL);
+
+		g_print ("Found %04x:%04x, %s %s\n",
+			 g_usb_device_get_vid (device),
+			 g_usb_device_get_pid (device),
+			 manufacturer ? manufacturer : "",
+			 product ? product : "");
+
+		g_free (manufacturer);
+		g_free (product);
+	}
 	g_ptr_array_unref (array);
 
 	/* coldplug again, and ensure we did not duplicate devices */

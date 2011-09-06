@@ -371,6 +371,43 @@ gboolean g_usb_device_release_interface (GUsbDevice		      *device,
 	return TRUE;
 }
 
+/**
+ * g_usb_device_get_string_descriptor:
+ * @desc_index: the index for the string descriptor to retreive
+ * @error: a #GError, or %NULL
+ *
+ * Get a string descriptor from the device. The returned string should be freed
+ * with g_free() when no longer needed.
+ *
+ * Return value: a newly-allocated string holding the descriptor, or NULL on error.
+ *
+ * Since: 0.1.0
+ **/
+gchar *g_usb_device_get_string_descriptor (GUsbDevice		 *device,
+					   guint8		  desc_index,
+					   GError		**error)
+{
+	gint rc;
+	/* libusb_get_string_descriptor_ascii returns max 128 bytes */
+	unsigned char buf[128];
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+
+	if (device->priv->handle == NULL) {
+		g_usb_device_not_open_error (device, error);
+		return NULL;
+	}
+
+	rc = libusb_get_string_descriptor_ascii (device->priv->handle,
+						 desc_index, buf, sizeof(buf));
+	if (rc < 0) {
+		g_usb_device_libusb_error_to_gerror (device, rc, error);
+		return NULL;
+	}
+
+	return g_strdup ((char *)buf);
+}
+
 typedef gssize (GUsbDeviceTransferFinishFunc) (GUsbDevice *device, GAsyncResult *res, GError **error);
 
 typedef struct {
@@ -1273,4 +1310,52 @@ guint16
 g_usb_device_get_pid (GUsbDevice *device)
 {
 	return device->priv->desc.idProduct;
+}
+
+/**
+ * g_usb_device_get_manufacturer_index:
+ * @device: a #GUsbDevice
+ *
+ * Gets the index for the Manufacturer string descriptor.
+ *
+ * Return value: a string descriptor index.
+ *
+ * Since: 0.1.0
+ **/
+guint8
+g_usb_device_get_manufacturer_index (GUsbDevice *device)
+{
+	return device->priv->desc.iManufacturer;
+}
+
+/**
+ * g_usb_device_get_product_index:
+ * @device: a #GUsbDevice
+ *
+ * Gets the index for the Product string descriptor.
+ *
+ * Return value: a string descriptor index.
+ *
+ * Since: 0.1.0
+ **/
+guint8
+g_usb_device_get_product_index (GUsbDevice *device)
+{
+	return device->priv->desc.iProduct;
+}
+
+/**
+ * g_usb_device_get_serial_number_index:
+ * @device: a #GUsbDevice
+ *
+ * Gets the index for the Serial Number string descriptor.
+ *
+ * Return value: a string descriptor index.
+ *
+ * Since: 0.1.0
+ **/
+guint8
+g_usb_device_get_serial_number_index (GUsbDevice *device)
+{
+	return device->priv->desc.iSerialNumber;
 }

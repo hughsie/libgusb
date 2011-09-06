@@ -117,6 +117,10 @@ guint8			 g_usb_device_get_address	(GUsbDevice	*device);
 guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
 
+guint8			 g_usb_device_get_manufacturer_index	(GUsbDevice *device);
+guint8			 g_usb_device_get_product_index		(GUsbDevice *device);
+guint8			 g_usb_device_get_serial_number_index	(GUsbDevice *device);
+
 gboolean		 g_usb_device_open		(GUsbDevice	*device,
 							 GError		**error);
 gboolean		 g_usb_device_close		(GUsbDevice	*device,
@@ -135,6 +139,10 @@ gboolean		 g_usb_device_claim_interface	(GUsbDevice	*device,
 gboolean		 g_usb_device_release_interface	(GUsbDevice	*device,
 							 gint		 interface,
 							 GUsbDeviceClaimInterfaceFlags flags,
+							 GError		**error);
+
+gchar			*g_usb_device_get_string_descriptor (GUsbDevice *device,
+							 guint8		 desc_index,
 							 GError		**error);
 
 /* sync -- TODO: use GCancellable and GUsbSource */
