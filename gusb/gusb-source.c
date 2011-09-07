@@ -37,6 +37,7 @@
 #include "gusb-context-private.h"
 #include "gusb-util.h"
 #include "gusb-source.h"
+#include "gusb-source-private.h"
 
 /**
  * g_usb_source_error_quark:
@@ -57,7 +58,6 @@ g_usb_source_error_quark (void)
 struct _GUsbSource {
 	GSource		 source;
 	GSList		*pollfds;
-	GUsbContext	*usbcontext;
 	libusb_context	*ctx;
 };
 
@@ -208,7 +208,6 @@ static void
 g_usb_source_finalize (GSource *source)
 {
 	GUsbSource *usb_source = (GUsbSource *)source;
-	g_object_unref (usb_source->usbcontext);
 	g_slist_free (usb_source->pollfds);
 }
 
@@ -221,20 +220,20 @@ static GSourceFuncs usb_source_funcs = {
 };
 
 /**
- * g_usb_source_new:
+ * _g_usb_source_new:
  * @main_ctx: a #GMainContext, or %NULL
  * @gusb_ctx: a #GUsbContext
  * @error: a #GError, or %NULL
  *
  * Creates a source for integration into libusb1.
  *
- * Return value: (transfer none): the #GUsbSource. Use g_usb_source_destroy() to unref.
+ * Return value: (transfer none): the #GUsbSource. Use _g_usb_source_destroy() to unref.
  *
  * Since: 0.1.0
  **/
 GUsbSource *
-g_usb_source_new (GMainContext *main_ctx,
-		  GUsbContext *gusb_ctx)
+_g_usb_source_new (GMainContext *main_ctx,
+		   GUsbContext *gusb_ctx)
 {
 	guint i;
 	const struct libusb_pollfd **pollfds;
@@ -243,7 +242,6 @@ g_usb_source_new (GMainContext *main_ctx,
 	gusb_source = (GUsbSource *)g_source_new (&usb_source_funcs,
 						  sizeof(GUsbSource));
 	gusb_source->pollfds = NULL;
-	gusb_source->usbcontext = g_object_ref (gusb_ctx);
 	gusb_source->ctx = _g_usb_context_get_context (gusb_ctx);
 
 	/* watch the fd's already created */
@@ -265,7 +263,7 @@ g_usb_source_new (GMainContext *main_ctx,
 }
 
 /**
- * g_usb_source_destroy:
+ * _g_usb_source_destroy:
  * @source: a #GUsbSource
  *
  * Destroys a #GUsbSource
@@ -273,7 +271,7 @@ g_usb_source_new (GMainContext *main_ctx,
  * Since: 0.1.0
  **/
 void
-g_usb_source_destroy (GUsbSource *source)
+_g_usb_source_destroy (GUsbSource *source)
 {
 	libusb_set_pollfd_notifiers (source->ctx, NULL, NULL, NULL);
 	g_usb_source_pollfd_remove_all (source);

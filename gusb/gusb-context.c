@@ -33,6 +33,7 @@
 #include "gusb-util.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
+#include "gusb-source-private.h"
 
 static void g_usb_context_finalize (GObject *object);
 
@@ -51,6 +52,8 @@ enum {
  **/
 struct _GUsbContextPrivate
 {
+	GStaticMutex		 source_mutex;
+	GUsbSource		*source;
 	libusb_context		*context;
 	int			 debug_level;
 };
@@ -179,7 +182,11 @@ g_usb_context_class_init (GUsbContextClass *klass)
 static void
 g_usb_context_init (GUsbContext *context)
 {
-	context->priv = G_USB_CONTEXT_GET_PRIVATE (context);
+	GUsbContextPrivate *priv;
+
+	priv = context->priv = G_USB_CONTEXT_GET_PRIVATE (context);
+	g_static_mutex_init (&priv->source_mutex);
+	priv->source = NULL;
 }
 
 /**
@@ -190,6 +197,10 @@ g_usb_context_finalize (GObject *object)
 {
 	GUsbContext *context = G_USB_CONTEXT (object);
 	GUsbContextPrivate *priv = context->priv;
+
+	g_static_mutex_free (&priv->source_mutex);
+	if (priv->source != NULL)
+		_g_usb_source_destroy (priv->source);
 
 	libusb_exit (priv->context);
 
@@ -226,6 +237,34 @@ libusb_context *
 _g_usb_context_get_context (GUsbContext *context)
 {
 	return context->priv->context;
+}
+
+/**
+ * g_usb_context_get_source:
+ * @context: a #GUsbContext
+ * @main_ctx: a #GMainContext, or %NULL
+ *
+ * Returns a source for this context. The first call actually creates
+ * the source and the result is returned in all future calls.
+ *
+ * Return value: (transfer none): the #GUsbSource.
+ *
+ * Since: 0.1.0
+ **/
+GUsbSource *
+g_usb_context_get_source (GUsbContext *context,
+			  GMainContext *main_ctx)
+{
+	GUsbContextPrivate *priv = context->priv;
+
+	if (priv->source == NULL) {
+		g_static_mutex_lock (&priv->source_mutex);
+		if (priv->source == NULL)
+			priv->source = _g_usb_source_new (main_ctx, context);
+		g_static_mutex_unlock (&priv->source_mutex);
+	}
+
+	return priv->source;
 }
 
 /**

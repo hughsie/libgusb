@@ -24,7 +24,6 @@
 #include <glib-object.h>
 
 #include "gusb-context.h"
-#include "gusb-source.h"
 #include "gusb-device.h"
 #include "gusb-device-list.h"
 
@@ -54,12 +53,11 @@ gusb_source_func (void)
 	g_assert_no_error (error);
 	g_assert (ctx != NULL);
 
-	source = g_usb_source_new (NULL, ctx);
-	g_assert (ctx != NULL);
+	source = g_usb_context_get_source (ctx, NULL);
+	g_assert (source != NULL);
 
 	/* TODO: test callback? */
 
-	g_usb_source_destroy (source);
 	g_object_unref (ctx);
 }
 

@@ -34,7 +34,6 @@
 #include <libusb-1.0/libusb.h>
 
 #include "gusb-context.h"
-#include "gusb-source.h"
 #include "gusb-util.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
@@ -601,7 +600,6 @@ g_usb_device_interrupt_transfer	(GUsbDevice	*device,
 typedef struct {
 	GCancellable		*cancellable;
 	gulong			 cancellable_id;
-	GUsbSource		*source;
 	struct libusb_transfer	*transfer;
 	GSimpleAsyncResult	*res;
 	guint8			*data; /* owned by the user */
@@ -616,7 +614,6 @@ g_usb_device_req_free (GcmDeviceReq *req)
 		g_object_unref (req->cancellable);
 	}
 
-	g_usb_source_destroy (req->source);
 	libusb_free_transfer (req->transfer);
 	g_object_unref (req->res);
 	g_slice_free (GcmDeviceReq, req);
@@ -857,8 +854,7 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
 	}
 
 	/* setup with the default mainloop */
-	req->source = g_usb_source_new (NULL,
-					device->priv->context);
+	g_usb_context_get_source (device->priv->context, NULL);
 }
 
 /**********************************************************************/
@@ -971,8 +967,7 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 	}
 
 	/* setup with the default mainloop */
-	req->source = g_usb_source_new (NULL,
-					device->priv->context);
+	g_usb_context_get_source (device->priv->context, NULL);
 }
 
 /**********************************************************************/
@@ -1085,8 +1080,7 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 	}
 
 	/* setup with the default mainloop */
-	req->source = g_usb_source_new (NULL,
-					device->priv->context);
+	g_usb_context_get_source (device->priv->context, NULL);
 }
 
 /**********************************************************************/

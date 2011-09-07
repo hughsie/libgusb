@@ -23,6 +23,7 @@
 #define __GUSB_CONTEXT_H__
 
 #include <glib-object.h>
+#include <gusb/gusb-source.h>
 #include <gusb/gusb-util.h>
 
 G_BEGIN_DECLS
@@ -61,6 +62,9 @@ GType		 g_usb_context_get_type		(void);
 GQuark		 g_usb_context_error_quark	(void);
 
 GUsbContext	*g_usb_context_new		(GError		**error);
+
+GUsbSource	*g_usb_context_get_source	(GUsbContext	*context,
+						 GMainContext	*main_ctx);
 
 void		 g_usb_context_set_debug	(GUsbContext	*context,
 						 GLogLevelFlags	 flags);

@@ -1,7 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
+ * Copyright (C) 2011 Debarshi Ray <debarshir@src.gnome.org>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -16,36 +15,21 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GUSB_SOURCE_H__
-#define __GUSB_SOURCE_H__
+#ifndef __GUSB_SOURCE_PRIVATE_H__
+#define __GUSB_SOURCE_PRIVATE_H__
 
-#include <glib.h>
+#include <gusb/gusb-context.h>
+#include <gusb/gusb-source.h>
 
 G_BEGIN_DECLS
 
-#define G_USB_SOURCE_ERROR			(g_usb_source_error_quark ())
-
-typedef struct _GUsbSource GUsbSource;
-
-/**
- * GUsbSourceError:
- *
- * The error code.
- **/
-typedef enum {
-	G_USB_SOURCE_ERROR_INTERNAL
-} GUsbSourceError;
-
-GQuark		 g_usb_source_error_quark	(void);
-void		 g_usb_source_set_callback	(GUsbSource	*source,
-						 GSourceFunc	 func,
-						 gpointer	 data,
-						 GDestroyNotify	 notify);
+GUsbSource	*_g_usb_source_new		(GMainContext	*main_ctx,
+						 GUsbContext	*context);
+void		 _g_usb_source_destroy		(GUsbSource	*source);
 
 G_END_DECLS
 
-#endif /* __GUSB_SOURCE_H__ */
+#endif /* __GUSB_SOURCE_PRIVATE_H__ */
