@@ -25,6 +25,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include <gusb/gusb-util.h>
+
 G_BEGIN_DECLS
 
 #define G_USB_TYPE_DEVICE		(g_usb_device_get_type ())
@@ -106,6 +108,12 @@ struct _GUsbDevice
 struct _GUsbDeviceClass
 {
 	GObjectClass			 parent_class;
+	/*< private >*/
+	/*
+	 * If adding fields to this struct, remove corresponding
+	 * amount of padding to avoid changing overall struct size
+	 */
+	gchar _gusb_reserved[GUSB_RESERVED_PADDING];
 };
 
 GType			 g_usb_device_get_type		(void);

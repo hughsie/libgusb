@@ -33,6 +33,7 @@
 #include <gusb/gusb-device.h>
 #include <gusb/gusb-device-list.h>
 #include <gusb/gusb-version.h>
+#include <gusb/gusb-util.h>
 
 #undef __GUSB_INSIDE__
 

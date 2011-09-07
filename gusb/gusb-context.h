@@ -23,6 +23,7 @@
 #define __GUSB_CONTEXT_H__
 
 #include <glib-object.h>
+#include <gusb/gusb-util.h>
 
 G_BEGIN_DECLS
 
@@ -44,6 +45,12 @@ struct _GUsbContext
 struct _GUsbContextClass
 {
 	GObjectClass			 parent_class;
+	/*< private >*/
+	/*
+	 * If adding fields to this struct, remove corresponding
+	 * amount of padding to avoid changing overall struct size
+	 */
+	gchar _gusb_reserved[GUSB_RESERVED_PADDING];
 };
 
 typedef enum {

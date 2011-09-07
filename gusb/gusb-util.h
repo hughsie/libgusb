@@ -23,6 +23,8 @@
 
 #include <glib.h>
 
+#define GUSB_RESERVED_PADDING 64
+
 G_BEGIN_DECLS
 
 const gchar* gusb_strerror(gint error_code);
