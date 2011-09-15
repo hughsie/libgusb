@@ -54,6 +54,9 @@ AC_PATH_PROG(XSLTPROC, xsltproc)
 LT_PREREQ([2.2])
 LT_INIT
 
+# set up gtk-doc
+GTK_DOC_CHECK(1.9)
+
 dnl ---------------------------------------------------------------------------
 dnl - Use strict options (default enabled for devs, disabled in releases)
 dnl ---------------------------------------------------------------------------
