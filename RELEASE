@@ -5,7 +5,7 @@ GUsb Release Notes
 git shortlog gusb_0_1_0.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.1.0
+Version 0.1.1
 ~~~~~~~~~~~~~
 Released: 2011-xx-xx
 
@@ -20,8 +20,8 @@ Bugfixes:
 
 * Commit changes in git:
 
-git commit -a -m "Release version 0.1.0"
-git tag -s -f -m "Release 0.1.0" gusb_0_1_0
+git commit -a -m "Release version 0.1.1"
+git tag -s -f -m "Release 0.1.1" gusb_0_1_1
 <gpg password>
 git push --tags
 git push
@@ -42,13 +42,13 @@ git push
 * Send an email to devkit-devel@lists.freedesktop.org
 
 =================================================
-GUsb 0.1.0 released!
+GUsb 0.1.1 released!
 
 GUsb is a GObject wrapper for libusb1 that makes it easy to do
 asynchronous control, bulk and interrupt transfers with proper
 cancellation and integration into a mainloop.
 
-Tarballs available here: http://www.packagekit.org/releases/
+Tarballs available here: http://people.freedesktop.org/~hughsient/releases/
 
 =================================================
 

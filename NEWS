@@ -10,7 +10,7 @@ Notes:
  - Quite a lot of functionality has been added by Richard, Debarshi and
    Hans for this release, and we're open to new API ideas, patches and
    bugreports.
- 
+
 New Features:
  - Add a debugging tool to exercise the API that is not installed (Richard Hughes)
  - Add a simple self test framework (Richard Hughes)
