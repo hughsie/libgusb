@@ -10,4 +10,4 @@ low hanging fruit if you're interested.
 
 Note: GUsb is not API or ABI stable at this time, so don't go bitchin'
 when we break your compile. That said, we're not going to break API
-without a good readon. Caveat emptor.
+without a good reason. Caveat emptor.
