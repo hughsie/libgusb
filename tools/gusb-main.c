@@ -164,11 +164,10 @@ gusb_cmd_get_descriptions (GPtrArray *array)
 static void
 gusb_device_list_added_cb (GUsbDeviceList *list,
 			   GUsbDevice *device,
-			   GUdevDevice *udev,
 			   gpointer user_data)
 {
 	g_print ("device %s added %x:%x\n",
-		 g_udev_device_get_name (udev),
+		 g_usb_device_get_platform_id (device),
 		 g_usb_device_get_bus (device),
 		 g_usb_device_get_address (device));
 }
@@ -179,11 +178,10 @@ gusb_device_list_added_cb (GUsbDeviceList *list,
 static void
 gusb_device_list_removed_cb (GUsbDeviceList *list,
 			     GUsbDevice *device,
-			     GUdevDevice *udev,
 			     gpointer user_data)
 {
 	g_print ("device %s removed %x:%x\n",
-		 g_udev_device_get_name (udev),
+		 g_usb_device_get_platform_id (device),
 		 g_usb_device_get_bus (device),
 		 g_usb_device_get_address (device));
 }

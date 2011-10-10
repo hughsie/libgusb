@@ -38,7 +38,6 @@
 #include "gusb-device.h"
 #include "gusb-device-list.h"
 #include "gusb-device-private.h"
-#include "gusb-marshal.h"
 
 #define G_USB_DEVICE_LIST_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), G_USB_TYPE_DEVICE_LIST, GUsbDeviceListPrivate))
 
@@ -200,11 +199,10 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			G_STRUCT_OFFSET (GUsbDeviceListClass, device_added),
 			NULL,
 			NULL,
-			g_cclosure_user_marshal_VOID__OBJECT_OBJECT,
+			g_cclosure_marshal_VOID__OBJECT,
 			G_TYPE_NONE,
-			2,
-			G_USB_TYPE_DEVICE,
-			G_UDEV_TYPE_DEVICE);
+			1,
+			G_USB_TYPE_DEVICE);
 
 	/**
 	 * GUsbDeviceList::device-removed:
@@ -220,11 +218,10 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			G_STRUCT_OFFSET (GUsbDeviceListClass, device_removed),
 			NULL,
 			NULL,
-			g_cclosure_user_marshal_VOID__OBJECT_OBJECT,
+			g_cclosure_marshal_VOID__OBJECT,
 			G_TYPE_NONE,
-			2,
-			G_USB_TYPE_DEVICE,
-			G_UDEV_TYPE_DEVICE);
+			1,
+			G_USB_TYPE_DEVICE);
 
 	g_type_class_add_private (klass, sizeof (GUsbDeviceListPrivate));
 }
@@ -319,7 +316,7 @@ g_usb_device_list_add_dev (GUsbDeviceList *list, GUdevDevice *udev)
 	}
 
 	g_ptr_array_add (priv->devices, device);
-	g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device, udev);
+	g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device);
 	return TRUE;
 }
 
@@ -340,7 +337,7 @@ g_usb_device_list_remove_dev (GUsbDeviceList *list, GUdevDevice *udev)
 	if (!device)
 		return;
 
-	g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device, udev);
+	g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device);
 	g_ptr_array_remove (priv->devices, device);
 }
 

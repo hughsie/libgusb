@@ -23,7 +23,6 @@
 #define __GUSB_DEVICE_LIST_H__
 
 #include <glib-object.h>
-#include <gudev/gudev.h>
 
 #include <gusb/gusb-context.h>
 #include <gusb/gusb-device.h>
@@ -50,11 +49,9 @@ struct _GUsbDeviceListClass
 	GObjectClass			 parent_class;
 	/* Signals */
 	void (*device_added)		(GUsbDeviceList		*list,
-					 GUsbDevice		*device,
-					 GUdevDevice		*udev);
+					 GUsbDevice		*device);
 	void (*device_removed)		(GUsbDeviceList		*list,
-					 GUsbDevice		*device,
-					 GUdevDevice		*udev);
+					 GUsbDevice		*device);
 	/*< private >*/
 	/*
 	 * If adding fields to this struct, remove corresponding
