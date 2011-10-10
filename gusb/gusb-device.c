@@ -49,6 +49,7 @@ static void     g_usb_device_finalize	(GObject     *object);
  **/
 struct _GUsbDevicePrivate
 {
+	gchar			*platform_id;
 	GUsbContext		*context;
 	libusb_device		*device;
 	libusb_device_handle	*handle;
@@ -58,7 +59,8 @@ struct _GUsbDevicePrivate
 enum {
 	PROP_0,
 	PROP_LIBUSB_DEVICE,
-	PROP_CONTEXT
+	PROP_CONTEXT,
+	PROP_PLATFORM_ID
 };
 
 G_DEFINE_TYPE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
@@ -1104,6 +1106,9 @@ g_usb_device_set_property (GObject		*object,
 	case PROP_CONTEXT:
 		priv->context = g_value_dup_object (value);
 		break;
+	case PROP_PLATFORM_ID:
+		priv->platform_id = g_value_dup_string (value);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -1177,6 +1182,16 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 	g_object_class_install_property (object_class, PROP_CONTEXT,
 					 pspec);
 
+	/**
+	 * GUsbDevice:platform-id:
+	 */
+	pspec = g_param_spec_string ("platform-id", NULL, NULL,
+				     NULL,
+				     G_PARAM_CONSTRUCT_ONLY|
+				     G_PARAM_WRITABLE);
+	g_object_class_install_property (object_class, PROP_PLATFORM_ID,
+					 pspec);
+
 	g_type_class_add_private (klass, sizeof (GUsbDevicePrivate));
 }
 
@@ -1198,6 +1213,7 @@ g_usb_device_finalize (GObject *object)
 	GUsbDevice *device = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv = device->priv;
 
+	g_free (priv->platform_id);
 	libusb_unref_device (priv->device);
 	g_object_unref (priv->context);
 
@@ -1212,12 +1228,15 @@ g_usb_device_finalize (GObject *object)
  * Since: 0.1.0
  **/
 GUsbDevice *
-_g_usb_device_new (GUsbContext *context, libusb_device *device)
+_g_usb_device_new (GUsbContext *context,
+		   libusb_device *device,
+		   GUdevDevice *udev)
 {
 	GObject *obj;
 	obj = g_object_new (G_USB_TYPE_DEVICE,
 			    "context", context,
 			    "libusb-device", device,
+			    "platform-id", g_udev_device_get_sysfs_path (udev),
 			    NULL);
 	return G_USB_DEVICE (obj);
 }
@@ -1234,6 +1253,23 @@ libusb_device *
 _g_usb_device_get_device (GUsbDevice	*device)
 {
 	return device->priv->device;
+}
+
+/**
+ * g_usb_device_get_platform_id:
+ * @device: a #GUsbDevice
+ *
+ * Gets the platform identifier for the device.
+ * On Linux, this is the full sysfs path of the device
+ *
+ * Return value: The platform ID, or %NULL
+ *
+ * Since: 0.1.1
+ **/
+const gchar *
+g_usb_device_get_platform_id (GUsbDevice *device)
+{
+	return device->priv->platform_id;
 }
 
 /**
