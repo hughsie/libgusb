@@ -7,6 +7,6 @@ Name: gusb
 Description: GUsb is a GLib binding for libusb1
 Version: @VERSION@
 Requires.private: gthread-2.0
-Requires: glib-2.0, gobject-2.0
+Requires: glib-2.0, gobject-2.0, usb-1.0
 Libs: -L${libdir} -lgusb
 Cflags: -I${includedir}/gusb-1
