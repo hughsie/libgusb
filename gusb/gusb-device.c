@@ -737,11 +737,8 @@ g_usb_device_control_transfer_finish (GUsbDevice *device,
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (g_simple_async_result_is_valid (res,
-							      G_OBJECT (device),
-							      g_usb_device_control_transfer_async),
-			      FALSE);
-
+	g_return_val_if_fail (G_IS_OBJECT (device), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
@@ -894,11 +891,8 @@ g_usb_device_bulk_transfer_finish (GUsbDevice *device,
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (g_simple_async_result_is_valid (res,
-							      G_OBJECT (device),
-							      g_usb_device_bulk_transfer_async),
-			      FALSE);
-
+	g_return_val_if_fail (G_IS_OBJECT (device), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
@@ -1007,11 +1001,8 @@ g_usb_device_interrupt_transfer_finish (GUsbDevice *device,
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (g_simple_async_result_is_valid (res,
-							      G_OBJECT (device),
-							      g_usb_device_interrupt_transfer_async),
-			      FALSE);
-
+	g_return_val_if_fail (G_IS_OBJECT (device), FALSE);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
