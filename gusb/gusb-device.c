@@ -282,12 +282,25 @@ gboolean g_usb_device_set_configuration (GUsbDevice	 *device,
 					 GError		**error)
 {
 	gint rc;
+	gint config_tmp = 0;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);
 
+	/* verify we've not already set the same configuration */
+	rc = libusb_get_configuration (device->priv->handle,
+				       &config_tmp);
+	if (rc != LIBUSB_SUCCESS) {
+		return g_usb_device_libusb_error_to_gerror (device,
+							    rc,
+							    error);
+	}
+	if (config_tmp == configuration)
+		return TRUE;
+
+	/* different, so change */
 	rc = libusb_set_configuration (device->priv->handle, configuration);
 	return g_usb_device_libusb_error_to_gerror (device, rc, error);
 }
