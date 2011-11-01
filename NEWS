@@ -1,3 +1,19 @@
+Version 0.1.1
+~~~~~~~~~~~~~
+Released: 2011-11-01
+
+Notes:
+ - This release bumps soname to remove GUdevDevice from the public API.
+
+New Features:
+ - Add g_usb_device_get_platform_id (Richard Hughes)
+
+Bugfixes:
+ - Add usb-1.0 to the gusb.pc 'Requires' (Richard Hughes)
+ - Do not leak the GUdev API into the public API of GUsb (Richard Hughes)
+ - Do not try to set the currently running device configuration twice (Richard Hughes)
+ - Do not use g_simple_async_result_is_valid() as it fails for sync methods (Richard Hughes)
+
 Version 0.1.0
 ~~~~~~~~~~~~~
 Released: 2011-09-15
