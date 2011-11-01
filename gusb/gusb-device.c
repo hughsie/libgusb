@@ -438,6 +438,7 @@ g_usb_device_sync_transfer_cb (GUsbDevice *device,
 {
 	helper->ret = (*helper->finish_func) (device, res, helper->error);
 	g_main_loop_quit (helper->loop);
+	g_main_loop_unref (helper->loop);
 }
 
 /**
