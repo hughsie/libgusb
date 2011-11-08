@@ -334,7 +334,8 @@ gboolean g_usb_device_claim_interface (GUsbDevice		    *device,
 		rc = libusb_detach_kernel_driver (device->priv->handle,
 						  interface);
 		if (rc != LIBUSB_SUCCESS &&
-		    rc != LIBUSB_ERROR_NOT_FOUND /* No driver attached */)
+		    rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
+		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
 			return g_usb_device_libusb_error_to_gerror (device, rc,
 								    error);
 	}
