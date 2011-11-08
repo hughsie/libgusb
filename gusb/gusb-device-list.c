@@ -410,6 +410,9 @@ g_usb_device_list_find_by_bus_address (GUsbDeviceList	*list,
 	GUsbDevice *device = NULL;
 	guint i;
 
+	/* ensure the list of coldplugged */
+	g_usb_device_list_coldplug (list);
+
 	for (i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *curr = g_ptr_array_index (priv->devices, i);
 		if (g_usb_device_get_bus (curr) == bus &&
@@ -449,6 +452,9 @@ g_usb_device_list_find_by_vid_pid (GUsbDeviceList	*list,
 	GUsbDeviceListPrivate *priv = list->priv;
 	GUsbDevice *device = NULL;
 	guint i;
+
+	/* ensure the list of coldplugged */
+	g_usb_device_list_coldplug (list);
 
 	for (i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *curr = g_ptr_array_index (priv->devices, i);
