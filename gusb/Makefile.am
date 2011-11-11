@@ -1,6 +1,7 @@
 
 INCLUDES = \
 	$(GLIB_CFLAGS)						\
+	$(USB_CFLAGS)						\
 	$(GUDEV_CFLAGS)						\
 	-I$(top_srcdir)						\
 	-I$(top_srcdir)/gusb					\
@@ -38,6 +39,7 @@ libgusb_la_SOURCES =						\
 
 libgusb_la_LIBADD =						\
 	$(GLIB_LIBS)						\
+	$(USB_LIBS)						\
 	$(GUDEV_LIBS)
 
 libgusb_la_LDFLAGS =						\
