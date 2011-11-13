@@ -47,7 +47,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 %defattr(-,root,root,-)
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/libgusb.so.?
-%{_libdir}/libgusb.so.?.0.0
+%{_libdir}/libgusb.so.?.0.*
 
 %files devel
 %defattr(-,root,root,-)
