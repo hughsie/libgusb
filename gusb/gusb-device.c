@@ -646,6 +646,12 @@ g_usb_device_libusb_status_to_gerror (gint status,
 	case LIBUSB_TRANSFER_COMPLETED:
 		ret = TRUE;
 		break;
+	case LIBUSB_TRANSFER_ERROR:
+		g_set_error_literal (error,
+				     G_USB_DEVICE_ERROR,
+				     G_USB_DEVICE_ERROR_FAILED,
+				     "transfer failed");
+		break;
 	case LIBUSB_TRANSFER_TIMED_OUT:
 		g_set_error_literal (error,
 				     G_USB_DEVICE_ERROR,
