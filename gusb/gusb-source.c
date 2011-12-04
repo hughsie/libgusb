@@ -75,8 +75,6 @@ g_usb_source_pollfd_add (GUsbSource *source, int fd, short events)
 
 	source->pollfds = g_slist_prepend(source->pollfds, pollfd);
 	g_source_add_poll((GSource *)source, pollfd);
-
-	g_debug ("added pollfd %i, events %hi", fd, events);
 }
 
 static void
@@ -91,8 +89,6 @@ g_usb_source_pollfd_remove (GUsbSource *source, int fd)
 {
 	GPollFD *pollfd;
 	GSList *elem = source->pollfds;
-
-	g_debug("remove pollfd %i", fd);
 
 	/* nothing to see here, move along */
 	if (elem == NULL) {
