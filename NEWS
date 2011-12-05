@@ -1,3 +1,11 @@
+Version 0.1.3
+~~~~~~~~~~~~~
+Released: 2011-12-05
+
+Bugfixes:
+ - Do not build with -Werror by default (Richard Hughes)
+ - Add a missing error enum value (Richard Hughes)
+
 Version 0.1.2
 ~~~~~~~~~~~~~
 Released: 2011-11-11
