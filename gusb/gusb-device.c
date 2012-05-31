@@ -229,6 +229,34 @@ g_usb_device_close (GUsbDevice *device, GError **error)
 }
 
 /**
+ * g_usb_device_reset:
+ * @device: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Perform a USB port reset to reinitialize a device.
+ *
+ * If the reset succeeds, the device will appear to disconnected and reconnected.
+ * This means the @device will no longer be valid and should be closed and
+ * rediscovered.
+ *
+ * This is a blocking function which usually incurs a noticeable delay.
+ *
+ * Return value: %TRUE on success
+ **/
+gboolean
+g_usb_device_reset (GUsbDevice *device, GError **error)
+{
+	gint rc;
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+
+	if (device->priv->handle == NULL)
+		return g_usb_device_not_open_error (device, error);
+
+	rc = libusb_reset_device (device->priv->handle);
+	return g_usb_device_libusb_error_to_gerror (device, rc, error);
+}
+
+/**
  * g_usb_device_get_configuration:
  * @device: a #GUsbDevice
  * @error: a #GError, or %NULL

@@ -137,6 +137,9 @@ gboolean		 g_usb_device_open		(GUsbDevice	*device,
 gboolean		 g_usb_device_close		(GUsbDevice	*device,
 							 GError		**error);
 
+gboolean		 g_usb_device_reset		(GUsbDevice	*device,
+							 GError		**error);
+
 gint			 g_usb_device_get_configuration (GUsbDevice	*device,
 							 GError		**error);
 gboolean		 g_usb_device_set_configuration (GUsbDevice	*device,
