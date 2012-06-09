@@ -319,7 +319,7 @@ g_usb_context_new (GError **error)
 			     G_USB_CONTEXT_ERROR,
 			     G_USB_CONTEXT_ERROR_INTERNAL,
 			     "failed to init libusb: %s [%i]",
-			     gusb_strerror (rc), rc);
+			     g_usb_strerror (rc), rc);
 		return NULL;
 	}
 

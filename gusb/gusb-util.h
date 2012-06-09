@@ -23,11 +23,11 @@
 
 #include <glib.h>
 
-#define GUSB_RESERVED_PADDING 64
+#define G_USB_RESERVED_PADDING 64
 
 G_BEGIN_DECLS
 
-const gchar* gusb_strerror(gint error_code);
+const gchar* g_usb_strerror(gint error_code);
 
 G_END_DECLS
 

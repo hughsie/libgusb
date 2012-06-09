@@ -191,7 +191,7 @@ g_usb_source_dispatch (GSource *source,
 	rc = libusb_handle_events_timeout (usb_source->ctx, &tv);
 	if (rc < 0) {
 		g_warning ("failed to handle event: %s [%i]",
-			   gusb_strerror (rc), rc);
+			   g_usb_strerror (rc), rc);
 	}
 
 	if (callback)

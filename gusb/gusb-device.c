@@ -141,7 +141,7 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
 		     "USB error on device %04x:%04x : %s [%i]",
 		     g_usb_device_get_vid (device),
 		     g_usb_device_get_pid (device),
-		     gusb_strerror (rc), rc);
+		     g_usb_strerror (rc), rc);
 
 	return FALSE;
 }
@@ -1184,7 +1184,7 @@ g_usb_device_constructor (GType			 gtype,
 	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
 	if (rc != LIBUSB_SUCCESS)
 		g_warning ("Failed to get USB descriptor for device: %s",
-			   gusb_strerror (rc));
+			   g_usb_strerror (rc));
 
 	return obj;
 }
