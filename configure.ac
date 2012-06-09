@@ -23,6 +23,9 @@ GTK_DOC_CHECK(1.9)
 # GObject Introspection
 GOBJECT_INTROSPECTION_CHECK([1.29])
 
+# Vala bindings
+VAPIGEN_CHECK([0.16])
+
 # use this in cd-version.h
 G_USB_MAJOR_VERSION=gusb_major_version
 G_USB_MINOR_VERSION=gusb_minor_version

@@ -96,6 +96,21 @@ typelibsdir = $(libdir)/girepository-1.0
 typelibs_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
 endif
 
+if ENABLE_VAPIGEN
+include $(VAPIGEN_MAKEFILE)
+
+gusb.vapi: GUsb-1.0.gir
+
+VAPIGEN_VAPIS = gusb.vapi
+
+gusb_vapi_DEPS = gio-2.0
+gusb_vapi_METADATADIRS = $(srcdir)
+gusb_vapi_FILES = GUsb-1.0.gir
+
+vapidir = $(VAPIGEN_VAPIDIR)
+vapi_DATA = $(VAPIGEN_VAPIS)
+endif
+
 EXTRA_DIST =							\
 	gusb-version.h.in					\
 	gusb.pc.in
@@ -104,6 +119,9 @@ CLEANFILES = $(BUILT_SOURCES)
 
 if HAVE_INTROSPECTION
 CLEANFILES += $(INTROSPECTION_GIRS) $(INTROSPECTION_GIRS:.gir=.typelib)
+endif
+if ENABLE_VAPIGEN
+CLEANFILES += $(VAPIGEN_VAPIS)
 endif
 
 clean-local:
