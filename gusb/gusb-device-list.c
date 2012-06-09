@@ -431,7 +431,7 @@ out:
 }
 
 /**
- * g_usb_device_list_find_by_bus_address:
+ * g_usb_device_list_find_by_vid_pid:
  * @list: a #GUsbDeviceList
  * @vid: a vendor ID
  * @pid: a product ID

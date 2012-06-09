@@ -477,7 +477,8 @@ g_usb_device_sync_transfer_cb (GUsbDevice *device,
  * @request: the request field for the setup packet
  * @value: the value field for the setup packet
  * @idx: the index field for the setup packet
- * @data: a suitably-sized data buffer for either input or output
+ * @data: (array length=length): a suitably-sized data buffer for
+ * either input or output
  * @length: the length field for the setup packet.
  * @actual_length: the actual number of bytes sent, or %NULL
  * @timeout: timeout timeout (in millseconds) that this function should wait
@@ -540,7 +541,8 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
  * g_usb_device_bulk_transfer:
  * @device: a #GUsbDevice
  * @endpoint: the address of a valid endpoint to communicate with
- * @data: a suitably-sized data buffer for either input or output
+ * @data: (array length=length): a suitably-sized data buffer for
+ * either input or output
  * @length: the length field for the setup packet.
  * @actual_length: the actual number of bytes sent, or %NULL
  * @timeout: timeout timeout (in millseconds) that this function should wait
@@ -593,7 +595,8 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
  * g_usb_device_interrupt_transfer:
  * @device: a #GUsbDevice
  * @endpoint: the address of a valid endpoint to communicate with
- * @data: a suitably-sized data buffer for either input or output
+ * @data: (array length=length): a suitably-sized data buffer for
+ * either input or output
  * @length: the length field for the setup packet.
  * @actual_length: the actual number of bytes sent, or %NULL
  * @timeout: timeout timeout (in millseconds) that this function should wait
@@ -812,6 +815,12 @@ out:
 /**
  * g_usb_device_control_transfer_async:
  * @device: a #GUsbDevice
+ * @data: (array length=length): a suitably-sized data buffer for
+ * either input or output
+ * @length: the length field for the setup packet.
+ * @timeout: timeout timeout (in millseconds) that this function should wait
+ * before giving up due to no response being received. For an unlimited
+ * timeout, use 0.
  * @cancellable: a #GCancellable, or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -940,6 +949,13 @@ g_usb_device_bulk_transfer_finish (GUsbDevice *device,
 /**
  * g_usb_device_bulk_transfer_async:
  * @device: a #GUsbDevice instance.
+ * @endpoint: the address of a valid endpoint to communicate with
+ * @data: (array length=length): a suitably-sized data buffer for
+ * either input or output
+ * @length: the length field for the setup packet.
+ * @timeout: timeout timeout (in millseconds) that this function should wait
+ * before giving up due to no response being received. For an unlimited
+ * timeout, use 0.
  * @cancellable: a #GCancellable, or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
@@ -1050,6 +1066,13 @@ g_usb_device_interrupt_transfer_finish (GUsbDevice *device,
 /**
  * g_usb_device_interrupt_transfer_async:
  * @device: a #GUsbDevice instance.
+ * @endpoint: the address of a valid endpoint to communicate with
+ * @data: (array length=length): a suitably-sized data buffer for
+ * either input or output
+ * @length: the length field for the setup packet.
+ * @timeout: timeout timeout (in millseconds) that this function should wait
+ * before giving up due to no response being received. For an unlimited
+ * timeout, use 0.
  * @cancellable: a #GCancellable, or %NULL
  * @callback: the function to run on completion
  * @user_data: the data to pass to @callback
