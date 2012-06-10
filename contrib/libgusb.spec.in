@@ -12,6 +12,8 @@ BuildRequires: glib2-devel >= 2.16.1
 BuildRequires: libtool
 BuildRequires: libgudev1-devel
 BuildRequires: libusb1-devel
+BuildRequires: gobject-introspection-devel
+BuildRequires: vala-devel
 
 %description
 GUsb is a GObject wrapper for libusb1 that makes it easy to do
@@ -48,6 +50,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 %doc README AUTHORS NEWS COPYING
 %{_libdir}/libgusb.so.?
 %{_libdir}/libgusb.so.?.0.*
+%{_libdir}/girepository-1.0/GUsb-1.0.typelib
 
 %files devel
 %defattr(-,root,root,-)
@@ -55,6 +58,8 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 %{_libdir}/libgusb.so
 %{_libdir}/pkgconfig/gusb.pc
 %{_datadir}/gtk-doc/html/gusb
+%{_datadir}/gir-1.0/GUsb-1.0.gir
+%{_datadir}/vala/vapi/gusb.vapi
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#

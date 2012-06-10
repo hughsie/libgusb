@@ -107,7 +107,7 @@ gusb_vapi_DEPS = gio-2.0
 gusb_vapi_METADATADIRS = $(srcdir)
 gusb_vapi_FILES = GUsb-1.0.gir
 
-vapidir = $(VAPIGEN_VAPIDIR)
+vapidir = $(datadir)/vala/vapi
 vapi_DATA = $(VAPIGEN_VAPIS)
 endif
 
