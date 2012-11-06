@@ -1,3 +1,16 @@
+Version 0.1.4
+~~~~~~~~~~~~~
+Released: 2012-11-06
+
+New Features:
+ - Add GObject Introspection support (Evan Nemerson)
+ - Add g_usb_device_reset() to reset a connected device (Richard Hughes)
+ - Add Vala bindings (Evan Nemerson)
+
+Bugfixes:
+ - Assorted introspection annotation fixes (Evan Nemerson)
+ - Rename inconsistently named gusb_* symbols to g_usb_* (Evan Nemerson)
+
 Version 0.1.3
 ~~~~~~~~~~~~~
 Released: 2011-12-05
