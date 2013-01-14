@@ -1,5 +1,5 @@
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	$(GLIB_CFLAGS)						\
 	$(USB_CFLAGS)						\
 	$(GUDEV_CFLAGS)						\
