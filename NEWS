@@ -1,3 +1,12 @@
+Version 0.1.5
+~~~~~~~~~~~~~
+Released: 2013-02-05
+
+Bugfixes:
+ - Don't use the deprecated INCLUDES in Makefile.am (Richard Hughes)
+ - Fix documentation build (Christopher James Halse Rogers)
+ - Fix obvious typo in README (Hans Ulrich Niedermann)
+
 Version 0.1.4
 ~~~~~~~~~~~~~
 Released: 2012-11-06
