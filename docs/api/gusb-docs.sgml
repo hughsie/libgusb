@@ -36,7 +36,7 @@
         This manual documents features of GUsb.
       </para>
     </partintro>
-    <xi:include href="spec/gusb-introduction.xml"/>
+    <xi:include href="gusb-introduction.xml"/>
   </reference>
 
   <reference id="libgusb">
@@ -69,7 +69,7 @@
         This part has answers to developer frequently asked questions.
       </para>
     </partintro>
-    <xi:include href="spec/gusb-faq.xml"/>
+    <xi:include href="gusb-faq.xml"/>
   </reference>
 
 </book>

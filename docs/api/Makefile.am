@@ -49,6 +49,8 @@ IGNORE_HFILES =						\
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
 content_files =						\
 	version.xml					\
+	gusb-introduction.xml				\
+	gusb-faq.xml					\
 	$(NULL)
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
