@@ -52,7 +52,7 @@ enum {
  **/
 struct _GUsbContextPrivate
 {
-	GStaticMutex		 source_mutex;
+	GMutex			 source_mutex;
 	GUsbSource		*source;
 	libusb_context		*context;
 	int			 debug_level;
@@ -185,7 +185,7 @@ g_usb_context_init (GUsbContext *context)
 	GUsbContextPrivate *priv;
 
 	priv = context->priv = G_USB_CONTEXT_GET_PRIVATE (context);
-	g_static_mutex_init (&priv->source_mutex);
+	g_mutex_init (&priv->source_mutex);
 	priv->source = NULL;
 }
 
@@ -198,7 +198,6 @@ g_usb_context_finalize (GObject *object)
 	GUsbContext *context = G_USB_CONTEXT (object);
 	GUsbContextPrivate *priv = context->priv;
 
-	g_static_mutex_free (&priv->source_mutex);
 	if (priv->source != NULL)
 		_g_usb_source_destroy (priv->source);
 
@@ -258,10 +257,10 @@ g_usb_context_get_source (GUsbContext *context,
 	GUsbContextPrivate *priv = context->priv;
 
 	if (priv->source == NULL) {
-		g_static_mutex_lock (&priv->source_mutex);
+		g_mutex_lock (&priv->source_mutex);
 		if (priv->source == NULL)
 			priv->source = _g_usb_source_new (main_ctx, context);
-		g_static_mutex_unlock (&priv->source_mutex);
+		g_mutex_unlock (&priv->source_mutex);
 	}
 
 	return priv->source;
