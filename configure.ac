@@ -17,9 +17,6 @@ AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz tar-ustar -Wno-portability])
 
 AM_SILENT_RULES([yes])
 
-# set up gtk-doc
-GTK_DOC_CHECK(1.9)
-
 # GObject Introspection
 GOBJECT_INTROSPECTION_CHECK([1.29])
 
