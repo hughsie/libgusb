@@ -467,7 +467,6 @@ g_usb_device_sync_transfer_cb (GUsbDevice *device,
 {
 	helper->ret = (*helper->finish_func) (device, res, helper->error);
 	g_main_loop_quit (helper->loop);
-	g_main_loop_unref (helper->loop);
 }
 
 /**
@@ -530,6 +529,7 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
 					     (GAsyncReadyCallback) g_usb_device_sync_transfer_cb,
 					     &helper);
 	g_main_loop_run (helper.loop);
+	g_main_loop_unref (helper.loop);
 
 	if (actual_length != NULL)
 		*actual_length = (gsize) helper.ret;
@@ -584,6 +584,7 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
 					  (GAsyncReadyCallback) g_usb_device_sync_transfer_cb,
 					  &helper);
 	g_main_loop_run (helper.loop);
+	g_main_loop_unref (helper.loop);
 
 	if (actual_length != NULL)
 		*actual_length = (gsize) helper.ret;
@@ -638,6 +639,7 @@ g_usb_device_interrupt_transfer	(GUsbDevice	*device,
 					       (GAsyncReadyCallback) g_usb_device_sync_transfer_cb,
 					       &helper);
 	g_main_loop_run (helper.loop);
+	g_main_loop_unref (helper.loop);
 
 	if (actual_length != NULL)
 		*actual_length = helper.ret;
