@@ -30,7 +30,6 @@
 #include "config.h"
 
 #include <libusb-1.0/libusb.h>
-#include <poll.h>
 #include <stdlib.h>
 
 #include "gusb-context.h"
@@ -38,6 +37,12 @@
 #include "gusb-util.h"
 #include "gusb-source.h"
 #include "gusb-source-private.h"
+
+/* the <poll.h> header is not available on all platforms */
+#ifndef POLLIN
+#define POLLIN		0x0001
+#define POLLOUT		0x0004
+#endif
 
 /**
  * g_usb_source_error_quark:
