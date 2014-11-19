@@ -1421,6 +1421,22 @@ g_usb_device_get_manufacturer_index (GUsbDevice *device)
 }
 
 /**
+ * g_usb_device_get_device_class:
+ * @device: a #GUsbDevice
+ *
+ * Gets the device class.
+ *
+ * Return value: a device class number, e.g. 0x09 is a USB hub.
+ *
+ * Since: 0.1.7
+ **/
+guint8
+g_usb_device_get_device_class (GUsbDevice *device)
+{
+	return device->priv->desc.bDeviceClass;
+}
+
+/**
  * g_usb_device_get_product_index:
  * @device: a #GUsbDevice
  *

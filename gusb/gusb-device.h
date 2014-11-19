@@ -127,6 +127,7 @@ guint8			 g_usb_device_get_address	(GUsbDevice	*device);
 
 guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
+guint8			 g_usb_device_get_device_class	(GUsbDevice	*device);
 
 guint8			 g_usb_device_get_manufacturer_index	(GUsbDevice *device);
 guint8			 g_usb_device_get_product_index		(GUsbDevice *device);
