@@ -139,13 +139,13 @@ gusb_cmd_get_descriptions (GPtrArray *array)
 
 	/* print each command */
 	string = g_string_new ("");
-	for (i=0; i<array->len; i++) {
+	for (i = 0; i < array->len; i++) {
 		item = g_ptr_array_index (array, i);
 		g_string_append (string, "  ");
 		g_string_append (string, item->name);
 		g_string_append (string, " ");
 		len = strlen (item->name);
-		for (j=len; j<max_len+2; j++)
+		for (j = len; j < max_len+2; j++)
 			g_string_append_c (string, ' ');
 		g_string_append (string, item->description);
 		g_string_append_c (string, '\n');
@@ -201,7 +201,7 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	list = g_usb_device_list_new (priv->usb_ctx);
 	g_usb_device_list_coldplug (list);
 	devices = g_usb_device_list_get_devices (list);
-	for (i=0; i<devices->len; i++) {
+	for (i = 0; i < devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
 		g_print ("device present %x:%x\n",
 			 g_usb_device_get_bus (device),
@@ -229,7 +229,7 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	list = g_usb_device_list_new (priv->usb_ctx);
 	g_usb_device_list_coldplug (list);
 	devices = g_usb_device_list_get_devices (list);
-	for (i=0; i<devices->len; i++) {
+	for (i = 0; i < devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
 		g_print ("device already present %x:%x\n",
 			 g_usb_device_get_bus (device),
@@ -264,7 +264,7 @@ gusb_cmd_run (GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError
 	GString *string;
 
 	/* find command */
-	for (i=0; i<priv->cmd_array->len; i++) {
+	for (i = 0; i < priv->cmd_array->len; i++) {
 		item = g_ptr_array_index (priv->cmd_array, i);
 		if (g_strcmp0 (item->name, command) == 0) {
 			ret = item->callback (priv, values, error);
@@ -276,7 +276,7 @@ gusb_cmd_run (GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError
 	string = g_string_new ("");
 	/* TRANSLATORS: error message */
 	g_string_append_printf (string, "%s\n", "Command not found, valid commands are:");
-	for (i=0; i<priv->cmd_array->len; i++) {
+	for (i = 0; i < priv->cmd_array->len; i++) {
 		item = g_ptr_array_index (priv->cmd_array, i);
 		g_string_append_printf (string, " * %s\n", item->name);
 	}
