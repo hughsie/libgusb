@@ -79,9 +79,6 @@ INTROSPECTION_GIRS = GUsb-1.0.gir
 GUsb-1.0.gir: libgusb.la
 
 GUsb_1_0_gir_PACKAGES = glib-2.0 gobject-2.0 libusb-1.0
-if HAVE_GUDEV
-GUsb_1_0_gir_PACKAGES += gudev-1.0
-endif
 GUsb_1_0_gir_EXPORT_PACKAGES = gusb
 GUsb_1_0_gir_INCLUDES = GLib-2.0 GObject-2.0 Gio-2.0
 GUsb_1_0_gir_LIBS = libgusb.la

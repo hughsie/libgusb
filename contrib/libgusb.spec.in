@@ -10,7 +10,6 @@ Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.
 
 BuildRequires: glib2-devel >= 2.16.1
 BuildRequires: libtool
-BuildRequires: libgudev1-devel
 BuildRequires: libusb1-devel
 BuildRequires: gobject-introspection-devel
 BuildRequires: vala-devel

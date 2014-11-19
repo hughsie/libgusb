@@ -1298,13 +1298,13 @@ g_usb_device_finalize (GObject *object)
 GUsbDevice *
 _g_usb_device_new (GUsbContext *context,
 		   libusb_device *device,
-		   GUdevDevice *udev)
+		   const gchar *platform_id)
 {
 	GObject *obj;
 	obj = g_object_new (G_USB_TYPE_DEVICE,
 			    "context", context,
 			    "libusb-device", device,
-			    "platform-id", g_udev_device_get_sysfs_path (udev),
+			    "platform-id", platform_id,
 			    NULL);
 	return G_USB_DEVICE (obj);
 }

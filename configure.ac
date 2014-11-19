@@ -99,18 +99,7 @@ dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
 dnl ---------------------------------------------------------------------------
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.28.0 gobject-2.0 gthread-2.0 gio-2.0 >= 2.25.9)
-
-dnl **** Check for GUDEV ****
-AC_ARG_ENABLE(gudev, AS_HELP_STRING([--enable-gudev],[Enable GUDEV support]),
-	      enable_gudev=$enableval, enable_gudev=yes)
-if test x$enable_gudev != xno; then
-	PKG_CHECK_MODULES(GUDEV, gudev-1.0)
-	AC_DEFINE(HAVE_GUDEV,1,[Use GUDEV support for hardware])
-fi
-AM_CONDITIONAL(HAVE_GUDEV, test x$enable_gudev = xyes)
-
-dnl **** Check for libusb1 ****
-PKG_CHECK_MODULES(USB, libusb-1.0 >= 1.0.0)
+PKG_CHECK_MODULES(USB, libusb-1.0 >= 1.0.19)
 
 dnl ---------------------------------------------------------------------------
 dnl - Build self tests
@@ -145,5 +134,4 @@ echo "
         cflags:                    ${CFLAGS}
         cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
-        GUDEV support:             ${enable_gudev}
 "

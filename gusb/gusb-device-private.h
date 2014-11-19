@@ -21,14 +21,13 @@
 #ifndef __GUSB_DEVICE_PRIVATE_H__
 #define __GUSB_DEVICE_PRIVATE_H__
 
-#include <gudev/gudev.h>
 #include <gusb/gusb-device.h>
 
 G_BEGIN_DECLS
 
 GUsbDevice	*_g_usb_device_new		(GUsbContext	*context,
 						 libusb_device	*device,
-						 GUdevDevice	*udev);
+						 const gchar	*platform_id);
 
 libusb_device	*_g_usb_device_get_device	(GUsbDevice	*device);
 
