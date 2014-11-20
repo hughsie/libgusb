@@ -363,6 +363,7 @@ gboolean g_usb_device_claim_interface (GUsbDevice		    *device,
 						  interface);
 		if (rc != LIBUSB_SUCCESS &&
 		    rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
+		    rc != LIBUSB_ERROR_NOT_SUPPORTED && /* win32 */
 		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
 			return g_usb_device_libusb_error_to_gerror (device, rc,
 								    error);
@@ -406,6 +407,7 @@ gboolean g_usb_device_release_interface (GUsbDevice		      *device,
 						  interface);
 		if (rc != LIBUSB_SUCCESS &&
 		    rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
+		    rc != LIBUSB_ERROR_NOT_SUPPORTED && /* win32 */
 		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
 			return g_usb_device_libusb_error_to_gerror (device, rc,
 								    error);
