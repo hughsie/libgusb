@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -311,10 +311,6 @@ main (int argc, char *argv[])
 
 	/* create helper object */
 	priv = g_slice_new0 (GUsbCmdPrivate);
-
-	if (! g_thread_supported ())
-		g_thread_init (NULL);
-	g_type_init ();
 
 	priv->context = g_option_context_new ("GUSB Console Program");
 	g_option_context_add_main_entries (priv->context, options, NULL);
