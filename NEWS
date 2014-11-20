@@ -1,3 +1,19 @@
+Version 0.2.0
+~~~~~~~~~~~~~
+Released: 2014-11-20
+
+Notes:
+ - This release raises the GLib requirement to 2.32 and libusb to 1.0.19
+ - No GUdev functionality is now required
+
+New Features:
+ - Add g_usb_device_get_device_class() (Richard Hughes)
+ - Use the native hotplug support in libusb 1.0.19 (Richard Hughes)
+
+Bugfixes:
+ - Fix a crash where libusb_get_pollfds() is unavailable (Richard Hughes)
+ - Manually coldplug devices and poll if hotplugging is not available (Richard Hughes)
+
 Version 0.1.6
 ~~~~~~~~~~~~~
 Released: 2013-03-05
