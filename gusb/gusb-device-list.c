@@ -223,6 +223,7 @@ g_usb_device_list_add_device (GUsbDeviceList *list, struct libusb_device *dev)
 {
 	GUsbDevice *device = NULL;
 	GUsbDeviceListPrivate *priv = list->priv;
+	gchar *platform_id = NULL;
 	guint8 bus;
 	guint8 address;
 
@@ -235,9 +236,12 @@ g_usb_device_list_add_device (GUsbDeviceList *list, struct libusb_device *dev)
 		g_debug ("%i:%i already exists", bus, address);
 		goto out;
 	}
-	device = _g_usb_device_new (priv->context, dev, NULL);
+
+	/* add the device */
+	platform_id = g_strdup_printf ("usb[%02x:%02x]", bus, address);
+	device = _g_usb_device_new (priv->context, dev, platform_id);
 	if (g_usb_device_get_device_class (device) == 0x09) {
-		g_debug ("%i:%i is a hub, ignoring", bus, address);
+		g_debug ("%02x:%02x is a hub, ignoring", bus, address);
 		goto out;
 	}
 	g_ptr_array_add (priv->devices, g_object_ref (device));
@@ -245,6 +249,7 @@ g_usb_device_list_add_device (GUsbDeviceList *list, struct libusb_device *dev)
 out:
 	if (device != NULL)
 		g_object_unref (device);
+	g_free (platform_id);
 }
 
 /**
