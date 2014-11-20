@@ -70,7 +70,8 @@ g_usb_device_list_finalize (GObject *object)
 	GUsbDeviceListPrivate *priv = list->priv;
 	libusb_context *ctx = _g_usb_context_get_context (priv->context);
 
-	libusb_hotplug_deregister_callback (ctx, priv->hotplug_id);
+	if (priv->hotplug_id > 0)
+		libusb_hotplug_deregister_callback (ctx, priv->hotplug_id);
 	g_ptr_array_unref (priv->devices);
 
 	G_OBJECT_CLASS (g_usb_device_list_parent_class)->finalize (object);
@@ -290,7 +291,7 @@ g_usb_device_list_get_devices (GUsbDeviceList *list)
  * g_usb_device_list_coldplug:
  * @list: a #GUsbDeviceList
  *
- * Finds all the USB devices and adds them to the list.
+ * Enumerates all the USB devices and adds them to the list.
  *
  * You only need to call this function once, and any subsequent calls
  * are silently ignored.
@@ -307,6 +308,13 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	if (priv->done_coldplug)
 		return;
 
+	/* only Linux has hotplug capability */
+	if (!libusb_has_capability (LIBUSB_CAP_HAS_HOTPLUG)) {
+		g_warning ("Platform does not have hotplug capability");
+		priv->done_coldplug = TRUE;
+		return;
+	}
+
 	/* enumerate and watch for add/remove */
 	rc = libusb_hotplug_register_callback (ctx,
 					       LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
@@ -318,8 +326,10 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 					       g_usb_device_list_hotplug_cb,
 					       list,
 					       &list->priv->hotplug_id);
-	if (rc != LIBUSB_SUCCESS)
-		g_error ("Error creating a hotplug callback");
+	if (rc != LIBUSB_SUCCESS) {
+		g_warning ("Error creating a hotplug callback: %s",
+			   g_usb_strerror (rc));
+	}
 	priv->done_coldplug = TRUE;
 }
 
