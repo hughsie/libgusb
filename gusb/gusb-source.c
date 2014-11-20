@@ -247,7 +247,7 @@ _g_usb_source_new (GMainContext *main_ctx,
 
 	/* watch the fd's already created */
 	pollfds = libusb_get_pollfds (gusb_source->ctx);
-	for (i=0; pollfds[i] != NULL; i++)
+	for (i = 0; pollfds != NULL && pollfds[i] != NULL; i++)
 		g_usb_source_pollfd_add (gusb_source,
 					 pollfds[i]->fd,
 					 pollfds[i]->events);
