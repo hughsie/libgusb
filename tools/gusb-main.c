@@ -374,6 +374,8 @@ main (int argc, char *argv[])
 	}
 out:
 	if (priv != NULL) {
+		if (priv->cmd_array != NULL)
+			g_ptr_array_unref (priv->cmd_array);
 		if (priv->usb_ctx != NULL)
 			g_object_unref (priv->usb_ctx);
 		g_option_context_free (priv->context);
