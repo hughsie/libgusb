@@ -56,6 +56,7 @@ struct _GUsbDeviceListPrivate {
 	GUsbContext			 *context;
 	GPtrArray			 *devices;
 	libusb_hotplug_callback_handle	 hotplug_id;
+	guint				 hotplug_poll_id;
 	gboolean			 done_coldplug;
 };
 
@@ -72,6 +73,8 @@ g_usb_device_list_finalize (GObject *object)
 
 	if (priv->hotplug_id > 0)
 		libusb_hotplug_deregister_callback (ctx, priv->hotplug_id);
+	if (priv->hotplug_poll_id > 0)
+		g_source_remove (priv->hotplug_poll_id);
 	g_ptr_array_unref (priv->devices);
 
 	G_OBJECT_CLASS (g_usb_device_list_parent_class)->finalize (object);
@@ -213,16 +216,12 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 }
 
 /**
- * g_usb_device_list_hotplug_cb:
+ * g_usb_device_list_add_device:
  **/
-static int
-g_usb_device_list_hotplug_cb (struct libusb_context *ctx,
-			      struct libusb_device *dev,
-			      libusb_hotplug_event event,
-			      void *user_data)
+static void
+g_usb_device_list_add_device (GUsbDeviceList *list, struct libusb_device *dev)
 {
 	GUsbDevice *device = NULL;
-	GUsbDeviceList *list = G_USB_DEVICE_LIST (user_data);
 	GUsbDeviceListPrivate *priv = list->priv;
 	guint8 bus;
 	guint8 address;
@@ -232,34 +231,67 @@ g_usb_device_list_hotplug_cb (struct libusb_context *ctx,
 	address = libusb_get_device_address (dev);
 	if (priv->done_coldplug)
 		device = g_usb_device_list_find_by_bus_address (list, bus, address, NULL);
+	if (device != NULL) {
+		g_debug ("%i:%i already exists", bus, address);
+		goto out;
+	}
+	device = _g_usb_device_new (priv->context, dev, NULL);
+	if (g_usb_device_get_device_class (device) == 0x09) {
+		g_debug ("%i:%i is a hub, ignoring", bus, address);
+		goto out;
+	}
+	g_ptr_array_add (priv->devices, g_object_ref (device));
+	g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device);
+out:
+	if (device != NULL)
+		g_object_unref (device);
+}
+
+/**
+ * g_usb_device_list_remove_device:
+ **/
+static void
+g_usb_device_list_remove_device (GUsbDeviceList *list, struct libusb_device *dev)
+{
+	GUsbDevice *device = NULL;
+	GUsbDeviceListPrivate *priv = list->priv;
+	guint8 bus;
+	guint8 address;
+
+	/* does any existing device exist */
+	bus = libusb_get_bus_number (dev);
+	address = libusb_get_device_address (dev);
+	device = g_usb_device_list_find_by_bus_address (list, bus, address, NULL);
+	if (device == NULL) {
+		g_debug ("%i:%i does not exist", bus, address);
+		return;
+	}
+	g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device);
+	g_ptr_array_remove (priv->devices, device);
+	g_object_unref (device);
+}
+
+/**
+ * g_usb_device_list_hotplug_cb:
+ **/
+static int
+g_usb_device_list_hotplug_cb (struct libusb_context *ctx,
+			      struct libusb_device *dev,
+			      libusb_hotplug_event event,
+			      void *user_data)
+{
+	GUsbDeviceList *list = G_USB_DEVICE_LIST (user_data);
+
 	switch (event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		if (device != NULL) {
-			g_debug ("%i:%i already exists", bus, address);
-			goto out;
-		}
-		device = _g_usb_device_new (priv->context, dev, NULL);
-		if (g_usb_device_get_device_class (device) == 0x09) {
-			g_debug ("%i:%i is a hub, ignoring", bus, address);
-			goto out;
-		}
-		g_ptr_array_add (priv->devices, g_object_ref (device));
-		g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device);
+		g_usb_device_list_add_device (list, dev);
 		break;
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		if (device == NULL) {
-			g_debug ("%i:%i does not exist", bus, address);
-			goto out;
-		}
-		g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device);
-		g_ptr_array_remove (priv->devices, device);
+		g_usb_device_list_remove_device (list, dev);
 		break;
 	default:
 		break;
 	}
-out:
-	if (device != NULL)
-		g_object_unref (device);
 	return 0;
 }
 
@@ -288,6 +320,64 @@ g_usb_device_list_get_devices (GUsbDeviceList *list)
 }
 
 /**
+ * g_usb_device_list_rescan:
+ **/
+static void
+g_usb_device_list_rescan (GUsbDeviceList *list)
+{
+	GList *existing_devices = NULL;
+	GList *l;
+	GUsbDevice *device;
+	GUsbDeviceListPrivate *priv = list->priv;
+	gboolean found;
+	guint i;
+	libusb_context *ctx = _g_usb_context_get_context (priv->context);
+	libusb_device **dev_list = NULL;
+
+	/* add any devices not yet added (duplicates will be filtered */
+	libusb_get_device_list (ctx, &dev_list);
+	for (i = 0; dev_list && dev_list[i]; i++)
+		g_usb_device_list_add_device (list, dev_list[i]);
+
+	/* copy to a list so we can remove from the array */
+	for (i = 0; i < priv->devices->len; i++) {
+		device = g_ptr_array_index (priv->devices, i);
+		existing_devices = g_list_prepend (existing_devices, device);
+	}
+
+	/* look for any removed devices */
+	for (l = existing_devices; l != NULL; l = l->next) {
+		device = G_USB_DEVICE (l->data);
+		found = FALSE;
+		for (i = 0; dev_list && dev_list[i]; i++) {
+			if (libusb_get_bus_number (dev_list[i]) == g_usb_device_get_bus (device) &&
+			    libusb_get_device_address (dev_list[i]) == g_usb_device_get_address (device)) {
+				found = TRUE;
+				break;
+			}
+		}
+		if (!found) {
+			g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device);
+			g_ptr_array_remove (priv->devices, device);
+		}
+	}
+
+	g_list_free (existing_devices);
+	libusb_free_device_list (dev_list, 1);
+}
+
+/**
+ * g_usb_device_list_rescan_cb:
+ **/
+static gboolean
+g_usb_device_list_rescan_cb (gpointer user_data)
+{
+	GUsbDeviceList *list = G_USB_DEVICE_LIST (user_data);
+	g_usb_device_list_rescan (list);
+	return TRUE;
+}
+
+/**
  * g_usb_device_list_coldplug:
  * @list: a #GUsbDeviceList
  *
@@ -308,9 +398,13 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	if (priv->done_coldplug)
 		return;
 
-	/* only Linux has hotplug capability */
+	/* fall back to polling for platforms without hotplug capability */
 	if (!libusb_has_capability (LIBUSB_CAP_HAS_HOTPLUG)) {
-		g_warning ("Platform does not have hotplug capability");
+		g_usb_device_list_rescan (list);
+		priv->hotplug_poll_id = g_timeout_add (500,
+						       g_usb_device_list_rescan_cb,
+						       list);
+		g_warning ("Platform does not have hotplug cap, using polling");
 		priv->done_coldplug = TRUE;
 		return;
 	}
