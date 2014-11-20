@@ -406,10 +406,10 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 	/* fall back to polling for platforms without hotplug capability */
 	if (!libusb_has_capability (LIBUSB_CAP_HAS_HOTPLUG)) {
 		g_usb_device_list_rescan (list);
+		g_debug ("platform does not do hotplug, using polling");
 		priv->hotplug_poll_id = g_timeout_add_seconds (1,
 							       g_usb_device_list_rescan_cb,
 							       list);
-		g_warning ("Platform does not have hotplug cap, using polling");
 		priv->done_coldplug = TRUE;
 		return;
 	}
