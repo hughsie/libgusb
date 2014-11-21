@@ -236,9 +236,6 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 			 g_usb_device_get_address (device));
 	}
 
-	/* setup with the default mainloop */
-	g_usb_context_get_source (priv->usb_ctx, NULL);
-
 	loop = g_main_loop_new (NULL, FALSE);
 	g_signal_connect (list, "device-added",
 			  G_CALLBACK (gusb_device_list_added_cb),

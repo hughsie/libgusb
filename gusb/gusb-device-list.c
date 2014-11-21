@@ -430,6 +430,9 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
 			   g_usb_strerror (rc));
 	}
 	priv->done_coldplug = TRUE;
+
+	/* setup with the default mainloop if not already done */
+	g_usb_context_get_source (priv->context, NULL);
 }
 
 /**
