@@ -1,7 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
- * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -26,7 +26,6 @@
 
 #include <gusb/gusb-context.h>
 #include <gusb/gusb-device.h>
-#include <gusb/gusb-util.h>
 
 G_BEGIN_DECLS
 
@@ -57,22 +56,27 @@ struct _GUsbDeviceListClass
 	 * If adding fields to this struct, remove corresponding
 	 * amount of padding to avoid changing overall struct size
 	 */
-	gchar _gusb_reserved[G_USB_RESERVED_PADDING];
+	gchar _gusb_reserved[64];
 };
 
 GType			 g_usb_device_list_get_type (void);
 
+G_DEPRECATED_FOR(g_usb_context_error_quark)
 GUsbDeviceList		*g_usb_device_list_new			(GUsbContext	*context);
 
+G_DEPRECATED
 void			 g_usb_device_list_coldplug		(GUsbDeviceList	*list);
 
+G_DEPRECATED_FOR(g_usb_context_get_devices)
 GPtrArray		*g_usb_device_list_get_devices		(GUsbDeviceList	*list);
 
+G_DEPRECATED_FOR(g_usb_context_find_by_bus_address)
 GUsbDevice		*g_usb_device_list_find_by_bus_address	(GUsbDeviceList	*list,
 								 guint8		 bus,
 								 guint8		 address,
 								 GError		**error);
 
+G_DEPRECATED_FOR(g_usb_context_find_by_vid_pid)
 GUsbDevice		*g_usb_device_list_find_by_vid_pid	(GUsbDeviceList	*list,
 								 guint16	 vid,
 								 guint16	 pid,

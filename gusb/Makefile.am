@@ -27,7 +27,6 @@ libgusbbase_include_HEADERS =					\
 	gusb-device-private.h					\
 	gusb-device-list.h					\
 	gusb-source.h						\
-	gusb-source-private.h					\
 	gusb-util.h
 
 libgusb_la_SOURCES =						\

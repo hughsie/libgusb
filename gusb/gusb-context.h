@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -23,8 +23,9 @@
 #define __GUSB_CONTEXT_H__
 
 #include <glib-object.h>
+
+#include <gusb/gusb-device.h>
 #include <gusb/gusb-source.h>
-#include <gusb/gusb-util.h>
 
 G_BEGIN_DECLS
 
@@ -46,28 +47,46 @@ struct _GUsbContext
 struct _GUsbContextClass
 {
 	GObjectClass			 parent_class;
+	void (*device_added)		(GUsbContext		*context,
+					 GUsbDevice		*device);
+	void (*device_removed)		(GUsbContext		*context,
+					 GUsbDevice		*device);
 	/*< private >*/
 	/*
 	 * If adding fields to this struct, remove corresponding
 	 * amount of padding to avoid changing overall struct size
 	 */
-	gchar _gusb_reserved[G_USB_RESERVED_PADDING];
+	gchar _gusb_reserved[62];
 };
 
 typedef enum {
 	G_USB_CONTEXT_ERROR_INTERNAL
 } GUsbContextError;
 
-GType		 g_usb_context_get_type		(void);
-GQuark		 g_usb_context_error_quark	(void);
+GType		 g_usb_context_get_type			(void);
+GQuark		 g_usb_context_error_quark		(void);
 
-GUsbContext	*g_usb_context_new		(GError		**error);
+GUsbContext	*g_usb_context_new			(GError		**error);
 
-GUsbSource	*g_usb_context_get_source	(GUsbContext	*context,
-						 GMainContext	*main_ctx);
+G_DEPRECATED
+GUsbSource	*g_usb_context_get_source		(GUsbContext	*context,
+							 GMainContext	*main_ctx);
 
-void		 g_usb_context_set_debug	(GUsbContext	*context,
-						 GLogLevelFlags	 flags);
+void		 g_usb_context_enumerate		(GUsbContext	*context);
+
+void		 g_usb_context_set_debug		(GUsbContext	*context,
+							 GLogLevelFlags	 flags);
+GPtrArray	*g_usb_context_get_devices		(GUsbContext	*context);
+
+GUsbDevice	*g_usb_context_find_by_bus_address	(GUsbContext	*context,
+							 guint8		 bus,
+							 guint8		 address,
+							 GError		**error);
+
+GUsbDevice	*g_usb_context_find_by_vid_pid		(GUsbContext	*context,
+							 guint16	 vid,
+							 guint16	 pid,
+							 GError		**error);
 
 G_END_DECLS
 

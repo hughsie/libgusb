@@ -114,7 +114,7 @@ struct _GUsbDeviceClass
 	 * If adding fields to this struct, remove corresponding
 	 * amount of padding to avoid changing overall struct size
 	 */
-	gchar _gusb_reserved[G_USB_RESERVED_PADDING];
+	gchar _gusb_reserved[64];
 };
 
 GType			 g_usb_device_get_type		(void);

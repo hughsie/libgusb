@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2010-2014 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -40,7 +40,10 @@ typedef enum {
 	G_USB_SOURCE_ERROR_INTERNAL
 } GUsbSourceError;
 
+G_DEPRECATED_FOR(g_usb_context_error_quark)
 GQuark		 g_usb_source_error_quark	(void);
+
+G_DEPRECATED
 void		 g_usb_source_set_callback	(GUsbSource	*source,
 						 GSourceFunc	 func,
 						 gpointer	 data,

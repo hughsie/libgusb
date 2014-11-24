@@ -162,7 +162,7 @@ gusb_cmd_get_descriptions (GPtrArray *array)
  * gusb_device_list_added_cb:
  **/
 static void
-gusb_device_list_added_cb (GUsbDeviceList *list,
+gusb_device_list_added_cb (GUsbContext *context,
 			   GUsbDevice *device,
 			   gpointer user_data)
 {
@@ -176,7 +176,7 @@ gusb_device_list_added_cb (GUsbDeviceList *list,
  * gusb_device_list_removed_cb:
  **/
 static void
-gusb_device_list_removed_cb (GUsbDeviceList *list,
+gusb_device_list_removed_cb (GUsbContext *context,
 			     GUsbDevice *device,
 			     gpointer user_data)
 {
@@ -196,11 +196,8 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	GPtrArray *devices;
 	guint i;
 	GUsbDevice *device;
-	GUsbDeviceList *list;
 
-	list = g_usb_device_list_new (priv->usb_ctx);
-	g_usb_device_list_coldplug (list);
-	devices = g_usb_device_list_get_devices (list);
+	devices = g_usb_context_get_devices (priv->usb_ctx);
 	for (i = 0; i < devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
 		g_print ("device present %x:%x\n",
@@ -208,8 +205,6 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 			 g_usb_device_get_address (device));
 	}
 	g_ptr_array_unref (devices);
-	if (list != NULL)
-		g_object_unref (list);
 	return ret;
 }
 
@@ -223,12 +218,9 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	GPtrArray *devices;
 	guint i;
 	GUsbDevice *device;
-	GUsbDeviceList *list;
 	GMainLoop *loop;
 
-	list = g_usb_device_list_new (priv->usb_ctx);
-	g_usb_device_list_coldplug (list);
-	devices = g_usb_device_list_get_devices (list);
+	devices = g_usb_context_get_devices (priv->usb_ctx);
 	for (i = 0; i < devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
 		g_print ("device already present %x:%x\n",
@@ -237,18 +229,16 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	}
 
 	loop = g_main_loop_new (NULL, FALSE);
-	g_signal_connect (list, "device-added",
+	g_signal_connect (priv->usb_ctx, "device-added",
 			  G_CALLBACK (gusb_device_list_added_cb),
 			  priv);
-	g_signal_connect (list, "device-removed",
+	g_signal_connect (priv->usb_ctx, "device-removed",
 			  G_CALLBACK (gusb_device_list_removed_cb),
 			  priv);
 	g_main_loop_run (loop);
 
 	g_main_loop_unref (loop);
 	g_ptr_array_unref (devices);
-	if (list != NULL)
-		g_object_unref (list);
 	return ret;
 }
 

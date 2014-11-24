@@ -457,6 +457,7 @@ typedef gssize (GUsbDeviceTransferFinishFunc) (GUsbDevice *device, GAsyncResult 
 
 typedef struct {
 	GError				**error;
+	GMainContext			*context;
 	GMainLoop			*loop;
 	GUsbDeviceTransferFinishFunc	*finish_func;
 	gssize				 ret;
@@ -514,7 +515,8 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
-	helper.loop = g_main_loop_new (NULL, FALSE);
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 	helper.finish_func = g_usb_device_control_transfer_finish;
 
@@ -533,6 +535,7 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
 					     &helper);
 	g_main_loop_run (helper.loop);
 	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	if (actual_length != NULL)
 		*actual_length = (gsize) helper.ret;
@@ -575,7 +578,8 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
-	helper.loop = g_main_loop_new (NULL, FALSE);
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 	helper.finish_func = g_usb_device_bulk_transfer_finish;
 
@@ -589,6 +593,7 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
 					  &helper);
 	g_main_loop_run (helper.loop);
 	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	if (actual_length != NULL)
 		*actual_length = (gsize) helper.ret;
@@ -631,7 +636,8 @@ g_usb_device_interrupt_transfer	(GUsbDevice	*device,
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
-	helper.loop = g_main_loop_new (NULL, FALSE);
+	helper.context = g_main_context_new ();
+	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 	helper.finish_func = g_usb_device_interrupt_transfer_finish;
 
@@ -645,6 +651,7 @@ g_usb_device_interrupt_transfer	(GUsbDevice	*device,
 					       &helper);
 	g_main_loop_run (helper.loop);
 	g_main_loop_unref (helper.loop);
+	g_main_context_unref (helper.context);
 
 	if (actual_length != NULL)
 		*actual_length = helper.ret;
@@ -739,8 +746,7 @@ g_usb_device_async_transfer_cb (struct libusb_transfer *transfer)
 	GcmDeviceReq *req = transfer->user_data;
 
 	/* did request fail? */
-	ret = g_usb_device_libusb_status_to_gerror (transfer->status,
-						    &error);
+	ret = g_usb_device_libusb_status_to_gerror (transfer->status, &error);
 	if (!ret) {
 		g_simple_async_result_set_from_error (req->res, error);
 		g_error_free (error);
@@ -916,9 +922,6 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
 		g_usb_device_req_free (req);
 		return;
 	}
-
-	/* setup with the default mainloop */
-	g_usb_context_get_source (device->priv->context, NULL);
 }
 
 /**********************************************************************/
@@ -1033,9 +1036,6 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
 		g_usb_device_req_free (req);
 		return;
 	}
-
-	/* setup with the default mainloop */
-	g_usb_context_get_source (device->priv->context, NULL);
 }
 
 /**********************************************************************/
@@ -1150,9 +1150,6 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
 		g_usb_device_req_free (req);
 		return;
 	}
-
-	/* setup with the default mainloop */
-	g_usb_context_get_source (device->priv->context, NULL);
 }
 
 /**********************************************************************/
