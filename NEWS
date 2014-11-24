@@ -1,3 +1,11 @@
+Version 0.2.1
+~~~~~~~~~~~~~
+Released: 2014-11-24
+
+Bugfixes:
+ - Always set a device platform ID (Richard Hughes)
+ - Ignore 'unsupported' as a return value for kernel drivers (Richard Hughes)
+
 Version 0.2.0
 ~~~~~~~~~~~~~
 Released: 2014-11-20
