@@ -61,7 +61,7 @@ struct _GUsbDeviceListClass
 
 GType			 g_usb_device_list_get_type (void);
 
-G_DEPRECATED_FOR(g_usb_context_error_quark)
+G_DEPRECATED_FOR(g_usb_context_new)
 GUsbDeviceList		*g_usb_device_list_new			(GUsbContext	*context);
 
 G_DEPRECATED
