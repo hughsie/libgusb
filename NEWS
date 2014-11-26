@@ -1,3 +1,14 @@
+Version 0.2.2
+~~~~~~~~~~~~~
+Released: 2014-11-26
+
+New Features:
+ - Official Windows support!
+
+Bugfixes:
+ - No longer require G_USB_API_IS_SUBJECT_TO_CHANGE (Richard Hughes)
+ - Use a thread to process libusb1 events (Richard Hughes)
+
 Version 0.2.1
 ~~~~~~~~~~~~~
 Released: 2014-11-24

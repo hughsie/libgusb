@@ -5,7 +5,7 @@ GUsb Release Notes
 git shortlog gusb_0_2_1.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.2.1
+Version 0.2.2
 ~~~~~~~~~~~~~
 Released: 2014-xx-xx
 
