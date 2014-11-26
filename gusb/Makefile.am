@@ -81,7 +81,7 @@ GUsb_1_0_gir_PACKAGES = glib-2.0 gobject-2.0 libusb-1.0
 GUsb_1_0_gir_EXPORT_PACKAGES = gusb
 GUsb_1_0_gir_INCLUDES = GLib-2.0 GObject-2.0 Gio-2.0
 GUsb_1_0_gir_LIBS = libgusb.la
-GUsb_1_0_gir_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -DG_USB_API_IS_SUBJECT_TO_CHANGE -DGUSB_COMPILATION
+GUsb_1_0_gir_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -DGUSB_COMPILATION
 GUsb_1_0_gir_FILES = $(libgusb_la_SOURCES) $(libgusbbase_include_HEADERS)
 GUsb_1_0_gir_SCANNERFLAGS = --c-include "gusb.h"
 
