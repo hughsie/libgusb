@@ -487,11 +487,11 @@ g_usb_context_finalize (GObject *object)
 	GUsbContext *context = G_USB_CONTEXT (object);
 	GUsbContextPrivate *priv = context->priv;
 
+	/* this is safe to call even when priv->hotplug_id is unset */
 	priv->thread_event_run = FALSE;
+	libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
 	g_thread_join (priv->thread_event);
 
-	if (priv->hotplug_id > 0)
-		libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
 	if (priv->hotplug_poll_id > 0)
 		g_source_remove (priv->hotplug_poll_id);
 	g_ptr_array_unref (priv->devices);
