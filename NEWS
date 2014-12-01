@@ -1,3 +1,10 @@
+Version 0.2.3
+~~~~~~~~~~~~~
+Released: 2014-12-01
+
+Bugfixes:
+ - Correctly terminate the libusb event thread (Richard Hughes)
+
 Version 0.2.2
 ~~~~~~~~~~~~~
 Released: 2014-11-26
