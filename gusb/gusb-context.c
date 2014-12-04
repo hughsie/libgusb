@@ -259,6 +259,24 @@ g_usb_context_emit_device_remove (GUsbContext *context, GUsbDevice *device)
 }
 
 /**
+ * g_usb_context_build_platform_id:
+ **/
+static void
+g_usb_context_build_platform_id (GString *str, libusb_device *dev)
+{
+	libusb_device *parent;
+	parent = libusb_get_parent (dev);
+	if (parent != NULL)
+		g_usb_context_build_platform_id (str, parent);
+	if (str->len == 0) {
+		g_string_append_printf (str, "%02x:",
+					libusb_get_bus_number (dev));
+	}
+	g_string_append_printf (str, "%02x:",
+				libusb_get_port_number (dev));
+}
+
+/**
  * g_usb_context_add_device:
  **/
 static void
@@ -266,13 +284,14 @@ g_usb_context_add_device (GUsbContext *context, struct libusb_device *dev)
 {
 	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
-	gchar *platform_id = NULL;
+	GString *platform_id = NULL;
 	guint8 bus;
 	guint8 address;
 
 	/* does any existing device exist */
 	bus = libusb_get_bus_number (dev);
 	address = libusb_get_device_address (dev);
+
 	if (priv->done_enumerate)
 		device = g_usb_context_find_by_bus_address (context, bus, address, NULL);
 	if (device != NULL) {
@@ -280,9 +299,13 @@ g_usb_context_add_device (GUsbContext *context, struct libusb_device *dev)
 		goto out;
 	}
 
+	/* build a topology of the device */
+	platform_id = g_string_new ("usb:");
+	g_usb_context_build_platform_id (platform_id, dev);
+	g_string_truncate (platform_id, platform_id->len - 1);
+
 	/* add the device */
-	platform_id = g_strdup_printf ("usb[%02x:%02x]", bus, address);
-	device = _g_usb_device_new (context, dev, platform_id);
+	device = _g_usb_device_new (context, dev, platform_id->str);
 	if (g_usb_device_get_device_class (device) == 0x09) {
 		g_debug ("%02x:%02x is a hub, ignoring", bus, address);
 		goto out;
@@ -292,7 +315,7 @@ g_usb_context_add_device (GUsbContext *context, struct libusb_device *dev)
 out:
 	if (device != NULL)
 		g_object_unref (device);
-	g_free (platform_id);
+	g_string_free (platform_id, TRUE);
 }
 
 /**

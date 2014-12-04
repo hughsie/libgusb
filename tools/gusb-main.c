@@ -223,7 +223,8 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	devices = g_usb_context_get_devices (priv->usb_ctx);
 	for (i = 0; i < devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
-		g_print ("device already present %x:%x\n",
+		g_print ("device %s already present %x:%x\n",
+			 g_usb_device_get_platform_id (device),
 			 g_usb_device_get_bus (device),
 			 g_usb_device_get_address (device));
 	}

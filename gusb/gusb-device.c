@@ -1329,7 +1329,10 @@ _g_usb_device_get_device (GUsbDevice	*device)
  * Gets the platform identifier for the device.
  * On Linux, this is the full sysfs path of the device
  *
- * Return value: The platform ID, e.g. "usb[03:03]"
+ * When the device is removed and then replugged, this value is not expected to
+ * be different.
+ *
+ * Return value: The platform ID, e.g. "usb:02:00:03:01"
  *
  * Since: 0.1.1
  **/
