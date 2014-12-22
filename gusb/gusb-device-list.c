@@ -58,12 +58,6 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (GUsbDeviceList, g_usb_device_list, G_TYPE_OBJECT);
 
-static void
-g_usb_device_list_finalize (GObject *object)
-{
-	G_OBJECT_CLASS (g_usb_device_list_parent_class)->finalize (object);
-}
-
 /**
  * g_usb_device_list_get_property:
  **/
@@ -139,7 +133,6 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 	GParamSpec *pspec;
 	GObjectClass *object_class = (GObjectClass *) klass;
 
-	object_class->finalize		= g_usb_device_list_finalize;
 	object_class->get_property	= g_usb_device_list_get_property;
 	object_class->set_property	= g_usb_device_list_set_property;
 
@@ -286,7 +279,5 @@ g_usb_device_list_find_by_vid_pid (GUsbDeviceList	*list,
 GUsbDeviceList *
 g_usb_device_list_new (GUsbContext *context)
 {
-	GObject *obj;
-	obj = g_object_new (G_USB_TYPE_DEVICE_LIST, "context", context, NULL);
-	return G_USB_DEVICE_LIST (obj);
+	return g_object_new (G_USB_TYPE_DEVICE_LIST, "context", context, NULL);
 }
