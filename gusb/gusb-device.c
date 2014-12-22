@@ -40,8 +40,6 @@
 
 static void     g_usb_device_finalize	(GObject     *object);
 
-#define G_USB_DEVICE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), G_USB_TYPE_DEVICE, GUsbDevicePrivate))
-
 /**
  * GUsbDevicePrivate:
  *
@@ -63,7 +61,7 @@ enum {
 	PROP_PLATFORM_ID
 };
 
-G_DEFINE_TYPE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
 
 
 /**
@@ -1258,8 +1256,6 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 				     G_PARAM_WRITABLE);
 	g_object_class_install_property (object_class, PROP_PLATFORM_ID,
 					 pspec);
-
-	g_type_class_add_private (klass, sizeof (GUsbDevicePrivate));
 }
 
 /**
@@ -1268,7 +1264,7 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 static void
 g_usb_device_init (GUsbDevice *device)
 {
-	device->priv = G_USB_DEVICE_GET_PRIVATE (device);
+	device->priv = g_usb_device_get_instance_private (device);
 }
 
 /**

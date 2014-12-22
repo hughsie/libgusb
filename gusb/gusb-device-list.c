@@ -38,8 +38,6 @@
 #include "gusb-device-list.h"
 #include "gusb-device-private.h"
 
-#define G_USB_DEVICE_LIST_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), G_USB_TYPE_DEVICE_LIST, GUsbDeviceListPrivate))
-
 enum {
 	PROP_0,
 	PROP_CONTEXT
@@ -58,7 +56,7 @@ struct _GUsbDeviceListPrivate {
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE (GUsbDeviceList, g_usb_device_list, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE (GUsbDeviceList, g_usb_device_list, G_TYPE_OBJECT);
 
 static void
 g_usb_device_list_finalize (GObject *object)
@@ -189,8 +187,6 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			G_TYPE_NONE,
 			1,
 			G_USB_TYPE_DEVICE);
-
-	g_type_class_add_private (klass, sizeof (GUsbDeviceListPrivate));
 }
 
 /**
@@ -199,7 +195,7 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 static void
 g_usb_device_list_init (GUsbDeviceList *list)
 {
-	list->priv = G_USB_DEVICE_LIST_GET_PRIVATE (list);
+	list->priv = g_usb_device_list_get_instance_private (list);
 }
 
 /**

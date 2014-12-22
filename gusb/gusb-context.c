@@ -37,8 +37,6 @@
 
 static void g_usb_context_finalize (GObject *object);
 
-#define G_USB_CONTEXT_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), G_USB_TYPE_CONTEXT, GUsbContextPrivate))
-
 enum {
 	PROP_0,
 	PROP_LIBUSB_CONTEXT,
@@ -70,7 +68,7 @@ struct _GUsbContextPrivate
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE (GUsbContext, g_usb_context, G_TYPE_OBJECT)
+G_DEFINE_TYPE_WITH_PRIVATE (GUsbContext, g_usb_context, G_TYPE_OBJECT)
 
 /**
  * usb_context_get_property:
@@ -189,8 +187,6 @@ g_usb_context_class_init (GUsbContextClass *klass)
 			G_TYPE_NONE,
 			1,
 			G_USB_TYPE_DEVICE);
-
-	g_type_class_add_private (klass, sizeof (GUsbContextPrivate));
 }
 
 typedef struct {
@@ -475,7 +471,7 @@ g_usb_context_init (GUsbContext *context)
 	GUsbContextPrivate *priv;
 	gint rc;
 
-	priv = context->priv = G_USB_CONTEXT_GET_PRIVATE (context);
+	priv = context->priv = g_usb_context_get_instance_private (context);
 	priv->devices = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->thread_event_run = TRUE;
 	priv->thread_event = g_thread_new ("GUsbEventThread",
