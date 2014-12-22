@@ -68,7 +68,12 @@ struct _GUsbContextPrivate
 
 static guint signals[LAST_SIGNAL] = { 0 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (GUsbContext, g_usb_context, G_TYPE_OBJECT)
+static void g_usb_context_initable_iface_init (GInitableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
+                         G_ADD_PRIVATE (GUsbContext)
+                         G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE,
+                                               g_usb_context_initable_iface_init))
 
 /**
  * usb_context_get_property:
@@ -108,9 +113,6 @@ g_usb_context_set_property (GObject		*object,
 	GUsbContextPrivate *priv = context->priv;
 
 	switch (prop_id) {
-	case PROP_LIBUSB_CONTEXT:
-		priv->ctx = g_value_get_pointer (value);
-		break;
 	case PROP_DEBUG_LEVEL:
 		priv->debug_level = g_value_get_int (value);
 		libusb_set_debug (priv->ctx, priv->debug_level);
@@ -138,8 +140,7 @@ g_usb_context_class_init (GUsbContextClass *klass)
 	 * GUsbContext:libusb_context:
 	 */
 	pspec = g_param_spec_pointer ("libusb_context", NULL, NULL,
-				      G_PARAM_CONSTRUCT_ONLY|
-				      G_PARAM_READWRITE);
+				      G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_LIBUSB_CONTEXT,
 					 pspec);
 
@@ -469,32 +470,64 @@ static void
 g_usb_context_init (GUsbContext *context)
 {
 	GUsbContextPrivate *priv;
-	gint rc;
 
 	priv = context->priv = g_usb_context_get_instance_private (context);
 	priv->devices = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+}
+
+static gboolean
+g_usb_context_initable_init (GInitable     *initable,
+                             GCancellable  *cancellable,
+                             GError       **error)
+{
+	GUsbContext *context = G_USB_CONTEXT (initable);
+	GUsbContextPrivate *priv;
+	gint rc;
+	libusb_context *ctx;
+
+	priv = context->priv;
+
+	rc = libusb_init (&ctx);
+	if (rc < 0) {
+		g_set_error (error,
+		             G_USB_CONTEXT_ERROR,
+		             G_USB_CONTEXT_ERROR_INTERNAL,
+		             "failed to init libusb: %s [%i]",
+		             g_usb_strerror (rc), rc);
+		return FALSE;
+	}
+
+	priv->ctx = ctx;
 	priv->thread_event_run = TRUE;
 	priv->thread_event = g_thread_new ("GUsbEventThread",
-					   g_usb_context_event_thread_cb,
-					   context);
+	                                   g_usb_context_event_thread_cb,
+	                                   context);
 
 	/* watch for add/remove */
 	if (libusb_has_capability (LIBUSB_CAP_HAS_HOTPLUG)) {
 		rc = libusb_hotplug_register_callback (priv->ctx,
-						       LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
-						       LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT,
-						       0,
-						       LIBUSB_HOTPLUG_MATCH_ANY,
-						       LIBUSB_HOTPLUG_MATCH_ANY,
-						       LIBUSB_HOTPLUG_MATCH_ANY,
-						       g_usb_context_hotplug_cb,
-						       context,
-						       &context->priv->hotplug_id);
+		                                       LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED |
+		                                       LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT,
+		                                       0,
+		                                       LIBUSB_HOTPLUG_MATCH_ANY,
+		                                       LIBUSB_HOTPLUG_MATCH_ANY,
+		                                       LIBUSB_HOTPLUG_MATCH_ANY,
+		                                       g_usb_context_hotplug_cb,
+		                                       context,
+		                                       &context->priv->hotplug_id);
 		if (rc != LIBUSB_SUCCESS) {
 			g_warning ("Error creating a hotplug callback: %s",
-				   g_usb_strerror (rc));
+			           g_usb_strerror (rc));
 		}
 	}
+
+	return TRUE;
+}
+
+static void
+g_usb_context_initable_iface_init(GInitableIface *iface)
+{
+	iface->init = g_usb_context_initable_init;
 }
 
 /**
@@ -709,19 +742,5 @@ g_usb_context_get_devices (GUsbContext *context)
 GUsbContext *
 g_usb_context_new (GError **error)
 {
-	gint rc;
-	GObject *obj;
-	libusb_context *ctx;
-
-	rc = libusb_init (&ctx);
-	if (rc < 0) {
-		g_set_error (error,
-			     G_USB_CONTEXT_ERROR,
-			     G_USB_CONTEXT_ERROR_INTERNAL,
-			     "failed to init libusb: %s [%i]",
-			     g_usb_strerror (rc), rc);
-		return NULL;
-	}
-	obj = g_object_new (G_USB_TYPE_CONTEXT, "libusb_context", ctx, NULL);
-	return G_USB_CONTEXT (obj);
+	return g_initable_new (G_USB_TYPE_CONTEXT, NULL, error, NULL);
 }
