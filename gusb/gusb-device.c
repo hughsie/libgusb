@@ -1443,6 +1443,40 @@ g_usb_device_get_device_class (GUsbDevice *device)
 }
 
 /**
+ * g_usb_device_get_device_subclass:
+ * @device: a #GUsbDevice
+ *
+ * Gets the device subclass qualified by the class number.
+ * See g_usb_device_get_device_class().
+ *
+ * Return value: a device subclass number.
+ *
+ * Since: 0.2.4
+ **/
+guint8
+g_usb_device_get_device_subclass (GUsbDevice *device)
+{
+	return device->priv->desc.bDeviceSubClass;
+}
+
+/**
+ * g_usb_device_get_device_protocol:
+ * @device: a #GUsbDevice
+ *
+ * Gets the device protocol qualified by the class and subclass numbers.
+ * See g_usb_device_get_device_class() and g_usb_device_get_device_subclass().
+ *
+ * Return value: a device protocol number.
+ *
+ * Since: 0.2.4
+ **/
+guint8
+g_usb_device_get_device_protocol (GUsbDevice *device)
+{
+	return device->priv->desc.bDeviceProtocol;
+}
+
+/**
  * g_usb_device_get_product_index:
  * @device: a #GUsbDevice
  *
