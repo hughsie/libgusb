@@ -288,6 +288,7 @@ g_usb_context_add_device (GUsbContext          *context,
 	GString *platform_id = NULL;
 	guint8 bus;
 	guint8 address;
+	GError *error = NULL;
 
 	/* does any existing device exist */
 	bus = libusb_get_bus_number (dev);
@@ -306,7 +307,13 @@ g_usb_context_add_device (GUsbContext          *context,
 	g_string_truncate (platform_id, platform_id->len - 1);
 
 	/* add the device */
-	device = _g_usb_device_new (context, dev, platform_id->str);
+	device = _g_usb_device_new (context, dev, platform_id->str, &error);
+	if (device == NULL) {
+		g_debug ("There was a problem creating the device: %s",
+		         error->message);
+		goto out;
+	}
+
 	if (g_usb_device_get_device_class (device) == 0x09) {
 		g_debug ("%02x:%02x is a hub, ignoring", bus, address);
 		goto out;

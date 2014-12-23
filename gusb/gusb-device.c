@@ -59,7 +59,12 @@ enum {
 	PROP_PLATFORM_ID
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
+static void g_usb_device_initable_iface_init (GInitableIface *iface);
+
+G_DEFINE_TYPE_WITH_CODE (GUsbDevice, g_usb_device, G_TYPE_OBJECT,
+                         G_ADD_PRIVATE (GUsbDevice)
+                         G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE,
+                                                g_usb_device_initable_iface_init))
 
 static void
 g_usb_device_finalize (GObject *object)
@@ -196,6 +201,77 @@ static void
 g_usb_device_init (GUsbDevice *device)
 {
 	device->priv = g_usb_device_get_instance_private (device);
+}
+
+static gboolean
+g_usb_device_initable_init (GInitable     *initable,
+                            GCancellable  *cancellable,
+                            GError       **error)
+{
+	GUsbDevice *device = G_USB_DEVICE (initable);
+	GUsbDevicePrivate *priv;
+	gint rc;
+
+	priv = device->priv;
+
+	if (!priv->device) {
+		g_set_error (error, G_USB_DEVICE_ERROR, G_USB_DEVICE_ERROR_INTERNAL,
+		             "Constructed without a libusb_device");
+		return FALSE;
+	}
+
+	libusb_ref_device (priv->device);
+
+	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
+	if (rc != LIBUSB_SUCCESS) {
+		g_set_error (error, G_USB_DEVICE_ERROR, G_USB_DEVICE_ERROR_INTERNAL,
+		             "Failed to get USB descriptor for device: %s",
+		             g_usb_strerror (rc));
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static void
+g_usb_device_initable_iface_init (GInitableIface *iface)
+{
+	iface->init = g_usb_device_initable_init;
+}
+
+/**
+ * _g_usb_device_new:
+ *
+ * Return value: a new #GUsbDevice object.
+ *
+ * Since: 0.1.0
+ **/
+GUsbDevice *
+_g_usb_device_new (GUsbContext    *context,
+                   libusb_device  *device,
+                   const gchar    *platform_id,
+                   GError        **error)
+{
+	return g_initable_new (G_USB_TYPE_DEVICE,
+	                       NULL, error,
+	                       "context", context,
+	                       "libusb-device", device,
+	                       "platform-id", platform_id,
+	                       NULL);
+}
+
+/**
+ * _g_usb_device_get_device:
+ * @device: a #GUsbDevice instance
+ *
+ * Gets the low-level libusb_device
+ *
+ * Return value: The #libusb_device or %NULL. Do not unref this value.
+ **/
+libusb_device *
+_g_usb_device_get_device (GUsbDevice *device)
+{
+	return device->priv->device;
 }
 
 /**
@@ -1273,39 +1349,6 @@ g_usb_device_interrupt_transfer_async (GUsbDevice          *device,
 }
 
 /**********************************************************************/
-
-/**
- * _g_usb_device_new:
- *
- * Return value: a new #GUsbDevice object.
- *
- * Since: 0.1.0
- **/
-GUsbDevice *
-_g_usb_device_new (GUsbContext   *context,
-                   libusb_device *device,
-                   const gchar   *platform_id)
-{
-	return g_object_new (G_USB_TYPE_DEVICE,
-	                     "context", context,
-	                     "libusb-device", device,
-	                     "platform-id", platform_id,
-	                     NULL);
-}
-
-/**
- * _g_usb_device_get_device:
- * @device: a #GUsbDevice instance
- *
- * Gets the low-level libusb_device
- *
- * Return value: The #libusb_device or %NULL. Do not unref this value.
- **/
-libusb_device *
-_g_usb_device_get_device (GUsbDevice *device)
-{
-	return device->priv->device;
-}
 
 /**
  * g_usb_device_get_platform_id:
