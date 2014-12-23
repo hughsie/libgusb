@@ -215,8 +215,8 @@ g_usb_device_initable_init (GInitable     *initable,
 	priv = device->priv;
 
 	if (!priv->device) {
-		g_set_error (error, G_USB_DEVICE_ERROR, G_USB_DEVICE_ERROR_INTERNAL,
-		             "Constructed without a libusb_device");
+		g_set_error_literal (error, G_USB_DEVICE_ERROR, G_USB_DEVICE_ERROR_INTERNAL,
+		                     "Constructed without a libusb_device");
 		return FALSE;
 	}
 
