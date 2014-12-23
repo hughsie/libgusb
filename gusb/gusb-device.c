@@ -118,25 +118,13 @@ g_usb_device_set_property (GObject      *object,
 	}
 }
 
-static GObject *
-g_usb_device_constructor (GType                  gtype,
-                          guint                  n_properties,
-                          GObjectConstructParam *properties)
+static void
+g_usb_device_constructed (GObject *object)
 {
-	GObject *obj;
-	GUsbDevice *device;
+	GUsbDevice *device = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv;
 	gint rc;
 
-	{
-		/* Always chain up to the parent constructor */
-		GObjectClass *parent_class;
-		parent_class = G_OBJECT_CLASS (g_usb_device_parent_class);
-		obj = parent_class->constructor (gtype, n_properties,
-						 properties);
-	}
-
-	device = G_USB_DEVICE (obj);
 	priv = device->priv;
 
 	if (!priv->device)
@@ -149,7 +137,7 @@ g_usb_device_constructor (GType                  gtype,
 		g_warning ("Failed to get USB descriptor for device: %s",
 			   g_usb_strerror (rc));
 
-	return obj;
+	G_OBJECT_CLASS (g_usb_device_parent_class)->constructed (object);
 }
 
 static void
@@ -158,10 +146,10 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	object_class->constructor	= g_usb_device_constructor;
 	object_class->finalize		= g_usb_device_finalize;
 	object_class->get_property	= g_usb_device_get_property;
 	object_class->set_property	= g_usb_device_set_property;
+	object_class->constructed	= g_usb_device_constructed;
 
 	/**
 	 * GUsbDevice:libusb_device:
