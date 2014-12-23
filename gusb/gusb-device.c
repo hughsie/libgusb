@@ -570,7 +570,7 @@ g_usb_device_get_string_descriptor (GUsbDevice  *device,
 		return NULL;
 	}
 
-	return g_strdup ((char *)buf);
+	return g_strdup ((const gchar *)buf);
 }
 
 typedef gssize (GUsbDeviceTransferFinishFunc) (GUsbDevice *device, GAsyncResult *res, GError **error);
