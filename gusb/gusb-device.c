@@ -38,8 +38,6 @@
 #include "gusb-device.h"
 #include "gusb-device-private.h"
 
-static void     g_usb_device_finalize  (GObject     *object);
-
 /**
  * GUsbDevicePrivate:
  *
@@ -63,26 +61,19 @@ enum {
 
 G_DEFINE_TYPE_WITH_PRIVATE (GUsbDevice, g_usb_device, G_TYPE_OBJECT)
 
-
-/**
- * g_usb_device_error_quark:
- *
- * Return value: Our personal error quark.
- *
- * Since: 0.1.0
- **/
-GQuark
-g_usb_device_error_quark (void)
+static void
+g_usb_device_finalize (GObject *object)
 {
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("g_usb_device_error");
-	return quark;
+	GUsbDevice *device = G_USB_DEVICE (object);
+	GUsbDevicePrivate *priv = device->priv;
+
+	g_free (priv->platform_id);
+	libusb_unref_device (priv->device);
+	g_object_unref (priv->context);
+
+	G_OBJECT_CLASS (g_usb_device_parent_class)->finalize (object);
 }
 
-/**
- * usb_device_get_property:
- **/
 static void
 g_usb_device_get_property (GObject    *object,
                            guint       prop_id,
@@ -100,6 +91,128 @@ g_usb_device_get_property (GObject    *object,
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
+}
+
+static void
+g_usb_device_set_property (GObject      *object,
+                           guint         prop_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
+{
+	GUsbDevice *device = G_USB_DEVICE (object);
+	GUsbDevicePrivate *priv = device->priv;
+
+	switch (prop_id) {
+	case PROP_LIBUSB_DEVICE:
+		priv->device = g_value_get_pointer (value);
+		break;
+	case PROP_CONTEXT:
+		priv->context = g_value_dup_object (value);
+		break;
+	case PROP_PLATFORM_ID:
+		priv->platform_id = g_value_dup_string (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static GObject *
+g_usb_device_constructor (GType                  gtype,
+                          guint                  n_properties,
+                          GObjectConstructParam *properties)
+{
+	GObject *obj;
+	GUsbDevice *device;
+	GUsbDevicePrivate *priv;
+	gint rc;
+
+	{
+		/* Always chain up to the parent constructor */
+		GObjectClass *parent_class;
+		parent_class = G_OBJECT_CLASS (g_usb_device_parent_class);
+		obj = parent_class->constructor (gtype, n_properties,
+						 properties);
+	}
+
+	device = G_USB_DEVICE (obj);
+	priv = device->priv;
+
+	if (!priv->device)
+		g_error("constructed without a libusb_device");
+
+	libusb_ref_device(priv->device);
+
+	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
+	if (rc != LIBUSB_SUCCESS)
+		g_warning ("Failed to get USB descriptor for device: %s",
+			   g_usb_strerror (rc));
+
+	return obj;
+}
+
+static void
+g_usb_device_class_init (GUsbDeviceClass *klass)
+{
+	GParamSpec *pspec;
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+	object_class->constructor	= g_usb_device_constructor;
+	object_class->finalize		= g_usb_device_finalize;
+	object_class->get_property	= g_usb_device_get_property;
+	object_class->set_property	= g_usb_device_set_property;
+
+	/**
+	 * GUsbDevice:libusb_device:
+	 */
+	pspec = g_param_spec_pointer ("libusb-device", NULL, NULL,
+				      G_PARAM_CONSTRUCT_ONLY|
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_LIBUSB_DEVICE,
+					 pspec);
+
+	/**
+	 * GUsbDevice:context:
+	 */
+	pspec = g_param_spec_object ("context", NULL, NULL,
+				     G_USB_TYPE_CONTEXT,
+				     G_PARAM_CONSTRUCT_ONLY|
+				     G_PARAM_WRITABLE);
+	g_object_class_install_property (object_class, PROP_CONTEXT,
+					 pspec);
+
+	/**
+	 * GUsbDevice:platform-id:
+	 */
+	pspec = g_param_spec_string ("platform-id", NULL, NULL,
+				     NULL,
+				     G_PARAM_CONSTRUCT_ONLY|
+				     G_PARAM_WRITABLE);
+	g_object_class_install_property (object_class, PROP_PLATFORM_ID,
+					 pspec);
+}
+
+static void
+g_usb_device_init (GUsbDevice *device)
+{
+	device->priv = g_usb_device_get_instance_private (device);
+}
+
+/**
+ * g_usb_device_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.1.0
+ **/
+GQuark
+g_usb_device_error_quark (void)
+{
+	static GQuark quark = 0;
+	if (!quark)
+		quark = g_quark_from_static_string ("g_usb_device_error");
+	return quark;
 }
 
 static gboolean
@@ -1161,137 +1274,6 @@ g_usb_device_interrupt_transfer_async (GUsbDevice          *device,
 }
 
 /**********************************************************************/
-
-/**
- * usb_device_set_property:
- **/
-static void
-g_usb_device_set_property (GObject      *object,
-                           guint         prop_id,
-                           const GValue *value,
-                           GParamSpec   *pspec)
-{
-	GUsbDevice *device = G_USB_DEVICE (object);
-	GUsbDevicePrivate *priv = device->priv;
-
-	switch (prop_id) {
-	case PROP_LIBUSB_DEVICE:
-		priv->device = g_value_get_pointer (value);
-		break;
-	case PROP_CONTEXT:
-		priv->context = g_value_dup_object (value);
-		break;
-	case PROP_PLATFORM_ID:
-		priv->platform_id = g_value_dup_string (value);
-		break;
-	default:
-		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-		break;
-	}
-}
-
-static GObject *
-g_usb_device_constructor (GType                  gtype,
-                          guint                  n_properties,
-                          GObjectConstructParam *properties)
-{
-	GObject *obj;
-	GUsbDevice *device;
-	GUsbDevicePrivate *priv;
-	gint rc;
-
-	{
-		/* Always chain up to the parent constructor */
-		GObjectClass *parent_class;
-		parent_class = G_OBJECT_CLASS (g_usb_device_parent_class);
-		obj = parent_class->constructor (gtype, n_properties,
-						 properties);
-	}
-
-	device = G_USB_DEVICE (obj);
-	priv = device->priv;
-
-	if (!priv->device)
-		g_error("constructed without a libusb_device");
-
-	libusb_ref_device(priv->device);
-
-	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
-	if (rc != LIBUSB_SUCCESS)
-		g_warning ("Failed to get USB descriptor for device: %s",
-			   g_usb_strerror (rc));
-
-	return obj;
-}
-
-/**
- * usb_device_class_init:
- **/
-static void
-g_usb_device_class_init (GUsbDeviceClass *klass)
-{
-	GParamSpec *pspec;
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-	object_class->constructor	= g_usb_device_constructor;
-	object_class->finalize		= g_usb_device_finalize;
-	object_class->get_property	= g_usb_device_get_property;
-	object_class->set_property	= g_usb_device_set_property;
-
-	/**
-	 * GUsbDevice:libusb_device:
-	 */
-	pspec = g_param_spec_pointer ("libusb-device", NULL, NULL,
-				      G_PARAM_CONSTRUCT_ONLY|
-				      G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_LIBUSB_DEVICE,
-					 pspec);
-
-	/**
-	 * GUsbDevice:context:
-	 */
-	pspec = g_param_spec_object ("context", NULL, NULL,
-				     G_USB_TYPE_CONTEXT,
-				     G_PARAM_CONSTRUCT_ONLY|
-				     G_PARAM_WRITABLE);
-	g_object_class_install_property (object_class, PROP_CONTEXT,
-					 pspec);
-
-	/**
-	 * GUsbDevice:platform-id:
-	 */
-	pspec = g_param_spec_string ("platform-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_CONSTRUCT_ONLY|
-				     G_PARAM_WRITABLE);
-	g_object_class_install_property (object_class, PROP_PLATFORM_ID,
-					 pspec);
-}
-
-/**
- * g_usb_device_init:
- **/
-static void
-g_usb_device_init (GUsbDevice *device)
-{
-	device->priv = g_usb_device_get_instance_private (device);
-}
-
-/**
- * g_usb_device_finalize:
- **/
-static void
-g_usb_device_finalize (GObject *object)
-{
-	GUsbDevice *device = G_USB_DEVICE (object);
-	GUsbDevicePrivate *priv = device->priv;
-
-	g_free (priv->platform_id);
-	libusb_unref_device (priv->device);
-	g_object_unref (priv->context);
-
-	G_OBJECT_CLASS (g_usb_device_parent_class)->finalize (object);
-}
 
 /**
  * _g_usb_device_new:
