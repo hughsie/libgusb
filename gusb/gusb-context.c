@@ -59,7 +59,7 @@ struct _GUsbContextPrivate
 	GPtrArray			*devices;
 	GThread				*thread_event;
 	gboolean			 done_enumerate;
-	gboolean			 thread_event_run;
+	volatile gint			 thread_event_run;
 	guint				 hotplug_poll_id;
 	int				 debug_level;
 	libusb_context			*ctx;
@@ -463,8 +463,10 @@ g_usb_context_event_thread_cb (gpointer data)
 {
 	GUsbContext *context = G_USB_CONTEXT (data);
 	GUsbContextPrivate *priv = context->priv;
-	while (priv->thread_event_run)
+
+	while (g_atomic_int_get (&priv->thread_event_run) > 0)
 		libusb_handle_events (priv->ctx);
+
 	return NULL;
 }
 
@@ -503,7 +505,7 @@ g_usb_context_initable_init (GInitable     *initable,
 	}
 
 	priv->ctx = ctx;
-	priv->thread_event_run = TRUE;
+	priv->thread_event_run = 1;
 	priv->thread_event = g_thread_new ("GUsbEventThread",
 	                                   g_usb_context_event_thread_cb,
 	                                   context);
@@ -545,7 +547,7 @@ g_usb_context_finalize (GObject *object)
 	GUsbContextPrivate *priv = context->priv;
 
 	/* this is safe to call even when priv->hotplug_id is unset */
-	priv->thread_event_run = FALSE;
+	g_atomic_int_dec_and_test (&priv->thread_event_run);
 	libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
 	g_thread_join (priv->thread_event);
 
