@@ -68,10 +68,20 @@ g_usb_device_finalize (GObject *object)
 	GUsbDevicePrivate *priv = device->priv;
 
 	g_free (priv->platform_id);
-	libusb_unref_device (priv->device);
-	g_object_unref (priv->context);
 
 	G_OBJECT_CLASS (g_usb_device_parent_class)->finalize (object);
+}
+
+static void
+g_usb_device_dispose (GObject *object)
+{
+	GUsbDevice *device = G_USB_DEVICE (object);
+	GUsbDevicePrivate *priv = device->priv;
+
+	g_clear_pointer (&priv->device, libusb_unref_device);
+	g_clear_object (&priv->context);
+
+	G_OBJECT_CLASS (g_usb_device_parent_class)->dispose (object);
 }
 
 static void
@@ -146,10 +156,11 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	object_class->finalize		= g_usb_device_finalize;
-	object_class->get_property	= g_usb_device_get_property;
-	object_class->set_property	= g_usb_device_set_property;
-	object_class->constructed	= g_usb_device_constructed;
+	object_class->finalize = g_usb_device_finalize;
+	object_class->dispose = g_usb_device_dispose;
+	object_class->get_property = g_usb_device_get_property;
+	object_class->set_property = g_usb_device_set_property;
+	object_class->constructed = g_usb_device_constructed;
 
 	/**
 	 * GUsbDevice:libusb_device:
