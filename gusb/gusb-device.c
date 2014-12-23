@@ -38,7 +38,7 @@
 #include "gusb-device.h"
 #include "gusb-device-private.h"
 
-static void     g_usb_device_finalize	(GObject     *object);
+static void     g_usb_device_finalize  (GObject     *object);
 
 /**
  * GUsbDevicePrivate:
@@ -84,10 +84,10 @@ g_usb_device_error_quark (void)
  * usb_device_get_property:
  **/
 static void
-g_usb_device_get_property (GObject		*object,
-			   guint		 prop_id,
-			   GValue		*value,
-			   GParamSpec		*pspec)
+g_usb_device_get_property (GObject    *object,
+                           guint       prop_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
 {
 	GUsbDevice *device = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv = device->priv;
@@ -103,9 +103,9 @@ g_usb_device_get_property (GObject		*object,
 }
 
 static gboolean
-g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
-				     gint rc,
-				     GError **error)
+g_usb_device_libusb_error_to_gerror (GUsbDevice  *device,
+                                     gint         rc,
+                                     GError     **error)
 {
 	gint error_code = G_USB_DEVICE_ERROR_INTERNAL;
 	/* Put the rc in libusb's error enum so that gcc warns us if we're
@@ -144,7 +144,9 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice *device,
 	return FALSE;
 }
 
-static gboolean g_usb_device_not_open_error(GUsbDevice *device, GError **error)
+static gboolean
+g_usb_device_not_open_error (GUsbDevice  *device,
+                             GError     **error)
 {
 	g_set_error (error,
 		     G_USB_DEVICE_ERROR,
@@ -155,9 +157,10 @@ static gboolean g_usb_device_not_open_error(GUsbDevice *device, GError **error)
 	return FALSE;
 }
 
-static void g_usb_device_async_not_open_error(GUsbDevice	  *device,
-					      GAsyncReadyCallback  callback,
-					      gpointer		   user_data)
+static void
+g_usb_device_async_not_open_error (GUsbDevice          *device,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
 {
 	g_simple_async_report_error_in_idle (G_OBJECT (device),
 				callback, user_data,
@@ -182,8 +185,8 @@ static void g_usb_device_async_not_open_error(GUsbDevice	  *device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_open (GUsbDevice *device,
-		   GError **error)
+g_usb_device_open (GUsbDevice  *device,
+                   GError     **error)
 {
 	gint rc;
 
@@ -214,7 +217,8 @@ g_usb_device_open (GUsbDevice *device,
  * Return value: %TRUE on success
  **/
 gboolean
-g_usb_device_close (GUsbDevice *device, GError **error)
+g_usb_device_close (GUsbDevice  *device,
+                    GError     **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
 
@@ -242,7 +246,8 @@ g_usb_device_close (GUsbDevice *device, GError **error)
  * Return value: %TRUE on success
  **/
 gboolean
-g_usb_device_reset (GUsbDevice *device, GError **error)
+g_usb_device_reset (GUsbDevice  *device,
+                    GError     **error)
 {
 	gint rc;
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
@@ -267,8 +272,9 @@ g_usb_device_reset (GUsbDevice *device, GError **error)
  *
  * Since: 0.1.0
  **/
-gint g_usb_device_get_configuration (GUsbDevice		 *device,
-				     GError		**error)
+gint
+g_usb_device_get_configuration (GUsbDevice  *device,
+                                GError     **error)
 {
 	gint rc;
 	int config;
@@ -303,9 +309,10 @@ gint g_usb_device_get_configuration (GUsbDevice		 *device,
  *
  * Since: 0.1.0
  **/
-gboolean g_usb_device_set_configuration (GUsbDevice	 *device,
-					 gint		  configuration,
-					 GError		**error)
+gboolean
+g_usb_device_set_configuration (GUsbDevice  *device,
+                                gint         configuration,
+                                GError     **error)
 {
 	gint rc;
 	gint config_tmp = 0;
@@ -344,10 +351,11 @@ gboolean g_usb_device_set_configuration (GUsbDevice	 *device,
  *
  * Since: 0.1.0
  **/
-gboolean g_usb_device_claim_interface (GUsbDevice		    *device,
-				       gint			     interface,
-				       GUsbDeviceClaimInterfaceFlags flags,
-				       GError			   **error)
+gboolean
+g_usb_device_claim_interface (GUsbDevice                     *device,
+                              gint                            interface,
+                              GUsbDeviceClaimInterfaceFlags   flags,
+                              GError                        **error)
 {
 	gint rc;
 
@@ -384,10 +392,11 @@ gboolean g_usb_device_claim_interface (GUsbDevice		    *device,
  *
  * Since: 0.1.0
  **/
-gboolean g_usb_device_release_interface (GUsbDevice		      *device,
-					 gint                          interface,
-					 GUsbDeviceClaimInterfaceFlags flags,
-					 GError			     **error)
+gboolean
+g_usb_device_release_interface (GUsbDevice                     *device,
+                                gint                            interface,
+                                GUsbDeviceClaimInterfaceFlags   flags,
+                                GError                        **error)
 {
 	gint rc;
 
@@ -426,9 +435,10 @@ gboolean g_usb_device_release_interface (GUsbDevice		      *device,
  *
  * Since: 0.1.0
  **/
-gchar *g_usb_device_get_string_descriptor (GUsbDevice		 *device,
-					   guint8		  desc_index,
-					   GError		**error)
+gchar *
+g_usb_device_get_string_descriptor (GUsbDevice  *device,
+                                    guint8       desc_index,
+                                    GError     **error)
 {
 	gint rc;
 	/* libusb_get_string_descriptor_ascii returns max 128 bytes */
@@ -462,9 +472,9 @@ typedef struct {
 } GUsbSyncHelper;
 
 static void
-g_usb_device_sync_transfer_cb (GUsbDevice *device,
-				  GAsyncResult *res,
-				  GUsbSyncHelper *helper)
+g_usb_device_sync_transfer_cb (GUsbDevice     *device,
+                               GAsyncResult   *res,
+                               GUsbSyncHelper *helper)
 {
 	helper->ret = (*helper->finish_func) (device, res, helper->error);
 	g_main_loop_quit (helper->loop);
@@ -496,19 +506,19 @@ g_usb_device_sync_transfer_cb (GUsbDevice *device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_control_transfer	(GUsbDevice	*device,
-				 GUsbDeviceDirection direction,
-				 GUsbDeviceRequestType request_type,
-				 GUsbDeviceRecipient recipient,
-				 guint8		 request,
-				 guint16	 value,
-				 guint16	 idx,
-				 guint8		*data,
-				 gsize		 length,
-				 gsize		*actual_length,
-				 guint		 timeout,
-				 GCancellable	*cancellable,
-				 GError		**error)
+g_usb_device_control_transfer (GUsbDevice            *device,
+                               GUsbDeviceDirection    direction,
+                               GUsbDeviceRequestType  request_type,
+                               GUsbDeviceRecipient    recipient,
+                               guint8                 request,
+                               guint16                value,
+                               guint16                idx,
+                               guint8                *data,
+                               gsize                  length,
+                               gsize                 *actual_length,
+                               guint                  timeout,
+                               GCancellable          *cancellable,
+                               GError               **error)
 {
 	GUsbSyncHelper helper;
 
@@ -564,14 +574,14 @@ g_usb_device_control_transfer	(GUsbDevice	*device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_bulk_transfer	(GUsbDevice	*device,
-				 guint8		 endpoint,
-				 guint8		*data,
-				 gsize		 length,
-				 gsize		*actual_length,
-				 guint		 timeout,
-				 GCancellable	*cancellable,
-				 GError		**error)
+g_usb_device_bulk_transfer (GUsbDevice    *device,
+                            guint8         endpoint,
+                            guint8        *data,
+                            gsize          length,
+                            gsize         *actual_length,
+                            guint          timeout,
+                            GCancellable  *cancellable,
+                            GError       **error)
 {
 	GUsbSyncHelper helper;
 
@@ -622,14 +632,14 @@ g_usb_device_bulk_transfer	(GUsbDevice	*device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_interrupt_transfer	(GUsbDevice	*device,
-				 guint8		 endpoint,
-				 guint8		*data,
-				 gsize		 length,
-				 gsize		*actual_length,
-				 guint		 timeout,
-				 GCancellable	*cancellable,
-				 GError		**error)
+g_usb_device_interrupt_transfer	(GUsbDevice    *device,
+                                 guint8         endpoint,
+                                 guint8        *data,
+                                 gsize          length,
+                                 gsize         *actual_length,
+                                 guint          timeout,
+                                 GCancellable  *cancellable,
+                                 GError       **error)
 {
 	GUsbSyncHelper helper;
 
@@ -680,8 +690,8 @@ g_usb_device_req_free (GcmDeviceReq *req)
 }
 
 static gboolean
-g_usb_device_libusb_status_to_gerror (gint status,
-				      GError **error)
+g_usb_device_libusb_status_to_gerror (gint     status,
+                                      GError **error)
 {
 	gboolean ret = FALSE;
 
@@ -760,7 +770,7 @@ out:
 
 static void
 g_usb_device_cancelled_cb (GCancellable *cancellable,
-			   GcmDeviceReq *req)
+                           GcmDeviceReq *req)
 {
 	libusb_cancel_transfer (req->transfer);
 }
@@ -780,9 +790,9 @@ g_usb_device_cancelled_cb (GCancellable *cancellable,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_control_transfer_finish (GUsbDevice *device,
-				      GAsyncResult *res,
-				      GError **error)
+g_usb_device_control_transfer_finish (GUsbDevice    *device,
+                                      GAsyncResult  *res,
+                                      GError       **error)
 {
 	GSimpleAsyncResult *simple;
 
@@ -841,19 +851,19 @@ out:
  * Since: 0.1.0
  **/
 void
-g_usb_device_control_transfer_async	(GUsbDevice	*device,
-					 GUsbDeviceDirection direction,
-					 GUsbDeviceRequestType request_type,
-					 GUsbDeviceRecipient recipient,
-					 guint8		 request,
-					 guint16	 value,
-					 guint16	 idx,
-					 guint8		*data,
-					 gsize		 length,
-					 guint		 timeout,
-					 GCancellable	*cancellable,
-					 GAsyncReadyCallback callback,
-					 gpointer user_data)
+g_usb_device_control_transfer_async (GUsbDevice           *device,
+                                     GUsbDeviceDirection   direction,
+                                     GUsbDeviceRequestType request_type,
+                                     GUsbDeviceRecipient   recipient,
+                                     guint8                request,
+                                     guint16               value,
+                                     guint16               idx,
+                                     guint8               *data,
+                                     gsize                 length,
+                                     guint                 timeout,
+                                     GCancellable         *cancellable,
+                                     GAsyncReadyCallback   callback,
+                                     gpointer              user_data)
 {
 	GcmDeviceReq *req;
 	GError *error = NULL;
@@ -937,9 +947,9 @@ g_usb_device_control_transfer_async	(GUsbDevice	*device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_bulk_transfer_finish (GUsbDevice *device,
-				   GAsyncResult *res,
-				   GError **error)
+g_usb_device_bulk_transfer_finish (GUsbDevice    *device,
+                                   GAsyncResult  *res,
+                                   GError       **error)
 {
 	GSimpleAsyncResult *simple;
 
@@ -973,14 +983,14 @@ g_usb_device_bulk_transfer_finish (GUsbDevice *device,
  * Since: 0.1.0
  **/
 void
-g_usb_device_bulk_transfer_async (GUsbDevice *device,
-				  guint8 endpoint,
-				  guint8 *data,
-				  gsize length,
-				  guint timeout,
-				  GCancellable *cancellable,
-				  GAsyncReadyCallback callback,
-				  gpointer user_data)
+g_usb_device_bulk_transfer_async (GUsbDevice          *device,
+                                  guint8               endpoint,
+                                  guint8              *data,
+                                  gsize                length,
+                                  guint                timeout,
+                                  GCancellable        *cancellable,
+                                  GAsyncReadyCallback  callback,
+                                  gpointer             user_data)
 {
 	GcmDeviceReq *req;
 	GError *error = NULL;
@@ -1051,9 +1061,9 @@ g_usb_device_bulk_transfer_async (GUsbDevice *device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_interrupt_transfer_finish (GUsbDevice *device,
-					GAsyncResult *res,
-					GError **error)
+g_usb_device_interrupt_transfer_finish (GUsbDevice    *device,
+                                        GAsyncResult  *res,
+                                        GError       **error)
 {
 	GSimpleAsyncResult *simple;
 
@@ -1087,14 +1097,14 @@ g_usb_device_interrupt_transfer_finish (GUsbDevice *device,
  * Since: 0.1.0
  **/
 void
-g_usb_device_interrupt_transfer_async (GUsbDevice *device,
-				       guint8 endpoint,
-				       guint8 *data,
-				       gsize length,
-				       guint timeout,
-				       GCancellable *cancellable,
-				       GAsyncReadyCallback callback,
-				       gpointer user_data)
+g_usb_device_interrupt_transfer_async (GUsbDevice          *device,
+                                       guint8               endpoint,
+                                       guint8              *data,
+                                       gsize                length,
+                                       guint                timeout,
+                                       GCancellable        *cancellable,
+                                       GAsyncReadyCallback  callback,
+                                       gpointer             user_data)
 {
 	GcmDeviceReq *req;
 	GError *error = NULL;
@@ -1156,10 +1166,10 @@ g_usb_device_interrupt_transfer_async (GUsbDevice *device,
  * usb_device_set_property:
  **/
 static void
-g_usb_device_set_property (GObject		*object,
-			   guint		 prop_id,
-			   const GValue		*value,
-			   GParamSpec		*pspec)
+g_usb_device_set_property (GObject      *object,
+                           guint         prop_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
 {
 	GUsbDevice *device = G_USB_DEVICE (object);
 	GUsbDevicePrivate *priv = device->priv;
@@ -1181,9 +1191,9 @@ g_usb_device_set_property (GObject		*object,
 }
 
 static GObject *
-g_usb_device_constructor (GType			 gtype,
-			  guint			 n_properties,
-			  GObjectConstructParam	*properties)
+g_usb_device_constructor (GType                  gtype,
+                          guint                  n_properties,
+                          GObjectConstructParam *properties)
 {
 	GObject *obj;
 	GUsbDevice *device;
@@ -1291,9 +1301,9 @@ g_usb_device_finalize (GObject *object)
  * Since: 0.1.0
  **/
 GUsbDevice *
-_g_usb_device_new (GUsbContext *context,
-		   libusb_device *device,
-		   const gchar *platform_id)
+_g_usb_device_new (GUsbContext   *context,
+                   libusb_device *device,
+                   const gchar   *platform_id)
 {
 	return g_object_new (G_USB_TYPE_DEVICE,
 	                     "context", context,
@@ -1311,7 +1321,7 @@ _g_usb_device_new (GUsbContext *context,
  * Return value: The #libusb_device or %NULL. Do not unref this value.
  **/
 libusb_device *
-_g_usb_device_get_device (GUsbDevice	*device)
+_g_usb_device_get_device (GUsbDevice *device)
 {
 	return device->priv->device;
 }

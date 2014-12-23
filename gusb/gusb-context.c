@@ -79,10 +79,10 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
  * usb_context_get_property:
  **/
 static void
-g_usb_context_get_property (GObject		*object,
-			    guint		 prop_id,
-			    GValue		*value,
-			    GParamSpec		*pspec)
+g_usb_context_get_property (GObject    *object,
+                            guint       prop_id,
+                            GValue     *value,
+                            GParamSpec *pspec)
 {
 	GUsbContext *context = G_USB_CONTEXT (object);
 	GUsbContextPrivate *priv = context->priv;
@@ -104,10 +104,10 @@ g_usb_context_get_property (GObject		*object,
  * usb_context_set_property:
  **/
 static void
-g_usb_context_set_property (GObject		*object,
-			   guint		 prop_id,
-			   const GValue		*value,
-			   GParamSpec		*pspec)
+g_usb_context_set_property (GObject      *object,
+                            guint         prop_id,
+                            const GValue *value,
+                            GParamSpec   *pspec)
 {
 	GUsbContext *context = G_USB_CONTEXT (object);
 	GUsbContextPrivate *priv = context->priv;
@@ -223,7 +223,8 @@ g_usb_context_idle_signal_cb (gpointer user_data)
  * g_usb_context_emit_device_add:
  **/
 static void
-g_usb_context_emit_device_add (GUsbContext *context, GUsbDevice *device)
+g_usb_context_emit_device_add (GUsbContext *context,
+                               GUsbDevice  *device)
 {
 	GUsbContextIdleHelper *helper;
 	helper = g_new0 (GUsbContextIdleHelper, 1);
@@ -241,7 +242,8 @@ g_usb_context_emit_device_add (GUsbContext *context, GUsbDevice *device)
  * g_usb_context_emit_device_remove:
  **/
 static void
-g_usb_context_emit_device_remove (GUsbContext *context, GUsbDevice *device)
+g_usb_context_emit_device_remove (GUsbContext *context,
+                                  GUsbDevice  *device)
 {
 	GUsbContextIdleHelper *helper;
 	helper = g_new0 (GUsbContextIdleHelper, 1);
@@ -259,7 +261,8 @@ g_usb_context_emit_device_remove (GUsbContext *context, GUsbDevice *device)
  * g_usb_context_build_platform_id:
  **/
 static void
-g_usb_context_build_platform_id (GString *str, libusb_device *dev)
+g_usb_context_build_platform_id (GString       *str,
+                                 libusb_device *dev)
 {
 	libusb_device *parent;
 	parent = libusb_get_parent (dev);
@@ -277,7 +280,8 @@ g_usb_context_build_platform_id (GString *str, libusb_device *dev)
  * g_usb_context_add_device:
  **/
 static void
-g_usb_context_add_device (GUsbContext *context, struct libusb_device *dev)
+g_usb_context_add_device (GUsbContext          *context,
+                          struct libusb_device *dev)
 {
 	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
@@ -319,7 +323,8 @@ out:
  * g_usb_context_remove_device:
  **/
 static void
-g_usb_context_remove_device (GUsbContext *context, struct libusb_device *dev)
+g_usb_context_remove_device (GUsbContext          *context,
+                             struct libusb_device *dev)
 {
 	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
@@ -344,9 +349,9 @@ g_usb_context_remove_device (GUsbContext *context, struct libusb_device *dev)
  **/
 static int
 g_usb_context_hotplug_cb (struct libusb_context *ctx,
-			  struct libusb_device *dev,
-			  libusb_hotplug_event event,
-			  void *user_data)
+                          struct libusb_device  *dev,
+                          libusb_hotplug_event   event,
+                          void                  *user_data)
 {
 	GUsbContext *context = G_USB_CONTEXT (user_data);
 
@@ -525,7 +530,7 @@ g_usb_context_initable_init (GInitable     *initable,
 }
 
 static void
-g_usb_context_initable_iface_init(GInitableIface *iface)
+g_usb_context_initable_iface_init (GInitableIface *iface)
 {
 	iface->init = g_usb_context_initable_init;
 }
@@ -597,7 +602,8 @@ _g_usb_context_get_context (GUsbContext *context)
  * Since: 0.1.0
  **/
 GUsbSource *
-g_usb_context_get_source (GUsbContext *context, GMainContext *main_ctx)
+g_usb_context_get_source (GUsbContext  *context,
+                          GMainContext *main_ctx)
 {
 	return NULL;
 }
@@ -615,7 +621,8 @@ g_usb_context_get_source (GUsbContext *context, GMainContext *main_ctx)
  * Since: 0.1.0
  **/
 void
-g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
+g_usb_context_set_debug (GUsbContext    *context,
+                         GLogLevelFlags  flags)
 {
 	GUsbContextPrivate *priv = context->priv;
 
@@ -645,10 +652,10 @@ g_usb_context_set_debug (GUsbContext *context, GLogLevelFlags flags)
  * Since: 0.2.2
  **/
 GUsbDevice *
-g_usb_context_find_by_bus_address (GUsbContext	*context,
-				   guint8	 bus,
-				   guint8	 address,
-				   GError	**error)
+g_usb_context_find_by_bus_address (GUsbContext  *context,
+                                   guint8        bus,
+                                   guint8        address,
+                                   GError      **error)
 {
 	GUsbContextPrivate *priv = context->priv;
 	GUsbDevice *device = NULL;
@@ -686,10 +693,10 @@ out:
  * Since: 0.2.2
  **/
 GUsbDevice *
-g_usb_context_find_by_vid_pid (GUsbContext	*context,
-			       guint16		 vid,
-			       guint16		 pid,
-			       GError		**error)
+g_usb_context_find_by_vid_pid (GUsbContext  *context,
+                               guint16       vid,
+                               guint16       pid,
+                               GError      **error)
 {
 	GUsbContextPrivate *priv = context->priv;
 	GUsbDevice *device = NULL;

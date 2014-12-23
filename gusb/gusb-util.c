@@ -27,7 +27,8 @@
 /* libusb_strerror is not going upstream in the forseeable future because of
    i18n worries, provide our own implementation for now, later this can
    hopefully became just a wrapper of the upstream version */
-const gchar* g_usb_strerror(gint error_code)
+const gchar *
+g_usb_strerror (gint error_code)
 {
     enum libusb_error error = error_code;
 
