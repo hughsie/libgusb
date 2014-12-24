@@ -51,7 +51,7 @@ enum
 };
 
 struct _GUsbDeviceListPrivate {
-	GUsbContext			*context;
+	GUsbContext *context;
 };
 
 static guint signals[LAST_SIGNAL] = { 0 };
@@ -120,7 +120,7 @@ static void
 g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 {
 	GParamSpec *pspec;
-	GObjectClass *object_class = (GObjectClass *) klass;
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->get_property	= g_usb_device_list_get_property;
 	object_class->set_property	= g_usb_device_list_set_property;
