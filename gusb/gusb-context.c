@@ -374,11 +374,6 @@ g_usb_context_rescan (GUsbContext *context)
 	guint i;
 	libusb_device **dev_list = NULL;
 
-	/* add any devices not yet added (duplicates will be filtered */
-	libusb_get_device_list (priv->ctx, &dev_list);
-	for (i = 0; dev_list && dev_list[i]; i++)
-		g_usb_context_add_device (context, dev_list[i]);
-
 	/* copy to a context so we can remove from the array */
 	for (i = 0; i < priv->devices->len; i++) {
 		device = g_ptr_array_index (priv->devices, i);
@@ -401,6 +396,11 @@ g_usb_context_rescan (GUsbContext *context)
 			g_ptr_array_remove (priv->devices, device);
 		}
 	}
+
+	/* add any devices not yet added (duplicates will be filtered */
+	libusb_get_device_list (priv->ctx, &dev_list);
+	for (i = 0; dev_list && dev_list[i]; i++)
+		g_usb_context_add_device (context, dev_list[i]);
 
 	g_list_free (existing_devices);
 	libusb_free_device_list (dev_list, 1);
