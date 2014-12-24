@@ -940,8 +940,6 @@ g_usb_device_libusb_status_to_gerror (gint     status,
 	return ret;
 }
 
-
-
 static void
 g_usb_device_async_transfer_cb (struct libusb_transfer *transfer)
 {
@@ -970,8 +968,6 @@ g_usb_device_cancelled_cb (GCancellable *cancellable,
 {
 	libusb_cancel_transfer (req->transfer);
 }
-
-/**********************************************************************/
 
 /**
  * g_usb_device_control_transfer_finish:
@@ -1128,8 +1124,6 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
 	}
 }
 
-/**********************************************************************/
-
 /**
  * g_usb_device_bulk_transfer_finish:
  * @device: a #GUsbDevice instance.
@@ -1242,8 +1236,6 @@ g_usb_device_bulk_transfer_async (GUsbDevice          *device,
 	}
 }
 
-/**********************************************************************/
-
 /**
  * g_usb_device_interrupt_transfer_finish:
  * @device: a #GUsbDevice instance.
@@ -1355,8 +1347,6 @@ g_usb_device_interrupt_transfer_async (GUsbDevice          *device,
 		return;
 	}
 }
-
-/**********************************************************************/
 
 /**
  * g_usb_device_get_platform_id:
