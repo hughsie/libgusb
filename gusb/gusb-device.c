@@ -348,15 +348,15 @@ g_usb_device_not_open_error (GUsbDevice  *device,
 static void
 g_usb_device_async_not_open_error (GUsbDevice          *device,
                                    GAsyncReadyCallback  callback,
-                                   gpointer             user_data)
+                                   gpointer             user_data,
+                                   gpointer             source_tag)
 {
-	g_simple_async_report_error_in_idle (G_OBJECT (device),
-				callback, user_data,
-				G_USB_DEVICE_ERROR,
-				G_USB_DEVICE_ERROR_NOT_OPEN,
-				"Device %04x:%04x has not been opened",
-				g_usb_device_get_vid (device),
-				g_usb_device_get_pid (device));
+	g_task_report_new_error (device, callback, user_data, source_tag,
+	                         G_USB_DEVICE_ERROR,
+	                         G_USB_DEVICE_ERROR_NOT_OPEN,
+	                         "Device %04x:%04x has not been opened",
+	                         g_usb_device_get_vid (device),
+	                         g_usb_device_get_pid (device));
 }
 
 /**
@@ -867,7 +867,6 @@ typedef struct {
 	GCancellable		*cancellable;
 	gulong			 cancellable_id;
 	struct libusb_transfer	*transfer;
-	GSimpleAsyncResult	*res;
 	guint8			*data; /* owned by the user */
 } GcmDeviceReq;
 
@@ -881,7 +880,6 @@ g_usb_device_req_free (GcmDeviceReq *req)
 	}
 
 	libusb_free_transfer (req->transfer);
-	g_object_unref (req->res);
 	g_slice_free (GcmDeviceReq, req);
 }
 
@@ -943,23 +941,19 @@ g_usb_device_libusb_status_to_gerror (gint     status,
 static void
 g_usb_device_async_transfer_cb (struct libusb_transfer *transfer)
 {
+	GTask *task = transfer->user_data;
 	gboolean ret;
 	GError *error = NULL;
-	GcmDeviceReq *req = transfer->user_data;
 
 	/* did request fail? */
 	ret = g_usb_device_libusb_status_to_gerror (transfer->status, &error);
 	if (!ret) {
-		g_simple_async_result_set_from_error (req->res, error);
-		g_error_free (error);
-		goto out;
+		g_task_return_error (task, error);
+	} else {
+		g_task_return_int (task, transfer->actual_length);
 	}
 
-	/* success */
-	g_simple_async_result_set_op_res_gssize (req->res, transfer->actual_length);
-out:
-	g_simple_async_result_complete_in_idle (req->res);
-	g_usb_device_req_free (req);
+	g_object_unref (task);
 }
 
 static void
@@ -969,60 +963,27 @@ g_usb_device_cancelled_cb (GCancellable *cancellable,
 	libusb_cancel_transfer (req->transfer);
 }
 
-/**
- * g_usb_device_control_transfer_finish:
- * @device: a #GUsbDevice instance.
- * @res: the #GAsyncResult
- * @error: A #GError or %NULL
- *
- * Gets the result from the asynchronous function.
- *
- * Return value: the actual number of bytes sent, or -1 on error.
- *
- * Since: 0.1.0
- **/
-gssize
-g_usb_device_control_transfer_finish (GUsbDevice    *device,
-                                      GAsyncResult  *res,
-                                      GError       **error)
-{
-	GSimpleAsyncResult *simple;
-
-	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), -1);
-	g_return_val_if_fail (error == NULL || *error == NULL, -1);
-
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	if (g_simple_async_result_propagate_error (simple, error))
-		return -1;
-
-	return g_simple_async_result_get_op_res_gssize (simple);
-}
-
 static void
 g_usb_device_control_transfer_cb (struct libusb_transfer *transfer)
 {
+	GTask *task = transfer->user_data;
+	GcmDeviceReq *req = g_task_get_task_data (task);
 	gboolean ret;
 	GError *error = NULL;
-	GcmDeviceReq *req = transfer->user_data;
 
 	/* did request fail? */
 	ret = g_usb_device_libusb_status_to_gerror (transfer->status,
 						    &error);
 	if (!ret) {
-		g_simple_async_result_set_from_error (req->res, error);
-		g_error_free (error);
-		goto out;
+		g_task_return_error (task, error);
+	} else {
+		memmove (req->data,
+		         transfer->buffer + LIBUSB_CONTROL_SETUP_SIZE,
+		         (gsize) transfer->actual_length);
+		g_task_return_int (task, transfer->actual_length);
 	}
 
-	/* success */
-	g_simple_async_result_set_op_res_gssize (req->res, transfer->actual_length);
-	memmove (req->data,
-		 transfer->buffer + LIBUSB_CONTROL_SETUP_SIZE,
-		 (gsize) transfer->actual_length);
-out:
-	g_simple_async_result_complete_in_idle (req->res);
-	g_usb_device_req_free (req);
+	g_object_unref (task);
 }
 
 /**
@@ -1057,27 +1018,22 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
                                      GAsyncReadyCallback   callback,
                                      gpointer              user_data)
 {
+	GTask *task;
 	GcmDeviceReq *req;
-	GError *error = NULL;
 	gint rc;
 	guint8 request_type_raw = 0;
 	guint8 *data_raw;
-	GSimpleAsyncResult *res;
+	GError *error = NULL;
 
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
 	if (device->priv->handle == NULL) {
-		g_usb_device_async_not_open_error (device, callback, user_data);
+		g_usb_device_async_not_open_error (device, callback, user_data,
+		                                   g_usb_device_control_transfer_async);
 		return;
 	}
 
-	res = g_simple_async_result_new (G_OBJECT (device),
-					 callback,
-					 user_data,
-					 g_usb_device_control_transfer_async);
-
 	req = g_slice_new0 (GcmDeviceReq);
-	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 	req->data = data;
 
@@ -1085,10 +1041,13 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
 	if (cancellable != NULL) {
 		req->cancellable = g_object_ref (cancellable);
 		req->cancellable_id = g_cancellable_connect (req->cancellable,
-							     G_CALLBACK (g_usb_device_cancelled_cb),
-							     req,
-							     NULL);
+		                                             G_CALLBACK (g_usb_device_cancelled_cb),
+		                                             req,
+		                                             NULL);
 	}
+
+	task = g_task_new (device, cancellable, callback, user_data);
+	g_task_set_task_data (task, req, (GDestroyNotify)g_usb_device_req_free);
 
 	/* munge back to flags */
 	if (direction == G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST)
@@ -1100,32 +1059,28 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
 	memmove (data_raw + LIBUSB_CONTROL_SETUP_SIZE, data, length);
 
 	/* fill in setup packet */
-	libusb_fill_control_setup (data_raw, request_type_raw, request, value, idx, length);
+	libusb_fill_control_setup (data_raw, request_type_raw,
+	                           request, value, idx, length);
 
 	/* fill in transfer details */
 	libusb_fill_control_transfer (req->transfer,
-				      device->priv->handle,
-				      data_raw,
-				      g_usb_device_control_transfer_cb,
-				      req,
-				      timeout);
+	                              device->priv->handle,
+	                              data_raw,
+	                              g_usb_device_control_transfer_cb,
+	                              task,
+	                              timeout);
 
 	/* submit transfer */
 	rc = libusb_submit_transfer (req->transfer);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
-		g_simple_async_report_gerror_in_idle (G_OBJECT (device),
-						      callback,
-						      user_data,
-						      error);
-		g_error_free (error);
-		g_usb_device_req_free (req);
-		return;
+		g_task_return_error (task, error);
+		g_object_unref (task);
 	}
 }
 
 /**
- * g_usb_device_bulk_transfer_finish:
+ * g_usb_device_control_transfer_finish:
  * @device: a #GUsbDevice instance.
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
@@ -1137,21 +1092,15 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_bulk_transfer_finish (GUsbDevice    *device,
-                                   GAsyncResult  *res,
-                                   GError       **error)
+g_usb_device_control_transfer_finish (GUsbDevice    *device,
+                                      GAsyncResult  *res,
+                                      GError       **error)
 {
-	GSimpleAsyncResult *simple;
-
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), -1);
+	g_return_val_if_fail (g_task_is_valid (device, res), -1);
 	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	if (g_simple_async_result_propagate_error (simple, error))
-		return -1;
-
-	return g_simple_async_result_get_op_res_gssize (simple);
+	return g_task_propagate_int (G_TASK (res), error);
 }
 
 /**
@@ -1182,62 +1131,55 @@ g_usb_device_bulk_transfer_async (GUsbDevice          *device,
                                   GAsyncReadyCallback  callback,
                                   gpointer             user_data)
 {
+	GTask *task;
 	GcmDeviceReq *req;
-	GError *error = NULL;
 	gint rc;
-	GSimpleAsyncResult *res;
+	GError *error = NULL;
 
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
 	if (device->priv->handle == NULL) {
-		g_usb_device_async_not_open_error (device, callback, user_data);
+		g_usb_device_async_not_open_error (device, callback, user_data,
+		                                   g_usb_device_bulk_transfer_async);
 		return;
 	}
 
-	res = g_simple_async_result_new (G_OBJECT (device),
-					 callback,
-					 user_data,
-					 g_usb_device_bulk_transfer_async);
-
 	req = g_slice_new0 (GcmDeviceReq);
-	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 
 	/* setup cancellation */
 	if (cancellable != NULL) {
 		req->cancellable = g_object_ref (cancellable);
 		req->cancellable_id = g_cancellable_connect (req->cancellable,
-							     G_CALLBACK (g_usb_device_cancelled_cb),
-							     req,
-							     NULL);
+		                                             G_CALLBACK (g_usb_device_cancelled_cb),
+		                                             req,
+		                                             NULL);
 	}
+
+	task = g_task_new (device, cancellable, callback, user_data);
+	g_task_set_task_data (task, req, (GDestroyNotify)g_usb_device_req_free);
 
 	/* fill in transfer details */
 	libusb_fill_bulk_transfer (req->transfer,
-				   device->priv->handle,
-				   endpoint,
-				   data,
-				   length,
-				   g_usb_device_async_transfer_cb,
-				   req,
-				   timeout);
+	                           device->priv->handle,
+	                           endpoint,
+	                           data,
+	                           length,
+	                           g_usb_device_async_transfer_cb,
+	                           task,
+	                           timeout);
 
 	/* submit transfer */
 	rc = libusb_submit_transfer (req->transfer);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
-		g_simple_async_report_gerror_in_idle (G_OBJECT (device),
-						      callback,
-						      user_data,
-						      error);
-		g_error_free (error);
-		g_usb_device_req_free (req);
-		return;
+		g_task_return_error (task, error);
+		g_object_unref (task);
 	}
 }
 
 /**
- * g_usb_device_interrupt_transfer_finish:
+ * g_usb_device_bulk_transfer_finish:
  * @device: a #GUsbDevice instance.
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
@@ -1249,21 +1191,15 @@ g_usb_device_bulk_transfer_async (GUsbDevice          *device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_interrupt_transfer_finish (GUsbDevice    *device,
-                                        GAsyncResult  *res,
-                                        GError       **error)
+g_usb_device_bulk_transfer_finish (GUsbDevice    *device,
+                                   GAsyncResult  *res,
+                                   GError       **error)
 {
-	GSimpleAsyncResult *simple;
-
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), -1);
+	g_return_val_if_fail (g_task_is_valid (device, res), -1);
 	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
-	simple = G_SIMPLE_ASYNC_RESULT (res);
-	if (g_simple_async_result_propagate_error (simple, error))
-		return -1;
-
-	return g_simple_async_result_get_op_res_gssize (simple);
+	return g_task_propagate_int (G_TASK (res), error);
 }
 
 /**
@@ -1294,58 +1230,75 @@ g_usb_device_interrupt_transfer_async (GUsbDevice          *device,
                                        GAsyncReadyCallback  callback,
                                        gpointer             user_data)
 {
+	GTask *task;
 	GcmDeviceReq *req;
 	GError *error = NULL;
 	gint rc;
-	GSimpleAsyncResult *res;
 
 	g_return_if_fail (G_USB_IS_DEVICE (device));
 
 	if (device->priv->handle == NULL) {
-		g_usb_device_async_not_open_error (device, callback, user_data);
+		g_usb_device_async_not_open_error (device, callback, user_data,
+		                                   g_usb_device_interrupt_transfer_async);
 		return;
 	}
 
-	res = g_simple_async_result_new (G_OBJECT (device),
-					 callback,
-					 user_data,
-					 g_usb_device_interrupt_transfer_async);
-
 	req = g_slice_new0 (GcmDeviceReq);
-	req->res = res;
 	req->transfer = libusb_alloc_transfer (0);
 
 	/* setup cancellation */
 	if (cancellable != NULL) {
 		req->cancellable = g_object_ref (cancellable);
 		req->cancellable_id = g_cancellable_connect (req->cancellable,
-							     G_CALLBACK (g_usb_device_cancelled_cb),
-							     req,
-							     NULL);
+		                                             G_CALLBACK (g_usb_device_cancelled_cb),
+		                                             req,
+		                                             NULL);
 	}
+
+	task = g_task_new (device, cancellable, callback, user_data);
+	g_task_set_task_data (task, req, (GDestroyNotify)g_usb_device_req_free);
 
 	/* fill in transfer details */
 	libusb_fill_interrupt_transfer (req->transfer,
-					device->priv->handle,
-					endpoint,
-					data,
-					length,
-					g_usb_device_async_transfer_cb,
-					req,
-					timeout);
+	                                device->priv->handle,
+	                                endpoint,
+	                                data,
+	                                length,
+	                                g_usb_device_async_transfer_cb,
+	                                task,
+	                                timeout);
 
 	/* submit transfer */
 	rc = libusb_submit_transfer (req->transfer);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
-		g_simple_async_report_gerror_in_idle (G_OBJECT (device),
-						      callback,
-						      user_data,
-						      error);
-		g_error_free (error);
-		g_usb_device_req_free (req);
-		return;
+		g_task_return_error (task, error);
+		g_object_unref (task);
 	}
+}
+
+/**
+ * g_usb_device_interrupt_transfer_finish:
+ * @device: a #GUsbDevice instance.
+ * @res: the #GAsyncResult
+ * @error: A #GError or %NULL
+ *
+ * Gets the result from the asynchronous function.
+ *
+ * Return value: the actual number of bytes sent, or -1 on error.
+ *
+ * Since: 0.1.0
+ **/
+gssize
+g_usb_device_interrupt_transfer_finish (GUsbDevice    *device,
+                                        GAsyncResult  *res,
+                                        GError       **error)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
+	g_return_val_if_fail (g_task_is_valid (device, res), -1);
+	g_return_val_if_fail (error == NULL || *error == NULL, -1);
+
+	return g_task_propagate_int (G_TASK (res), error);
 }
 
 /**
