@@ -206,6 +206,8 @@ g_usb_device_list_init (GUsbDeviceList *list)
 GPtrArray *
 g_usb_device_list_get_devices (GUsbDeviceList *list)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE_LIST (list), NULL);
+
 	return g_usb_context_get_devices (list->priv->context);
 }
 
@@ -242,6 +244,9 @@ g_usb_device_list_find_by_bus_address (GUsbDeviceList  *list,
                                        guint8           address,
                                        GError         **error)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE_LIST (list), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
 	return g_usb_context_find_by_bus_address (list->priv->context,
 	                                          bus, address, error);
 }
@@ -265,6 +270,9 @@ g_usb_device_list_find_by_vid_pid (GUsbDeviceList  *list,
                                    guint16          pid,
                                    GError         **error)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE_LIST (list), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
 	return g_usb_context_find_by_vid_pid (list->priv->context,
 	                                      vid, pid, error);
 }

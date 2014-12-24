@@ -379,6 +379,7 @@ g_usb_device_open (GUsbDevice  *device,
 	gint rc;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle != NULL) {
 		g_set_error (error,
@@ -409,6 +410,7 @@ g_usb_device_close (GUsbDevice  *device,
                     GError     **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);
@@ -439,6 +441,7 @@ g_usb_device_reset (GUsbDevice  *device,
 {
 	gint rc;
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);
@@ -468,6 +471,7 @@ g_usb_device_get_configuration (GUsbDevice  *device,
 	int config;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
+	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	if (device->priv->handle == NULL) {
 		g_usb_device_not_open_error (device, error);
@@ -506,6 +510,7 @@ g_usb_device_set_configuration (GUsbDevice  *device,
 	gint config_tmp = 0;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);
@@ -548,6 +553,7 @@ g_usb_device_claim_interface (GUsbDevice                     *device,
 	gint rc;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);
@@ -589,6 +595,7 @@ g_usb_device_release_interface (GUsbDevice                     *device,
 	gint rc;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);
@@ -632,7 +639,8 @@ g_usb_device_get_string_descriptor (GUsbDevice  *device,
 	/* libusb_get_string_descriptor_ascii returns max 128 bytes */
 	unsigned char buf[128];
 
-	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	if (device->priv->handle == NULL) {
 		g_usb_device_not_open_error (device, error);
@@ -984,9 +992,9 @@ g_usb_device_control_transfer_finish (GUsbDevice    *device,
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (G_IS_OBJECT (device), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), -1);
+	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))
@@ -1141,9 +1149,9 @@ g_usb_device_bulk_transfer_finish (GUsbDevice    *device,
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (G_IS_OBJECT (device), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), -1);
+	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))
@@ -1255,9 +1263,9 @@ g_usb_device_interrupt_transfer_finish (GUsbDevice    *device,
 {
 	GSimpleAsyncResult *simple;
 
-	g_return_val_if_fail (G_IS_OBJECT (device), FALSE);
-	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
+	g_return_val_if_fail (G_IS_SIMPLE_ASYNC_RESULT (res), -1);
+	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	simple = G_SIMPLE_ASYNC_RESULT (res);
 	if (g_simple_async_result_propagate_error (simple, error))
@@ -1367,6 +1375,8 @@ g_usb_device_interrupt_transfer_async (GUsbDevice          *device,
 const gchar *
 g_usb_device_get_platform_id (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+
 	return device->priv->platform_id;
 }
 
@@ -1383,6 +1393,8 @@ g_usb_device_get_platform_id (GUsbDevice *device)
 guint8
 g_usb_device_get_bus (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return libusb_get_bus_number (device->priv->device);
 }
 
@@ -1399,6 +1411,8 @@ g_usb_device_get_bus (GUsbDevice *device)
 guint8
 g_usb_device_get_address (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return libusb_get_device_address (device->priv->device);
 }
 
@@ -1415,6 +1429,8 @@ g_usb_device_get_address (GUsbDevice *device)
 guint16
 g_usb_device_get_vid (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.idVendor;
 }
 
@@ -1431,6 +1447,8 @@ g_usb_device_get_vid (GUsbDevice *device)
 guint16
 g_usb_device_get_pid (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.idProduct;
 }
 
@@ -1447,6 +1465,8 @@ g_usb_device_get_pid (GUsbDevice *device)
 guint8
 g_usb_device_get_manufacturer_index (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.iManufacturer;
 }
 
@@ -1463,6 +1483,8 @@ g_usb_device_get_manufacturer_index (GUsbDevice *device)
 guint8
 g_usb_device_get_device_class (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.bDeviceClass;
 }
 
@@ -1480,6 +1502,8 @@ g_usb_device_get_device_class (GUsbDevice *device)
 guint8
 g_usb_device_get_device_subclass (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.bDeviceSubClass;
 }
 
@@ -1497,6 +1521,8 @@ g_usb_device_get_device_subclass (GUsbDevice *device)
 guint8
 g_usb_device_get_device_protocol (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.bDeviceProtocol;
 }
 
@@ -1513,6 +1539,8 @@ g_usb_device_get_device_protocol (GUsbDevice *device)
 guint8
 g_usb_device_get_product_index (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.iProduct;
 }
 
@@ -1529,5 +1557,7 @@ g_usb_device_get_product_index (GUsbDevice *device)
 guint8
 g_usb_device_get_serial_number_index (GUsbDevice *device)
 {
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
 	return device->priv->desc.iSerialNumber;
 }

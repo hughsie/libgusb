@@ -633,7 +633,11 @@ void
 g_usb_context_set_debug (GUsbContext    *context,
                          GLogLevelFlags  flags)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv;
+
+	g_return_if_fail (G_USB_IS_CONTEXT (context));
+
+	priv = context->priv;
 
 	if (flags & (G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_INFO))
 		priv->debug_level = 3;
@@ -666,9 +670,13 @@ g_usb_context_find_by_bus_address (GUsbContext  *context,
                                    guint8        address,
                                    GError      **error)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv;
 	GUsbDevice *device = NULL;
 	guint i;
+
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+
+	priv = context->priv;
 
 	g_usb_context_enumerate (context);
 	for (i = 0; i < priv->devices->len; i++) {
@@ -679,6 +687,7 @@ g_usb_context_find_by_bus_address (GUsbContext  *context,
 			goto out;
 		}
 	}
+
 	g_set_error (error,
 		     G_USB_DEVICE_ERROR,
 		     G_USB_DEVICE_ERROR_NO_DEVICE,
@@ -707,9 +716,13 @@ g_usb_context_find_by_vid_pid (GUsbContext  *context,
                                guint16       pid,
                                GError      **error)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv;
 	GUsbDevice *device = NULL;
 	guint i;
+
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+
+	priv = context->priv;
 
 	g_usb_context_enumerate (context);
 	for (i = 0; i < priv->devices->len; i++) {
@@ -720,6 +733,7 @@ g_usb_context_find_by_vid_pid (GUsbContext  *context,
 			goto out;
 		}
 	}
+
 	g_set_error (error,
 		     G_USB_DEVICE_ERROR,
 		     G_USB_DEVICE_ERROR_NO_DEVICE,
@@ -741,7 +755,9 @@ GPtrArray *
 g_usb_context_get_devices (GUsbContext *context)
 {
 	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+
 	g_usb_context_enumerate (context);
+
 	return g_ptr_array_ref (context->priv->devices);
 }
 
