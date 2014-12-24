@@ -35,8 +35,6 @@
 #include "gusb-device-private.h"
 #include "gusb-util.h"
 
-static void g_usb_context_finalize (GObject *object);
-
 enum {
 	PROP_0,
 	PROP_LIBUSB_CONTEXT,
@@ -75,9 +73,26 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE,
                                                g_usb_context_initable_iface_init))
 
-/**
- * usb_context_get_property:
- **/
+static void
+g_usb_context_finalize (GObject *object)
+{
+	GUsbContext *context = G_USB_CONTEXT (object);
+	GUsbContextPrivate *priv = context->priv;
+
+	/* this is safe to call even when priv->hotplug_id is unset */
+	g_atomic_int_dec_and_test (&priv->thread_event_run);
+	libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
+	g_thread_join (priv->thread_event);
+
+	if (priv->hotplug_poll_id > 0)
+		g_source_remove (priv->hotplug_poll_id);
+	g_ptr_array_unref (priv->devices);
+
+	libusb_exit (priv->ctx);
+
+	G_OBJECT_CLASS (g_usb_context_parent_class)->finalize (object);
+}
+
 static void
 g_usb_context_get_property (GObject    *object,
                             guint       prop_id,
@@ -100,9 +115,6 @@ g_usb_context_get_property (GObject    *object,
 	}
 }
 
-/**
- * usb_context_set_property:
- **/
 static void
 g_usb_context_set_property (GObject      *object,
                             guint         prop_id,
@@ -123,9 +135,6 @@ g_usb_context_set_property (GObject      *object,
 	}
 }
 
-/**
- * usb_context_class_init:
- **/
 static void
 g_usb_context_class_init (GUsbContextClass *klass)
 {
@@ -196,9 +205,6 @@ typedef struct {
 	guint		 signal_id;
 } GUsbContextIdleHelper;
 
-/**
- * g_usb_context_idle_helper_free:
- **/
 static void
 g_usb_context_idle_helper_free (GUsbContextIdleHelper *helper)
 {
@@ -207,9 +213,6 @@ g_usb_context_idle_helper_free (GUsbContextIdleHelper *helper)
 	g_free (helper);
 }
 
-/**
- * g_usb_context_idle_signal_cb:
- **/
 static gboolean
 g_usb_context_idle_signal_cb (gpointer user_data)
 {
@@ -219,9 +222,6 @@ g_usb_context_idle_signal_cb (gpointer user_data)
 	return FALSE;
 }
 
-/**
- * g_usb_context_emit_device_add:
- **/
 static void
 g_usb_context_emit_device_add (GUsbContext *context,
                                GUsbDevice  *device)
@@ -238,9 +238,6 @@ g_usb_context_emit_device_add (GUsbContext *context,
 	g_idle_add (g_usb_context_idle_signal_cb, helper);
 }
 
-/**
- * g_usb_context_emit_device_remove:
- **/
 static void
 g_usb_context_emit_device_remove (GUsbContext *context,
                                   GUsbDevice  *device)
@@ -257,9 +254,6 @@ g_usb_context_emit_device_remove (GUsbContext *context,
 	g_idle_add (g_usb_context_idle_signal_cb, helper);
 }
 
-/**
- * g_usb_context_build_platform_id:
- **/
 static void
 g_usb_context_build_platform_id (GString       *str,
                                  libusb_device *dev)
@@ -276,9 +270,6 @@ g_usb_context_build_platform_id (GString       *str,
 				libusb_get_port_number (dev));
 }
 
-/**
- * g_usb_context_add_device:
- **/
 static void
 g_usb_context_add_device (GUsbContext          *context,
                           struct libusb_device *dev)
@@ -326,9 +317,6 @@ out:
 	g_string_free (platform_id, TRUE);
 }
 
-/**
- * g_usb_context_remove_device:
- **/
 static void
 g_usb_context_remove_device (GUsbContext          *context,
                              struct libusb_device *dev)
@@ -351,9 +339,6 @@ g_usb_context_remove_device (GUsbContext          *context,
 	g_object_unref (device);
 }
 
-/**
- * g_usb_context_hotplug_cb:
- **/
 static int
 g_usb_context_hotplug_cb (struct libusb_context *ctx,
                           struct libusb_device  *dev,
@@ -375,9 +360,6 @@ g_usb_context_hotplug_cb (struct libusb_context *ctx,
 	return 0;
 }
 
-/**
- * g_usb_context_rescan:
- **/
 static void
 g_usb_context_rescan (GUsbContext *context)
 {
@@ -421,9 +403,6 @@ g_usb_context_rescan (GUsbContext *context)
 	libusb_free_device_list (dev_list, 1);
 }
 
-/**
- * g_usb_context_rescan_cb:
- **/
 static gboolean
 g_usb_context_rescan_cb (gpointer user_data)
 {
@@ -462,9 +441,6 @@ g_usb_context_enumerate (GUsbContext *context)
 	priv->done_enumerate = TRUE;
 }
 
-/**
- * g_usb_context_event_thread_cb:
- **/
 static gpointer
 g_usb_context_event_thread_cb (gpointer data)
 {
@@ -477,9 +453,6 @@ g_usb_context_event_thread_cb (gpointer data)
 	return NULL;
 }
 
-/**
- * g_usb_context_init:
- **/
 static void
 g_usb_context_init (GUsbContext *context)
 {
@@ -542,29 +515,6 @@ static void
 g_usb_context_initable_iface_init (GInitableIface *iface)
 {
 	iface->init = g_usb_context_initable_init;
-}
-
-/**
- * g_usb_context_finalize:
- **/
-static void
-g_usb_context_finalize (GObject *object)
-{
-	GUsbContext *context = G_USB_CONTEXT (object);
-	GUsbContextPrivate *priv = context->priv;
-
-	/* this is safe to call even when priv->hotplug_id is unset */
-	g_atomic_int_dec_and_test (&priv->thread_event_run);
-	libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
-	g_thread_join (priv->thread_event);
-
-	if (priv->hotplug_poll_id > 0)
-		g_source_remove (priv->hotplug_poll_id);
-	g_ptr_array_unref (priv->devices);
-
-	libusb_exit (priv->ctx);
-
-	G_OBJECT_CLASS (g_usb_context_parent_class)->finalize (object);
 }
 
 /**

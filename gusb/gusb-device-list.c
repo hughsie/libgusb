@@ -58,9 +58,6 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (GUsbDeviceList, g_usb_device_list, G_TYPE_OBJECT);
 
-/**
- * g_usb_device_list_get_property:
- **/
 static void
 g_usb_device_list_get_property (GObject    *object,
                                 guint       prop_id,
@@ -80,9 +77,6 @@ g_usb_device_list_get_property (GObject    *object,
 	}
 }
 
-/**
- * g_usb_device_added_cb:
- **/
 static void
 g_usb_device_added_cb (GUsbContext    *context,
                        GUsbDevice     *device,
@@ -91,9 +85,6 @@ g_usb_device_added_cb (GUsbContext    *context,
 	g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device);
 }
 
-/**
- * g_usb_device_removed_cb:
- **/
 static void
 g_usb_device_removed_cb (GUsbContext    *context,
                          GUsbDevice     *device,
@@ -102,9 +93,6 @@ g_usb_device_removed_cb (GUsbContext    *context,
 	g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device);
 }
 
-/**
- * usb_device_list_set_property:
- **/
 static void
 g_usb_device_list_set_property (GObject      *object,
                                 guint         prop_id,
@@ -128,9 +116,6 @@ g_usb_device_list_set_property (GObject      *object,
 	}
 }
 
-/**
- * g_usb_device_list_class_init:
- **/
 static void
 g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 {
@@ -186,9 +171,6 @@ g_usb_device_list_class_init (GUsbDeviceListClass *klass)
 			G_USB_TYPE_DEVICE);
 }
 
-/**
- * g_usb_device_list_class_init:
- **/
 static void
 g_usb_device_list_init (GUsbDeviceList *list)
 {
