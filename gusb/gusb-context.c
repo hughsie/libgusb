@@ -625,6 +625,7 @@ g_usb_context_find_by_bus_address (GUsbContext  *context,
 	guint i;
 
 	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	priv = context->priv;
 
@@ -634,16 +635,18 @@ g_usb_context_find_by_bus_address (GUsbContext  *context,
 		if (g_usb_device_get_bus (curr) == bus &&
 		    g_usb_device_get_address (curr) == address) {
 			device = g_object_ref (curr);
-			goto out;
+			break;
 		}
 	}
 
-	g_set_error (error,
-		     G_USB_DEVICE_ERROR,
-		     G_USB_DEVICE_ERROR_NO_DEVICE,
-		     "Failed to find device %04x:%04x",
-		     bus, address);
-out:
+	if (device == NULL) {
+		g_set_error (error,
+		             G_USB_DEVICE_ERROR,
+		             G_USB_DEVICE_ERROR_NO_DEVICE,
+		             "Failed to find device %04x:%04x",
+		             bus, address);
+	}
+
 	return device;
 }
 
@@ -671,6 +674,7 @@ g_usb_context_find_by_vid_pid (GUsbContext  *context,
 	guint i;
 
 	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	priv = context->priv;
 
@@ -680,16 +684,18 @@ g_usb_context_find_by_vid_pid (GUsbContext  *context,
 		if (g_usb_device_get_vid (curr) == vid &&
 		    g_usb_device_get_pid (curr) == pid) {
 			device = g_object_ref (curr);
-			goto out;
+			break;
 		}
 	}
 
-	g_set_error (error,
-		     G_USB_DEVICE_ERROR,
-		     G_USB_DEVICE_ERROR_NO_DEVICE,
-		     "Failed to find device %04x:%04x",
-		     vid, pid);
-out:
+	if (device == NULL) {
+		g_set_error (error,
+		             G_USB_DEVICE_ERROR,
+		             G_USB_DEVICE_ERROR_NO_DEVICE,
+		             "Failed to find device %04x:%04x",
+		             vid, pid);
+	}
+
 	return device;
 }
 
