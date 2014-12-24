@@ -74,23 +74,26 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
                                                g_usb_context_initable_iface_init))
 
 static void
-g_usb_context_finalize (GObject *object)
+g_usb_context_dispose (GObject *object)
 {
 	GUsbContext *context = G_USB_CONTEXT (object);
 	GUsbContextPrivate *priv = context->priv;
 
 	/* this is safe to call even when priv->hotplug_id is unset */
-	g_atomic_int_dec_and_test (&priv->thread_event_run);
-	libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
-	g_thread_join (priv->thread_event);
+	if (g_atomic_int_dec_and_test (&priv->thread_event_run)) {
+		libusb_hotplug_deregister_callback (priv->ctx, priv->hotplug_id);
+		g_thread_join (priv->thread_event);
+	}
 
-	if (priv->hotplug_poll_id > 0)
+	if (priv->hotplug_poll_id > 0) {
 		g_source_remove (priv->hotplug_poll_id);
-	g_ptr_array_unref (priv->devices);
+		priv->hotplug_poll_id = 0;
+	}
 
-	libusb_exit (priv->ctx);
+	g_clear_pointer (&priv->devices, g_ptr_array_unref);
+	g_clear_pointer (&priv->ctx, libusb_exit);
 
-	G_OBJECT_CLASS (g_usb_context_parent_class)->finalize (object);
+	G_OBJECT_CLASS (g_usb_context_parent_class)->dispose (object);
 }
 
 static void
@@ -141,9 +144,9 @@ g_usb_context_class_init (GUsbContextClass *klass)
 	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	object_class->finalize		= g_usb_context_finalize;
-	object_class->get_property	= g_usb_context_get_property;
-	object_class->set_property	= g_usb_context_set_property;
+	object_class->dispose = g_usb_context_dispose;
+	object_class->get_property = g_usb_context_get_property;
+	object_class->set_property = g_usb_context_set_property;
 
 	/**
 	 * GUsbContext:libusb_context:
