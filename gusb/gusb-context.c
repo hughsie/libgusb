@@ -584,21 +584,27 @@ g_usb_context_set_debug (GUsbContext    *context,
                          GLogLevelFlags  flags)
 {
 	GUsbContextPrivate *priv;
+	int debug_level;
 
 	g_return_if_fail (G_USB_IS_CONTEXT (context));
 
 	priv = context->priv;
 
 	if (flags & (G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_INFO))
-		priv->debug_level = 3;
+		debug_level = 3;
 	else if (flags & (G_LOG_LEVEL_MESSAGE | G_LOG_LEVEL_WARNING))
-		priv->debug_level = 2;
+		debug_level = 2;
 	else if (flags & (G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_ERROR))
-		priv->debug_level = 1;
+		debug_level = 1;
 	else
-		priv->debug_level = 0;
+		debug_level = 0;
 
-	libusb_set_debug (priv->ctx, priv->debug_level);
+	if (debug_level != priv->debug_level) {
+		priv->debug_level = debug_level;
+		libusb_set_debug (priv->ctx, debug_level);
+
+		g_object_notify (G_OBJECT (context), "debug-level");
+	}
 }
 
 /**
