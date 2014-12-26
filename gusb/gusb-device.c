@@ -66,6 +66,15 @@ G_DEFINE_TYPE_WITH_CODE (GUsbDevice, g_usb_device, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE,
                                                 g_usb_device_initable_iface_init))
 
+/**
+ * g_usb_device_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.1.0
+ **/
+G_DEFINE_QUARK (g-usb-device-error-quark, g_usb_device_error)
+
 static void
 g_usb_device_finalize (GObject *object)
 {
@@ -272,22 +281,6 @@ libusb_device *
 _g_usb_device_get_device (GUsbDevice *device)
 {
 	return device->priv->device;
-}
-
-/**
- * g_usb_device_error_quark:
- *
- * Return value: Our personal error quark.
- *
- * Since: 0.1.0
- **/
-GQuark
-g_usb_device_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("g_usb_device_error");
-	return quark;
 }
 
 static gboolean
