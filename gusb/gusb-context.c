@@ -315,6 +315,7 @@ g_usb_context_add_device (GUsbContext          *context,
 	if (device == NULL) {
 		g_debug ("There was a problem creating the device: %s",
 		         error->message);
+		g_error_free (error);
 		goto out;
 	}
 
