@@ -73,6 +73,15 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE,
                                                g_usb_context_initable_iface_init))
 
+/**
+ * g_usb_context_error_quark:
+ *
+ * Return value: Our personal error quark.
+ *
+ * Since: 0.1.0
+ **/
+G_DEFINE_QUARK (g-usb-context-error-quark, g_usb_context_error)
+
 static void
 g_usb_context_dispose (GObject *object)
 {
@@ -518,22 +527,6 @@ static void
 g_usb_context_initable_iface_init (GInitableIface *iface)
 {
 	iface->init = g_usb_context_initable_init;
-}
-
-/**
- * g_usb_context_error_quark:
- *
- * Return value: Our personal error quark.
- *
- * Since: 0.1.0
- **/
-GQuark
-g_usb_context_error_quark (void)
-{
-	static GQuark quark = 0;
-	if (!quark)
-		quark = g_quark_from_static_string ("g_usb_context_error");
-	return quark;
 }
 
 /**
