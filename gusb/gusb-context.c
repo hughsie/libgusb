@@ -601,7 +601,7 @@ g_usb_context_set_debug (GUsbContext    *context,
 		priv->debug_level = debug_level;
 		libusb_set_debug (priv->ctx, debug_level);
 
-		g_object_notify (G_OBJECT (context), "debug-level");
+		g_object_notify_by_pspec (G_OBJECT (context), pspecs[PROP_DEBUG_LEVEL]);
 	}
 }
 
