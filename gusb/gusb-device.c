@@ -56,8 +56,11 @@ enum {
 	PROP_0,
 	PROP_LIBUSB_DEVICE,
 	PROP_CONTEXT,
-	PROP_PLATFORM_ID
+	PROP_PLATFORM_ID,
+	N_PROPERTIES
 };
+
+static GParamSpec *pspecs[N_PROPERTIES] = { NULL, };
 
 static void g_usb_device_initable_iface_init (GInitableIface *iface);
 
@@ -167,7 +170,6 @@ g_usb_device_constructed (GObject *object)
 static void
 g_usb_device_class_init (GUsbDeviceClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->finalize = g_usb_device_finalize;
@@ -179,31 +181,30 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 	/**
 	 * GUsbDevice:libusb_device:
 	 */
-	pspec = g_param_spec_pointer ("libusb-device", NULL, NULL,
-				      G_PARAM_CONSTRUCT_ONLY|
-				      G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_LIBUSB_DEVICE,
-					 pspec);
+	pspecs[PROP_LIBUSB_DEVICE] =
+		g_param_spec_pointer ("libusb-device", NULL, NULL,
+		                      G_PARAM_CONSTRUCT_ONLY|
+		                      G_PARAM_READWRITE);
 
 	/**
 	 * GUsbDevice:context:
 	 */
-	pspec = g_param_spec_object ("context", NULL, NULL,
-				     G_USB_TYPE_CONTEXT,
-				     G_PARAM_CONSTRUCT_ONLY|
-				     G_PARAM_WRITABLE);
-	g_object_class_install_property (object_class, PROP_CONTEXT,
-					 pspec);
+	pspecs[PROP_CONTEXT] =
+		g_param_spec_object ("context", NULL, NULL,
+		                     G_USB_TYPE_CONTEXT,
+		                     G_PARAM_CONSTRUCT_ONLY|
+		                     G_PARAM_WRITABLE);
 
 	/**
 	 * GUsbDevice:platform-id:
 	 */
-	pspec = g_param_spec_string ("platform-id", NULL, NULL,
-				     NULL,
-				     G_PARAM_CONSTRUCT_ONLY|
-				     G_PARAM_WRITABLE);
-	g_object_class_install_property (object_class, PROP_PLATFORM_ID,
-					 pspec);
+	pspecs[PROP_PLATFORM_ID] =
+		g_param_spec_string ("platform-id", NULL, NULL,
+		                     NULL,
+		                     G_PARAM_CONSTRUCT_ONLY|
+		                     G_PARAM_WRITABLE);
+
+	g_object_class_install_properties (object_class, N_PROPERTIES, pspecs);
 }
 
 static void
