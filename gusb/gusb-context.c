@@ -38,7 +38,8 @@
 enum {
 	PROP_0,
 	PROP_LIBUSB_CONTEXT,
-	PROP_DEBUG_LEVEL
+	PROP_DEBUG_LEVEL,
+	N_PROPERTIES
 };
 
 enum {
@@ -65,6 +66,7 @@ struct _GUsbContextPrivate
 };
 
 static guint signals[LAST_SIGNAL] = { 0 };
+static GParamSpec *pspecs[N_PROPERTIES] = { NULL, };
 
 static void g_usb_context_initable_iface_init (GInitableIface *iface);
 
@@ -150,7 +152,6 @@ g_usb_context_set_property (GObject      *object,
 static void
 g_usb_context_class_init (GUsbContextClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
 	object_class->dispose = g_usb_context_dispose;
@@ -160,19 +161,19 @@ g_usb_context_class_init (GUsbContextClass *klass)
 	/**
 	 * GUsbContext:libusb_context:
 	 */
-	pspec = g_param_spec_pointer ("libusb_context", NULL, NULL,
-				      G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_LIBUSB_CONTEXT,
-					 pspec);
+	pspecs[PROP_LIBUSB_CONTEXT] =
+		g_param_spec_pointer ("libusb_context", NULL, NULL,
+		                      G_PARAM_READABLE);
 
 	/**
 	 * GUsbContext:debug_level:
 	 */
-	pspec = g_param_spec_int ("debug_level", NULL, NULL,
-				  0, 3, 0,
-				  G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_DEBUG_LEVEL,
-					 pspec);
+	pspecs[PROP_DEBUG_LEVEL] =
+		g_param_spec_int ("debug_level", NULL, NULL,
+		                  0, 3, 0,
+		                  G_PARAM_READWRITE);
+
+	g_object_class_install_properties (object_class, N_PROPERTIES, pspecs);
 
 	/**
 	 * GUsbContext::device-added:
