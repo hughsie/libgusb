@@ -1091,7 +1091,7 @@ g_usb_device_control_transfer_finish (GUsbDevice    *device,
                                       GError       **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
-	g_return_val_if_fail (g_task_is_valid (device, res), -1);
+	g_return_val_if_fail (g_task_is_valid (res, device), -1);
 	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	return g_task_propagate_int (G_TASK (res), error);
@@ -1190,7 +1190,7 @@ g_usb_device_bulk_transfer_finish (GUsbDevice    *device,
                                    GError       **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
-	g_return_val_if_fail (g_task_is_valid (device, res), -1);
+	g_return_val_if_fail (g_task_is_valid (res, device), -1);
 	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	return g_task_propagate_int (G_TASK (res), error);
@@ -1289,7 +1289,7 @@ g_usb_device_interrupt_transfer_finish (GUsbDevice    *device,
                                         GError       **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), -1);
-	g_return_val_if_fail (g_task_is_valid (device, res), -1);
+	g_return_val_if_fail (g_task_is_valid (res, device), -1);
 	g_return_val_if_fail (error == NULL || *error == NULL, -1);
 
 	return g_task_propagate_int (G_TASK (res), error);
