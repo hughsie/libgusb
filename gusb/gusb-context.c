@@ -318,11 +318,6 @@ g_usb_context_add_device (GUsbContext          *context,
 		g_error_free (error);
 		goto out;
 	}
-
-	if (g_usb_device_get_device_class (device) == 0x09) {
-		g_debug ("%02x:%02x is a hub, ignoring", bus, address);
-		goto out;
-	}
 	g_ptr_array_add (priv->devices, g_object_ref (device));
 	g_usb_context_emit_device_add (context, device);
 out:
