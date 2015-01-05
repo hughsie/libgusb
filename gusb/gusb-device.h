@@ -125,6 +125,7 @@ GUsbDevice		*g_usb_device_get_parent	(GUsbDevice	*device);
 
 guint8			 g_usb_device_get_bus		(GUsbDevice	*device);
 guint8			 g_usb_device_get_address	(GUsbDevice	*device);
+guint8			 g_usb_device_get_port_number	(GUsbDevice	*device);
 
 guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);

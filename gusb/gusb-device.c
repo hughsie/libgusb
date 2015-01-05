@@ -1405,6 +1405,23 @@ g_usb_device_get_address (GUsbDevice *device)
 }
 
 /**
+ * g_usb_device_get_port_number:
+ * @device: a #GUsbDevice
+ *
+ * Gets the USB port number for the device.
+ *
+ * Return value: The 8-bit port number
+ *
+ * Since: 0.2.4
+ **/
+guint8
+g_usb_device_get_port_number (GUsbDevice *device)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+	return libusb_get_port_number (device->priv->device);
+}
+
+/**
  * g_usb_device_get_vid:
  * @device: a #GUsbDevice
  *
