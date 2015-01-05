@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <gusb/gusb.h>
+#include <gusb/gusb-cleanup.h>
 #include <string.h>
 
 /**
@@ -187,25 +188,128 @@ gusb_device_list_removed_cb (GUsbContext *context,
 }
 
 /**
+ * gusb_devices_sort_by_platform_id_cb:
+ **/
+static gint
+gusb_devices_sort_by_platform_id_cb (gconstpointer a, gconstpointer b)
+{
+	GUsbDevice *device_a = *((GUsbDevice **) a);
+	GUsbDevice *device_b = *((GUsbDevice **) b);
+	return g_strcmp0 (g_usb_device_get_platform_id (device_a),
+			  g_usb_device_get_platform_id (device_b));
+}
+
+static gboolean
+moo_cb (GNode *node, gpointer data)
+{
+	GUsbDevice *device = G_USB_DEVICE (node->data);
+	GNode *n;
+	guint i;
+	const gchar *tmp;
+	_cleanup_free_ gchar *product = NULL;
+	_cleanup_free_ gchar *vendor = NULL;
+	_cleanup_string_free_ GString *str = NULL;
+
+	if (device == NULL) {
+		g_print ("Root Device\n");
+		return FALSE;
+	}
+
+	/* indent */
+	str = g_string_new ("");
+	for (n = node; n->data != NULL; n = n->parent)
+		g_string_append (str, " ");
+
+	/* add bus:address */
+	g_string_append_printf (str, "%02x:%02x [%04x:%04x]",
+			        g_usb_device_get_bus (device),
+			        g_usb_device_get_address (device),
+			        g_usb_device_get_vid (device),
+			        g_usb_device_get_pid (device));
+
+	/* pad */
+	for (i = str->len; i < 30; i++)
+		g_string_append (str, " ");
+
+	/* We don't error check these as not all devices have these
+	   (and the device_open may have failed). */
+	g_usb_device_open (device, NULL);
+	vendor = g_usb_device_get_string_descriptor (device,
+			g_usb_device_get_manufacturer_index (device),
+			NULL);
+	product = g_usb_device_get_string_descriptor (device,
+			g_usb_device_get_product_index (device),
+			NULL);
+
+	/* lookup from usb.ids */
+	if (vendor == NULL) {
+		tmp = g_usb_device_get_vid_as_str (device);
+		if (tmp != NULL)
+			vendor = g_strdup (tmp);
+	}
+	if (product == NULL) {
+		tmp = g_usb_device_get_pid_as_str (device);
+		if (tmp != NULL)
+			product = g_strdup (tmp);
+	}
+
+	/* a hub */
+	if (g_usb_device_get_device_class (device) == 0x09) {
+		if (product == NULL)
+			product = g_strdup ("USB HUB");
+	}
+
+	/* fall back to the VID/PID */
+	if (product == NULL)
+		product = g_strdup ("Unknown");
+	if (vendor == NULL)
+		vendor = g_strdup ("Unknown");
+
+	/* add bus:address */
+	g_string_append_printf (str, "%s - %s", vendor, product);
+	g_print ("%s\n", str->str);
+	return FALSE;
+}
+
+/**
  * gusb_cmd_show:
  **/
 static gboolean
 gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
-	gboolean ret = TRUE;
-	GPtrArray *devices;
+	GNode *n;
+	GNode *node;
 	guint i;
 	GUsbDevice *device;
+	GUsbDevice *parent;
+	_cleanup_ptrarray_unref_ GPtrArray *devices = NULL;
 
+	/* sort */
 	devices = g_usb_context_get_devices (priv->usb_ctx);
+	g_ptr_array_sort (devices, gusb_devices_sort_by_platform_id_cb);
+
+	/* make a tree of the devices */
+	node = g_node_new (NULL);
 	for (i = 0; i < devices->len; i++) {
 		device = g_ptr_array_index (devices, i);
-		g_print ("device present %x:%x\n",
-			 g_usb_device_get_bus (device),
-			 g_usb_device_get_address (device));
+
+		parent = g_usb_device_get_parent (device);
+		if (parent == NULL) {
+			g_node_append_data (node, device);
+			continue;
+		}
+		n = g_node_find (node, G_PRE_ORDER, G_TRAVERSE_ALL, parent);
+		if (n == NULL) {
+			g_set_error (error, 1, 0,
+				     "no parent node for %s",
+				     g_usb_device_get_platform_id (device));
+			return FALSE;
+		}
+		g_node_append_data (n, device);
+
 	}
-	g_ptr_array_unref (devices);
-	return ret;
+	g_node_traverse (node, G_PRE_ORDER, G_TRAVERSE_ALL, -1, moo_cb, priv);
+	return TRUE;
 }
 
 /**
