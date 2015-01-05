@@ -631,6 +631,52 @@ g_usb_context_find_by_bus_address (GUsbContext  *context,
 }
 
 /**
+ * g_usb_context_find_by_platform_id:
+ * @context: a #GUsbContext
+ * @platform_id: a platform id, e.g. "usb:00:03:03:02"
+ * @error: A #GError or %NULL
+ *
+ * Finds a device based on its platform id value.
+ *
+ * Return value: (transfer full): a new #GUsbDevice, or %NULL if not found.
+ *
+ * Since: 0.2.4
+ **/
+GUsbDevice *
+g_usb_context_find_by_platform_id (GUsbContext *context,
+                                   const gchar *platform_id,
+                                   GError      **error)
+{
+	GUsbContextPrivate *priv;
+	GUsbDevice *device = NULL;
+	guint i;
+
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	priv = context->priv;
+
+	g_usb_context_enumerate (context);
+	for (i = 0; i < priv->devices->len; i++) {
+		GUsbDevice *curr = g_ptr_array_index (priv->devices, i);
+		if (g_strcmp0 (g_usb_device_get_platform_id (curr), platform_id) == 0) {
+			device = g_object_ref (curr);
+			break;
+		}
+	}
+
+	if (device == NULL) {
+		g_set_error (error,
+		             G_USB_DEVICE_ERROR,
+		             G_USB_DEVICE_ERROR_NO_DEVICE,
+		             "Failed to find device %s",
+		             platform_id);
+	}
+
+	return device;
+}
+
+/**
  * g_usb_context_find_by_vid_pid:
  * @context: a #GUsbContext
  * @vid: a vendor ID

@@ -87,6 +87,9 @@ GUsbDevice	*g_usb_context_find_by_vid_pid		(GUsbContext	*context,
 							 guint16	 vid,
 							 guint16	 pid,
 							 GError		**error);
+GUsbDevice	*g_usb_context_find_by_platform_id	(GUsbContext	*context,
+							 const gchar	*platform_id,
+							 GError		**error);
 
 G_END_DECLS
 
