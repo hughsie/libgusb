@@ -268,28 +268,11 @@ g_usb_context_emit_device_remove (GUsbContext *context,
 }
 
 static void
-g_usb_context_build_platform_id (GString       *str,
-                                 libusb_device *dev)
-{
-	libusb_device *parent;
-	parent = libusb_get_parent (dev);
-	if (parent != NULL)
-		g_usb_context_build_platform_id (str, parent);
-	if (str->len == 0) {
-		g_string_append_printf (str, "%02x:",
-					libusb_get_bus_number (dev));
-	}
-	g_string_append_printf (str, "%02x:",
-				libusb_get_port_number (dev));
-}
-
-static void
 g_usb_context_add_device (GUsbContext          *context,
                           struct libusb_device *dev)
 {
 	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
-	GString *platform_id = NULL;
 	guint8 bus;
 	guint8 address;
 	GError *error = NULL;
@@ -305,13 +288,8 @@ g_usb_context_add_device (GUsbContext          *context,
 		goto out;
 	}
 
-	/* build a topology of the device */
-	platform_id = g_string_new ("usb:");
-	g_usb_context_build_platform_id (platform_id, dev);
-	g_string_truncate (platform_id, platform_id->len - 1);
-
 	/* add the device */
-	device = _g_usb_device_new (context, dev, platform_id->str, &error);
+	device = _g_usb_device_new (context, dev, &error);
 	if (device == NULL) {
 		g_debug ("There was a problem creating the device: %s",
 		         error->message);
@@ -323,7 +301,6 @@ g_usb_context_add_device (GUsbContext          *context,
 out:
 	if (device != NULL)
 		g_object_unref (device);
-	g_string_free (platform_id, TRUE);
 }
 
 static void

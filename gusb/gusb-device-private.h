@@ -27,7 +27,6 @@ G_BEGIN_DECLS
 
 GUsbDevice	*_g_usb_device_new		(GUsbContext	*context,
 						 libusb_device	*device,
-						 const gchar	*platform_id,
                                                  GError        **error);
 
 libusb_device	*_g_usb_device_get_device	(GUsbDevice	*device);

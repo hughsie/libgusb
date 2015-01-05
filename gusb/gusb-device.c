@@ -235,6 +235,33 @@ g_usb_device_init (GUsbDevice *device)
 	device->priv = g_usb_device_get_instance_private (device);
 }
 
+static void
+g_usb_device_build_platform_id_cb (GString *str, libusb_device *dev)
+{
+	libusb_device *parent;
+	parent = libusb_get_parent (dev);
+	if (parent != NULL)
+		g_usb_device_build_platform_id_cb (str, parent);
+	if (str->len == 0) {
+		g_string_append_printf (str, "%02x:",
+					libusb_get_bus_number (dev));
+	}
+	g_string_append_printf (str, "%02x:",
+				libusb_get_port_number (dev));
+}
+
+static gchar *
+g_usb_device_build_platform_id (struct libusb_device *dev)
+{
+	GString *platform_id;
+
+	/* build a topology of the device */
+	platform_id = g_string_new ("usb:");
+	g_usb_device_build_platform_id_cb (platform_id, dev);
+	g_string_truncate (platform_id, platform_id->len - 1);
+	return g_string_free (platform_id, FALSE);
+}
+
 static gboolean
 g_usb_device_initable_init (GInitable     *initable,
                             GCancellable  *cancellable,
@@ -262,6 +289,9 @@ g_usb_device_initable_init (GInitable     *initable,
 		return FALSE;
 	}
 
+	/* this does not change on plug->unplug->plug */
+	priv->platform_id = g_usb_device_build_platform_id (priv->device);
+
 	return TRUE;
 }
 
@@ -281,14 +311,12 @@ g_usb_device_initable_iface_init (GInitableIface *iface)
 GUsbDevice *
 _g_usb_device_new (GUsbContext    *context,
                    libusb_device  *device,
-                   const gchar    *platform_id,
                    GError        **error)
 {
 	return g_initable_new (G_USB_TYPE_DEVICE,
 	                       NULL, error,
 	                       "context", context,
 	                       "libusb-device", device,
-	                       "platform-id", platform_id,
 	                       NULL);
 }
 
