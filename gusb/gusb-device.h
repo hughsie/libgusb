@@ -122,6 +122,7 @@ GQuark			 g_usb_device_error_quark	(void);
 
 const gchar		*g_usb_device_get_platform_id	(GUsbDevice	*device);
 GUsbDevice		*g_usb_device_get_parent	(GUsbDevice	*device);
+GPtrArray		*g_usb_device_get_children	(GUsbDevice	*device);
 
 guint8			 g_usb_device_get_bus		(GUsbDevice	*device);
 guint8			 g_usb_device_get_address	(GUsbDevice	*device);
