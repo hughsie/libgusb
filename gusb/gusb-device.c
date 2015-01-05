@@ -34,6 +34,7 @@
 #include <libusb-1.0/libusb.h>
 
 #include "gusb-context.h"
+#include "gusb-context-private.h"
 #include "gusb-util.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
@@ -1437,6 +1438,45 @@ g_usb_device_get_pid (GUsbDevice *device)
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
 
 	return device->priv->desc.idProduct;
+}
+
+/**
+ * g_usb_device_get_vid_as_str:
+ * @device: a #GUsbDevice
+ *
+ * Gets the vendor ID for the device as a string.
+ *
+ * Return value: an string ID, or %NULL if not available.
+ *
+ * Since: 0.2.4
+ **/
+const gchar *
+g_usb_device_get_vid_as_str (GUsbDevice *device)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	return _g_usb_context_lookup_vendor (device->priv->context,
+					     device->priv->desc.idVendor,
+					     NULL);
+}
+
+/**
+ * g_usb_device_get_pid_as_str:
+ * @device: a #GUsbDevice
+ *
+ * Gets the product ID for the device as a string.
+ *
+ * Return value: an string ID, or %NULL if not available.
+ *
+ * Since: 0.2.4
+ **/
+const gchar *
+g_usb_device_get_pid_as_str (GUsbDevice *device)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	return _g_usb_context_lookup_product (device->priv->context,
+					      device->priv->desc.idVendor,
+					      device->priv->desc.idProduct,
+					      NULL);
 }
 
 /**

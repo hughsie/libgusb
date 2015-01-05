@@ -128,6 +128,8 @@ guint8			 g_usb_device_get_address	(GUsbDevice	*device);
 
 guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
+const gchar		*g_usb_device_get_vid_as_str	(GUsbDevice	*device);
+const gchar		*g_usb_device_get_pid_as_str	(GUsbDevice	*device);
 guint8			 g_usb_device_get_device_class	(GUsbDevice	*device);
 guint8			 g_usb_device_get_device_subclass       (GUsbDevice *device);
 guint8                   g_usb_device_get_device_protocol       (GUsbDevice *device);
