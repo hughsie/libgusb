@@ -121,6 +121,7 @@ GType			 g_usb_device_get_type		(void);
 GQuark			 g_usb_device_error_quark	(void);
 
 const gchar		*g_usb_device_get_platform_id	(GUsbDevice	*device);
+GUsbDevice		*g_usb_device_get_parent	(GUsbDevice	*device);
 
 guint8			 g_usb_device_get_bus		(GUsbDevice	*device);
 guint8			 g_usb_device_get_address	(GUsbDevice	*device);

@@ -70,6 +70,28 @@ G_DEFINE_TYPE_WITH_CODE (GUsbDevice, g_usb_device, G_TYPE_OBJECT,
                                                 g_usb_device_initable_iface_init))
 
 /**
+ * g_usb_device_get_parent:
+ * @device: a #GUsbDevice instance
+ *
+ * Gets the device parent if one exists.
+ *
+ * Return value: (transfer full): #GUsbDevice or %NULL
+ **/
+GUsbDevice *
+g_usb_device_get_parent (GUsbDevice *device)
+{
+	GUsbDevicePrivate *priv = device->priv;
+	libusb_device *parent;
+	parent = libusb_get_parent (priv->device);
+	if (parent == NULL)
+		return NULL;
+	return g_usb_context_find_by_bus_address (priv->context,
+						  libusb_get_bus_number (parent),
+						  libusb_get_device_address (parent),
+						  NULL);
+}
+
+/**
  * g_usb_device_error_quark:
  *
  * Return value: Our personal error quark.
