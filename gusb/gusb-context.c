@@ -30,6 +30,7 @@
 
 #include <libusb-1.0/libusb.h>
 
+#include "gusb-cleanup.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-device-private.h"
@@ -56,6 +57,7 @@ enum {
 struct _GUsbContextPrivate
 {
 	GPtrArray			*devices;
+	GHashTable			*dict_usb_ids;
 	GThread				*thread_event;
 	gboolean			 done_enumerate;
 	volatile gint			 thread_event_run;
@@ -102,6 +104,7 @@ g_usb_context_dispose (GObject *object)
 	}
 
 	g_clear_pointer (&priv->devices, g_ptr_array_unref);
+	g_clear_pointer (&priv->dict_usb_ids, g_hash_table_unref);
 	g_clear_pointer (&priv->ctx, libusb_exit);
 
 	G_OBJECT_CLASS (g_usb_context_parent_class)->dispose (object);
@@ -446,6 +449,7 @@ g_usb_context_init (GUsbContext *context)
 
 	priv = context->priv = g_usb_context_get_instance_private (context);
 	priv->devices = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->dict_usb_ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 }
 
 static gboolean
@@ -673,6 +677,125 @@ g_usb_context_find_by_vid_pid (GUsbContext  *context,
 	}
 
 	return device;
+}
+static gboolean
+g_usb_context_load_usb_ids (GUsbContext *context, GError **error)
+{
+	guint16 pid;
+	guint16 vid = 0x0000;
+	guint i;
+	_cleanup_free_ gchar *data = NULL;
+	_cleanup_strv_free_ gchar **lines = NULL;
+
+	/* already loaded */
+	if (g_hash_table_size (context->priv->dict_usb_ids) > 0)
+		return TRUE;
+
+	/* parse */
+	if (!g_file_get_contents ("/usr/share/hwdata/usb.ids", &data, NULL, error))
+		return FALSE;
+	lines = g_strsplit (data, "\n", -1);
+	for (i = 0; lines[i] != NULL; i++) {
+		if (lines[i][0] == '#')
+			continue;
+		if (lines[i][0] == '\0')
+			continue;
+		if (lines[i][0] != '\t') {
+			lines[i][4] = '\0';
+			vid = g_ascii_strtoull (lines[i], NULL, 16);
+			if (vid == 0)
+				break;
+			g_hash_table_insert (context->priv->dict_usb_ids,
+					     g_strdup (lines[i]),
+					     g_strdup (lines[i] + 6));
+		} else {
+			if (vid == 0x0000)
+				break;
+			lines[i][5] = '\0';
+			pid = g_ascii_strtoull (lines[i] + 1, NULL, 16);
+			g_hash_table_insert (context->priv->dict_usb_ids,
+					     g_strdup_printf ("%04x:%04x", vid, pid),
+					     g_strdup (lines[i] + 7));
+		}
+	}
+	return TRUE;
+}
+
+/**
+ * _g_usb_context_lookup_vendor:
+ * @context: a #GUsbContext
+ * @vid: a USB vendor ID
+ * @error: a #GError, or %NULL
+ *
+ * Returns the vendor name using usb.ids.
+ *
+ * Return value: the description, or %NULL
+ *
+ * Since: 0.1.5
+ **/
+const gchar *
+_g_usb_context_lookup_vendor (GUsbContext *context, guint16 vid, GError **error)
+{
+	const gchar *tmp;
+	_cleanup_free_ gchar *key = NULL;
+
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* load */
+	if (!g_usb_context_load_usb_ids (context, error))
+		return NULL;
+
+	/* find */
+	key = g_strdup_printf ("%04x", vid);
+	tmp = g_hash_table_lookup (context->priv->dict_usb_ids, key);
+	if (tmp == NULL) {
+		g_set_error (error,
+		             G_USB_CONTEXT_ERROR,
+		             G_USB_CONTEXT_ERROR_INTERNAL,
+		             "failed to find vid %s", key);
+		return NULL;
+	}
+	return tmp;
+}
+
+/**
+ * _g_usb_context_lookup_product:
+ * @context: a #GUsbContext
+ * @vid: a USB vendor ID
+ * @pid: a USB product ID
+ * @error: a #GError, or %NULL
+ *
+ * Returns the product name using usb.ids.
+ *
+ * Return value: the description, or %NULL
+ *
+ * Since: 0.1.5
+ **/
+const gchar *
+_g_usb_context_lookup_product (GUsbContext *context, guint16 vid, guint16 pid, GError **error)
+{
+	const gchar *tmp;
+	_cleanup_free_ gchar *key = NULL;
+
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	/* load */
+	if (!g_usb_context_load_usb_ids (context, error))
+		return NULL;
+
+	/* find */
+	key = g_strdup_printf ("%04x:%04x", vid, pid);
+	tmp = g_hash_table_lookup (context->priv->dict_usb_ids, key);
+	if (tmp == NULL) {
+		g_set_error (error,
+		             G_USB_CONTEXT_ERROR,
+		             G_USB_CONTEXT_ERROR_INTERNAL,
+		             "failed to find vid %s", key);
+		return NULL;
+	}
+	return tmp;
 }
 
 /**

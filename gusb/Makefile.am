@@ -59,12 +59,12 @@ check_PROGRAMS =						\
 	gusb-self-test
 
 gusb_self_test_SOURCES =					\
+	$(libgusb_la_SOURCES)					\
 	gusb-self-test.c
 
 gusb_self_test_LDADD =						\
 	$(GLIB_LIBS)						\
-	$(USB_LIBS)						\
-	$(lib_LTLIBRARIES)
+	$(USB_LIBS)
 
 gusb_self_test_CFLAGS = $(AM_CFLAGS) $(WARNINGFLAGS_C)
 

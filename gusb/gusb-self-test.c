@@ -23,7 +23,9 @@
 
 #include <glib-object.h>
 
+#include "gusb-cleanup.h"
 #include "gusb-context.h"
+#include "gusb-context-private.h"
 #include "gusb-device.h"
 
 static void
@@ -49,6 +51,25 @@ gusb_device_func (void)
 	g_assert_cmpint (g_usb_device_get_pid (device), >, 0x0000);
 
 	g_ptr_array_unref (array);
+}
+
+static void
+gusb_context_lookup_func (void)
+{
+	_cleanup_object_unref_ GUsbContext *ctx = NULL;
+	GError *error = NULL;
+	const gchar *tmp;
+
+	ctx = g_usb_context_new (&error);
+	g_assert_no_error (error);
+	g_assert (ctx != NULL);
+
+	tmp = _g_usb_context_lookup_vendor (ctx, 0x04d8, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (tmp, ==, "Microchip Technology, Inc.");
+	tmp = _g_usb_context_lookup_product (ctx, 0x04d8, 0xf8da, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (tmp, ==, "Hughski Ltd. ColorHug");
 }
 
 static void
@@ -454,6 +475,7 @@ main (int    argc,
 
 	/* tests go here */
 	g_test_add_func ("/gusb/context", gusb_context_func);
+	g_test_add_func ("/gusb/context{lookup}", gusb_context_lookup_func);
 	g_test_add_func ("/gusb/device", gusb_device_func);
 	g_test_add_func ("/gusb/device[huey]", gusb_device_huey_func);
 	g_test_add_func ("/gusb/device[munki]", gusb_device_munki_func);
