@@ -274,11 +274,11 @@ static void
 g_usb_context_add_device (GUsbContext          *context,
                           struct libusb_device *dev)
 {
-	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
 	guint8 bus;
 	guint8 address;
-	GError *error = NULL;
+	_cleanup_error_free_ GError *error = NULL;
+	_cleanup_object_unref_ GUsbDevice *device = NULL;
 
 	/* does any existing device exist */
 	bus = libusb_get_bus_number (dev);
@@ -288,7 +288,7 @@ g_usb_context_add_device (GUsbContext          *context,
 		device = g_usb_context_find_by_bus_address (context, bus, address, NULL);
 	if (device != NULL) {
 		g_debug ("%i:%i already exists", bus, address);
-		goto out;
+		return;
 	}
 
 	/* add the device */
@@ -296,24 +296,20 @@ g_usb_context_add_device (GUsbContext          *context,
 	if (device == NULL) {
 		g_debug ("There was a problem creating the device: %s",
 		         error->message);
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	g_ptr_array_add (priv->devices, g_object_ref (device));
 	g_usb_context_emit_device_add (context, device);
-out:
-	if (device != NULL)
-		g_object_unref (device);
 }
 
 static void
 g_usb_context_remove_device (GUsbContext          *context,
                              struct libusb_device *dev)
 {
-	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
 	guint8 bus;
 	guint8 address;
+	_cleanup_object_unref_ GUsbDevice *device = NULL;
 
 	/* does any existing device exist */
 	bus = libusb_get_bus_number (dev);
@@ -325,7 +321,6 @@ g_usb_context_remove_device (GUsbContext          *context,
 	}
 	g_usb_context_emit_device_remove (context, device);
 	g_ptr_array_remove (priv->devices, device);
-	g_object_unref (device);
 }
 
 static int
@@ -352,13 +347,13 @@ g_usb_context_hotplug_cb (struct libusb_context *ctx,
 static void
 g_usb_context_rescan (GUsbContext *context)
 {
-	GList *existing_devices = NULL;
 	GList *l;
 	GUsbDevice *device;
 	GUsbContextPrivate *priv = context->priv;
 	gboolean found;
 	guint i;
 	libusb_device **dev_list = NULL;
+	_cleanup_list_free_ GList *existing_devices = NULL;
 
 	/* copy to a context so we can remove from the array */
 	for (i = 0; i < priv->devices->len; i++) {
@@ -387,8 +382,6 @@ g_usb_context_rescan (GUsbContext *context)
 	libusb_get_device_list (priv->ctx, &dev_list);
 	for (i = 0; dev_list && dev_list[i]; i++)
 		g_usb_context_add_device (context, dev_list[i]);
-
-	g_list_free (existing_devices);
 	libusb_free_device_list (dev_list, 1);
 }
 
