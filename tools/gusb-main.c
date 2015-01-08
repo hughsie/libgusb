@@ -246,6 +246,7 @@ moo_cb (GNode *node, gpointer data)
 		if (tmp != NULL)
 			vendor = g_strdup (tmp);
 	}
+
 	if (product == NULL) {
 		tmp = g_usb_device_get_pid_as_str (device);
 		if (tmp != NULL)
@@ -253,14 +254,14 @@ moo_cb (GNode *node, gpointer data)
 	}
 
 	/* a hub */
-	if (g_usb_device_get_device_class (device) == 0x09) {
-		if (product == NULL)
-			product = g_strdup ("USB HUB");
+	if (g_usb_device_get_device_class (device) == 0x09 && product == NULL) {
+		product = g_strdup ("USB HUB");
 	}
 
 	/* fall back to the VID/PID */
 	if (product == NULL)
 		product = g_strdup ("Unknown");
+
 	if (vendor == NULL)
 		vendor = g_strdup ("Unknown");
 
