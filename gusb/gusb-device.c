@@ -33,7 +33,6 @@
 
 #include <libusb-1.0/libusb.h>
 
-#include "gusb-cleanup.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-util.h"
@@ -84,9 +83,11 @@ g_usb_device_get_parent (GUsbDevice *device)
 {
 	GUsbDevicePrivate *priv = device->priv;
 	libusb_device *parent;
+
 	parent = libusb_get_parent (priv->device);
 	if (parent == NULL)
 		return NULL;
+
 	return g_usb_context_find_by_bus_address (priv->context,
 						  libusb_get_bus_number (parent),
 						  libusb_get_device_address (parent),
@@ -108,7 +109,7 @@ g_usb_device_get_children (GUsbDevice *device)
 	GUsbDevice *device_tmp;
 	GUsbDevicePrivate *priv = device->priv;
 	guint i;
-	_cleanup_ptrarray_unref_ GPtrArray *devices = NULL;
+	GPtrArray *devices = NULL;
 
 	/* find any devices that have @device as a parent */
 	children = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -118,6 +119,9 @@ g_usb_device_get_children (GUsbDevice *device)
 		if (priv->device == libusb_get_parent (device_tmp->priv->device))
 			g_ptr_array_add (children, g_object_ref (device_tmp));
 	}
+
+	g_ptr_array_unref (devices);
+
 	return children;
 }
 

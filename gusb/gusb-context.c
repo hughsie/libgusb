@@ -30,7 +30,6 @@
 
 #include <libusb-1.0/libusb.h>
 
-#include "gusb-cleanup.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-device-private.h"
@@ -725,13 +724,14 @@ g_usb_context_find_by_vid_pid (GUsbContext  *context,
 	return device;
 }
 static gboolean
-g_usb_context_load_usb_ids (GUsbContext *context, GError **error)
+g_usb_context_load_usb_ids (GUsbContext  *context,
+                            GError      **error)
 {
 	guint16 pid;
 	guint16 vid = 0x0000;
 	guint i;
-	_cleanup_free_ gchar *data = NULL;
-	_cleanup_strv_free_ gchar **lines = NULL;
+	gchar *data = NULL;
+	gchar **lines = NULL;
 
 	/* already loaded */
 	if (g_hash_table_size (context->priv->dict_usb_ids) > 0)
@@ -740,30 +740,41 @@ g_usb_context_load_usb_ids (GUsbContext *context, GError **error)
 	/* parse */
 	if (!g_file_get_contents ("/usr/share/hwdata/usb.ids", &data, NULL, error))
 		return FALSE;
+
 	lines = g_strsplit (data, "\n", -1);
+	g_free (data);
+
 	for (i = 0; lines[i] != NULL; i++) {
 		if (lines[i][0] == '#')
 			continue;
+
 		if (lines[i][0] == '\0')
 			continue;
+
 		if (lines[i][0] != '\t') {
 			lines[i][4] = '\0';
+
 			vid = g_ascii_strtoull (lines[i], NULL, 16);
 			if (vid == 0)
 				break;
+
 			g_hash_table_insert (context->priv->dict_usb_ids,
-					     g_strdup (lines[i]),
-					     g_strdup (lines[i] + 6));
+			                     g_strdup (lines[i]),
+			                     g_strdup (lines[i] + 6));
 		} else {
 			if (vid == 0x0000)
 				break;
+
 			lines[i][5] = '\0';
 			pid = g_ascii_strtoull (lines[i] + 1, NULL, 16);
 			g_hash_table_insert (context->priv->dict_usb_ids,
-					     g_strdup_printf ("%04x:%04x", vid, pid),
-					     g_strdup (lines[i] + 7));
+			                     g_strdup_printf ("%04x:%04x", vid, pid),
+			                     g_strdup (lines[i] + 7));
 		}
 	}
+
+	g_strfreev (lines);
+
 	return TRUE;
 }
 
@@ -780,10 +791,12 @@ g_usb_context_load_usb_ids (GUsbContext *context, GError **error)
  * Since: 0.1.5
  **/
 const gchar *
-_g_usb_context_lookup_vendor (GUsbContext *context, guint16 vid, GError **error)
+_g_usb_context_lookup_vendor (GUsbContext  *context,
+                              guint16       vid,
+                              GError      **error)
 {
 	const gchar *tmp;
-	_cleanup_free_ gchar *key = NULL;
+	gchar *key = NULL;
 
 	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
@@ -800,8 +813,12 @@ _g_usb_context_lookup_vendor (GUsbContext *context, guint16 vid, GError **error)
 		             G_USB_CONTEXT_ERROR,
 		             G_USB_CONTEXT_ERROR_INTERNAL,
 		             "failed to find vid %s", key);
+		g_free (key);
 		return NULL;
 	}
+
+	g_free (key);
+
 	return tmp;
 }
 
@@ -819,10 +836,13 @@ _g_usb_context_lookup_vendor (GUsbContext *context, guint16 vid, GError **error)
  * Since: 0.1.5
  **/
 const gchar *
-_g_usb_context_lookup_product (GUsbContext *context, guint16 vid, guint16 pid, GError **error)
+_g_usb_context_lookup_product (GUsbContext  *context,
+                               guint16       vid,
+                               guint16       pid,
+                               GError      **error)
 {
 	const gchar *tmp;
-	_cleanup_free_ gchar *key = NULL;
+	gchar *key = NULL;
 
 	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
@@ -839,8 +859,12 @@ _g_usb_context_lookup_product (GUsbContext *context, guint16 vid, guint16 pid, G
 		             G_USB_CONTEXT_ERROR,
 		             G_USB_CONTEXT_ERROR_INTERNAL,
 		             "failed to find vid %s", key);
+		g_free (key);
 		return NULL;
 	}
+
+	g_free (key);
+
 	return tmp;
 }
 

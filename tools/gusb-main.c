@@ -23,7 +23,6 @@
 
 #include <glib.h>
 #include <gusb/gusb.h>
-#include <gusb/gusb-cleanup.h>
 #include <string.h>
 
 /**
@@ -206,9 +205,9 @@ moo_cb (GNode *node, gpointer data)
 	GNode *n;
 	guint i;
 	const gchar *tmp;
-	_cleanup_free_ gchar *product = NULL;
-	_cleanup_free_ gchar *vendor = NULL;
-	_cleanup_string_free_ GString *str = NULL;
+	gchar *product = NULL;
+	gchar *vendor = NULL;
+	GString *str = NULL;
 
 	if (device == NULL) {
 		g_print ("Root Device\n");
@@ -267,7 +266,12 @@ moo_cb (GNode *node, gpointer data)
 
 	/* add bus:address */
 	g_string_append_printf (str, "%s - %s", vendor, product);
+	g_free (product);
+	g_free (vendor);
+
 	g_print ("%s\n", str->str);
+	g_string_free (str, TRUE);
+
 	return FALSE;
 }
 
@@ -282,7 +286,7 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	guint i;
 	GUsbDevice *device;
 	GUsbDevice *parent;
-	_cleanup_ptrarray_unref_ GPtrArray *devices = NULL;
+	GPtrArray *devices = NULL;
 
 	/* sort */
 	devices = g_usb_context_get_devices (priv->usb_ctx);
@@ -308,7 +312,10 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 		g_node_append_data (n, device);
 
 	}
+
+	g_ptr_array_unref (devices);
 	g_node_traverse (node, G_PRE_ORDER, G_TRAVERSE_ALL, -1, moo_cb, priv);
+
 	return TRUE;
 }
 
