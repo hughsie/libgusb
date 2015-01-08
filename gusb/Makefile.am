@@ -30,7 +30,6 @@ libgusbbase_include_HEADERS =					\
 	gusb-util.h
 
 libgusb_la_SOURCES =						\
-	gusb-cleanup.h						\
 	gusb-context.c						\
 	gusb-device.c						\
 	gusb-device-list.c					\
