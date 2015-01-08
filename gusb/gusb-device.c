@@ -71,61 +71,6 @@ G_DEFINE_TYPE_WITH_CODE (GUsbDevice, g_usb_device, G_TYPE_OBJECT,
                                                 g_usb_device_initable_iface_init))
 
 /**
- * g_usb_device_get_parent:
- * @device: a #GUsbDevice instance
- *
- * Gets the device parent if one exists.
- *
- * Return value: (transfer full): #GUsbDevice or %NULL
- **/
-GUsbDevice *
-g_usb_device_get_parent (GUsbDevice *device)
-{
-	GUsbDevicePrivate *priv = device->priv;
-	libusb_device *parent;
-
-	parent = libusb_get_parent (priv->device);
-	if (parent == NULL)
-		return NULL;
-
-	return g_usb_context_find_by_bus_address (priv->context,
-						  libusb_get_bus_number (parent),
-						  libusb_get_device_address (parent),
-						  NULL);
-}
-
-/**
- * g_usb_device_get_children:
- * @device: a #GUsbDevice instance
- *
- * Gets the device children if any exist.
- *
- * Return value: (transfer full): an array of #GUsbDevice
- **/
-GPtrArray *
-g_usb_device_get_children (GUsbDevice *device)
-{
-	GPtrArray *children;
-	GUsbDevice *device_tmp;
-	GUsbDevicePrivate *priv = device->priv;
-	guint i;
-	GPtrArray *devices = NULL;
-
-	/* find any devices that have @device as a parent */
-	children = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	devices = g_usb_context_get_devices (priv->context);
-	for (i = 0; i < devices->len; i++) {
-		device_tmp = g_ptr_array_index (devices, i);
-		if (priv->device == libusb_get_parent (device_tmp->priv->device))
-			g_ptr_array_add (children, g_object_ref (device_tmp));
-	}
-
-	g_ptr_array_unref (devices);
-
-	return children;
-}
-
-/**
  * g_usb_device_error_quark:
  *
  * Return value: Our personal error quark.
@@ -1399,6 +1344,65 @@ g_usb_device_get_platform_id (GUsbDevice *device)
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
 
 	return device->priv->platform_id;
+}
+
+/**
+ * g_usb_device_get_parent:
+ * @device: a #GUsbDevice instance
+ *
+ * Gets the device parent if one exists.
+ *
+ * Return value: (transfer full): #GUsbDevice or %NULL
+ *
+ * Since: 0.2.4
+ **/
+GUsbDevice *
+g_usb_device_get_parent (GUsbDevice *device)
+{
+	GUsbDevicePrivate *priv = device->priv;
+	libusb_device *parent;
+
+	parent = libusb_get_parent (priv->device);
+	if (parent == NULL)
+		return NULL;
+
+	return g_usb_context_find_by_bus_address (priv->context,
+						  libusb_get_bus_number (parent),
+						  libusb_get_device_address (parent),
+						  NULL);
+}
+
+/**
+ * g_usb_device_get_children:
+ * @device: a #GUsbDevice instance
+ *
+ * Gets the device children if any exist.
+ *
+ * Return value: (transfer full): an array of #GUsbDevice
+ *
+ * Since: 0.2.4
+ **/
+GPtrArray *
+g_usb_device_get_children (GUsbDevice *device)
+{
+	GPtrArray *children;
+	GUsbDevice *device_tmp;
+	GUsbDevicePrivate *priv = device->priv;
+	guint i;
+	GPtrArray *devices = NULL;
+
+	/* find any devices that have @device as a parent */
+	children = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	devices = g_usb_context_get_devices (priv->context);
+	for (i = 0; i < devices->len; i++) {
+		device_tmp = g_ptr_array_index (devices, i);
+		if (priv->device == libusb_get_parent (device_tmp->priv->device))
+			g_ptr_array_add (children, g_object_ref (device_tmp));
+	}
+
+	g_ptr_array_unref (devices);
+
+	return children;
 }
 
 /**
