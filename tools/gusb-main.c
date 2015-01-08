@@ -103,9 +103,9 @@ gusb_sort_command_name_cb (GUsbCmdItem **item1, GUsbCmdItem **item2)
 static void
 gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUsbCmdPrivateCb callback)
 {
-	GUsbCmdItem *item;
+	gchar **names;
 	guint i;
-	_cleanup_strv_free_ gchar **names = NULL;
+	GUsbCmdItem *item;
 
 	/* add each one */
 	names = g_strsplit (name, ",", -1);
@@ -122,6 +122,7 @@ gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUs
 		item->callback = callback;
 		g_ptr_array_add (array, item);
 	}
+	g_strfreev (names);
 }
 
 /**
@@ -318,10 +319,10 @@ static gboolean
 gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
 	gboolean ret = TRUE;
+	GPtrArray *devices;
 	guint i;
 	GUsbDevice *device;
 	GMainLoop *loop;
-	_cleanup_ptrarray_unref_ GPtrArray *devices = NULL;
 
 	devices = g_usb_context_get_devices (priv->usb_ctx);
 	for (i = 0; i < devices->len; i++) {
@@ -342,6 +343,7 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	g_main_loop_run (loop);
 
 	g_main_loop_unref (loop);
+	g_ptr_array_unref (devices);
 	return ret;
 }
 
@@ -351,15 +353,18 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 static gboolean
 gusb_cmd_run (GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError **error)
 {
+	gboolean ret = FALSE;
 	guint i;
 	GUsbCmdItem *item;
-	_cleanup_string_free_ GString *string = NULL;
+	GString *string;
 
 	/* find command */
 	for (i = 0; i < priv->cmd_array->len; i++) {
 		item = g_ptr_array_index (priv->cmd_array, i);
-		if (g_strcmp0 (item->name, command) == 0)
-			return item->callback (priv, values, error);
+		if (g_strcmp0 (item->name, command) == 0) {
+			ret = item->callback (priv, values, error);
+			goto out;
+		}
 	}
 
 	/* not found */
@@ -371,7 +376,9 @@ gusb_cmd_run (GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError
 		g_string_append_printf (string, " * %s\n", item->name);
 	}
 	g_set_error_literal (error, 1, 0, string->str);
-	return FALSE;
+	g_string_free (string, TRUE);
+out:
+	return ret;
 }
 
 /**
@@ -382,11 +389,12 @@ main (int argc, char *argv[])
 {
 	gboolean ret;
 	gboolean verbose = FALSE;
+	gchar *cmd_descriptions = NULL;
+	gchar *options_help = NULL;
+	GError *error = NULL;
 	gint retval = 0;
 	GUsbCmdPrivate *priv;
-	_cleanup_free_ gchar *cmd_descriptions = NULL;
-	_cleanup_free_ gchar *options_help = NULL;
-	_cleanup_error_free_ GError *error = NULL;
+
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
 			"Show extra debugging information", NULL },
@@ -448,6 +456,7 @@ main (int argc, char *argv[])
 	ret = gusb_cmd_run (priv, argv[1], (gchar**) &argv[2], &error);
 	if (!ret) {
 		g_print ("%s\n", error->message);
+		g_error_free (error);
 		retval = 1;
 		goto out;
 	}
@@ -460,5 +469,9 @@ out:
 		g_option_context_free (priv->context);
 		g_slice_free (GUsbCmdPrivate, priv);
 	}
+
+	/* free state */
+	g_free (options_help);
+	g_free (cmd_descriptions);
 	return retval;
 }

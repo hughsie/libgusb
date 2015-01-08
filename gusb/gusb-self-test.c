@@ -75,13 +75,15 @@ gusb_context_lookup_func (void)
 static void
 gusb_context_func (void)
 {
+	GUsbContext *ctx;
 	GError *error = NULL;
 	GPtrArray *array;
 	guint old_number_of_devices;
 	guint8 bus, address;
 	GUsbDevice *device;
+	gchar *manufacturer;
+	gchar *product;
 	guint i;
-	_cleanup_object_unref_ GUsbContext *ctx = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -98,8 +100,6 @@ gusb_context_func (void)
 	/* Print a list (also excercising various bits of g_usb_device) */
 	g_print ("\n");
 	for (i = 0; i < array->len; i++) {
-		_cleanup_free_ gchar *manufacturer = NULL;
-		_cleanup_free_ gchar *product = NULL;
 		device = G_USB_DEVICE (g_ptr_array_index (array, i));
 
 		g_assert_cmpint (g_usb_device_get_vid (device), >, 0x0000);
@@ -128,6 +128,9 @@ gusb_context_func (void)
 			 g_usb_device_get_pid (device),
 			 manufacturer ? manufacturer : "",
 			 product ? product : "");
+
+		g_free (manufacturer);
+		g_free (product);
 	}
 	g_ptr_array_unref (array);
 
@@ -161,17 +164,19 @@ gusb_context_func (void)
 			G_USB_DEVICE_ERROR_NO_DEVICE);
 	g_assert (device == NULL);
 	g_clear_error (&error);
+
+	g_object_unref (ctx);
 }
 
 static void
 gusb_device_huey_func (void)
 {
+	GUsbContext *ctx;
+	GError *error = NULL;
+	GUsbDevice *device;
 	gboolean ret;
 	GCancellable *cancellable = NULL;
 	const gchar request[8] = { 0x0e, 'G', 'r', 'M', 'b', 'k', 'e', 'd' };
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GUsbContext *ctx = NULL;
-	_cleanup_object_unref_ GUsbDevice *device = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -188,7 +193,8 @@ gusb_device_huey_func (void)
 	    error->domain == G_USB_DEVICE_ERROR &&
 	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
 		g_print ("No device detected!\n");
-		return;
+		g_error_free (error);
+		goto out;
 	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
@@ -269,6 +275,10 @@ gusb_device_huey_func (void)
 	ret = g_usb_device_close (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
+
+	g_object_unref (device);
+out:
+	g_object_unref (ctx);
 }
 
 typedef struct {
@@ -305,14 +315,15 @@ g_usb_test_button_pressed_cb (GObject      *source_object,
                               gpointer      user_data)
 {
 	gboolean ret;
+	GError *error = NULL;
 	GUsbDeviceAsyncHelper *helper = (GUsbDeviceAsyncHelper *) user_data;
-	_cleanup_error_free_ GError *error = NULL;
 
 	ret = g_usb_device_interrupt_transfer_finish (G_USB_DEVICE (source_object),
 						      res, &error);
 
 	if (!ret) {
 		g_error ("%s", error->message);
+		g_error_free (error);
 		return;
 	}
 
@@ -326,13 +337,13 @@ g_usb_test_button_pressed_cb (GObject      *source_object,
 static void
 gusb_device_munki_func (void)
 {
+	GError *error = NULL;
+	GUsbContext *ctx;
+	GUsbDevice *device;
 	gboolean ret;
 	GCancellable *cancellable = NULL;
 	guint8 request[24];
 	GUsbDeviceAsyncHelper *helper;
-	_cleanup_error_free_ GError *error = NULL;
-	_cleanup_object_unref_ GUsbContext *ctx = NULL;
-	_cleanup_object_unref_ GUsbDevice *device = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -349,7 +360,8 @@ gusb_device_munki_func (void)
 	    error->domain == G_USB_DEVICE_ERROR &&
 	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
 		g_print ("No device detected!\n");
-		return;
+		g_error_free (error);
+		goto out;
 	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
@@ -446,6 +458,10 @@ gusb_device_munki_func (void)
 	ret = g_usb_device_close (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
+
+	g_object_unref (device);
+out:
+	g_object_unref (ctx);
 }
 
 int
