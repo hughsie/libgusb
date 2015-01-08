@@ -23,7 +23,6 @@
 
 #include <glib-object.h>
 
-#include "gusb-cleanup.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-device.h"
@@ -56,7 +55,7 @@ gusb_device_func (void)
 static void
 gusb_context_lookup_func (void)
 {
-	_cleanup_object_unref_ GUsbContext *ctx = NULL;
+	GUsbContext *ctx = NULL;
 	GError *error = NULL;
 	const gchar *tmp;
 
@@ -70,6 +69,7 @@ gusb_context_lookup_func (void)
 	tmp = _g_usb_context_lookup_product (ctx, 0x04d8, 0xf8da, &error);
 	g_assert_no_error (error);
 	g_assert_cmpstr (tmp, ==, "Hughski Ltd. ColorHug");
+	g_object_unref (ctx);
 }
 
 static void
