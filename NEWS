@@ -1,3 +1,25 @@
+Version 0.2.4
+~~~~~~~~~~~~~
+Released: 2014-01-09
+
+Notes:
+ - Bump glib build requirement to 2.38 (Ignacio Casal Quinteiro)
+
+New Features:
+ - Add g_usb_context_find_by_platform_id() (Richard Hughes)
+ - Add g_usb_device_get_children() (Richard Hughes)
+ - Add g_usb_device_get_device_subclass and get_device_protocol methods (Ignacio Casal Quinteiro)
+ - Add g_usb_device_get_parent() (Richard Hughes)
+ - Add g_usb_device_get_port_number() (Richard Hughes)
+ - Add g_usb_device_get_vid_as_str() (Richard Hughes)
+ - Show more helpful output for 'gusb show' (Richard Hughes)
+
+Bugfixes:
+ - Don't filter out hub devices when getting the device list (Richard Hughes)
+ - Make the platform ID persistent across re-plug (Richard Hughes)
+ - Port to GTask (Ignacio Casal Quinteiro)
+ - Use new Glib features for various code cleanups (Ignacio Casal Quinteiro)
+
 Version 0.2.3
 ~~~~~~~~~~~~~
 Released: 2014-12-01

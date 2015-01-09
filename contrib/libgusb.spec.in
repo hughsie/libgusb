@@ -8,11 +8,12 @@ License:   LGPLv2+
 URL:       https://gitorious.org/gusb/
 Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.xz
 
-BuildRequires: glib2-devel >= 2.32.0
+BuildRequires: glib2-devel >= 2.38.0
 BuildRequires: libtool
 BuildRequires: libusb1-devel >= 1.0.19
 BuildRequires: gobject-introspection-devel
 BuildRequires: vala-devel
+BuildRequires: vala-tools
 
 %description
 GUsb is a GObject wrapper for libusb1 that makes it easy to do
@@ -31,7 +32,10 @@ GLib headers and libraries for gusb.
 
 %build
 %configure \
-        --disable-static \
+        --disable-static                \
+        --enable-vala=yes               \
+        --enable-introspection=yes      \
+        --disable-gtk-doc               \
         --disable-dependency-tracking
 
 make %{?_smp_mflags}
