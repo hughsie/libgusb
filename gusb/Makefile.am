@@ -45,7 +45,7 @@ libgusb_la_LDFLAGS =						\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)	\
 	-export-dynamic						\
 	-no-undefined						\
-	-export-symbols-regex '^g_usb_.*'
+	-Wl,--version-script=$(top_srcdir)/gusb/libgusb.ver
 
 libgusb_la_CFLAGS =						\
 	$(WARNINGFLAGS_C)

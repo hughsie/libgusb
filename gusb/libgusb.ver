@@ -1,0 +1,36 @@
+LIBGUSB_0.1.0 {
+  global:
+    g_usb_*;
+  local: *;
+};
+
+LIBGUSB_0.1.1 {
+  global:
+    g_usb_device_get_platform_id;
+} LIBGUSB_0.1.0;
+
+LIBGUSB_0.1.7 {
+  global:
+    g_usb_device_get_device_class;
+} LIBGUSB_0.1.1;
+
+LIBGUSB_0.2.2 {
+  global:
+    g_usb_context_enumerate;
+    g_usb_context_find_by_bus_address;
+    g_usb_context_find_by_vid_pid;
+    g_usb_context_get_devices;
+} LIBGUSB_0.1.7;
+
+LIBGUSB_0.2.4 {
+  global:
+    g_usb_device_get_parent;
+    g_usb_device_get_children;
+    g_usb_device_get_port_number;
+    g_usb_device_get_vid_as_str;
+    g_usb_device_get_pid_as_str;
+    g_usb_device_get_device_subclass;
+    g_usb_device_get_device_protocol;
+    g_usb_context_find_by_platform_id;
+} LIBGUSB_0.2.2;
+
