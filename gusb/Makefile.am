@@ -109,6 +109,7 @@ vapi_DATA = $(VAPIGEN_VAPIS)
 endif
 
 EXTRA_DIST =							\
+	libgusb.ver						\
 	gusb-version.h.in					\
 	gusb.pc.in
 

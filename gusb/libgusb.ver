@@ -34,3 +34,7 @@ LIBGUSB_0.2.4 {
     g_usb_context_find_by_platform_id;
 } LIBGUSB_0.2.2;
 
+LIBGUSB_0.2.5 {
+  global:
+    g_usb_device_get_custom_index;
+} LIBGUSB_0.2.4;

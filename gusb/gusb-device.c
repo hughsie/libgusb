@@ -420,6 +420,64 @@ g_usb_device_open (GUsbDevice  *device,
 }
 
 /**
+ * g_usb_device_get_custom_index:
+ * @device: a #GUsbDevice
+ * @class_id: a device class, e.g. 0xff for VENDOR
+ * @subclass_id: a device subclass
+ * @protocol_id: a protocol number
+ * @error: a #GError, or %NULL
+ *
+ * Gets the string index from the vendor class interface descriptor.
+ *
+ * Return value: a non-zero index, or 0x00 for failure
+ *
+ * Since: 0.2.5
+ **/
+guint8
+g_usb_device_get_custom_index (GUsbDevice *device,
+			       guint8      class_id,
+			       guint8      subclass_id,
+			       guint8      protocol_id,
+			       GError    **error)
+{
+	const struct libusb_interface_descriptor *ifp;
+	gint rc;
+	guint8 idx = 0x00;
+	guint i;
+	struct libusb_config_descriptor *config;
+
+	rc = libusb_get_active_config_descriptor (device->priv->device, &config);
+	if (!g_usb_device_libusb_error_to_gerror (device, rc, error))
+		return NULL;
+
+	/* find the right data */
+	for (i = 0; i < config->bNumInterfaces; i++) {
+		ifp = &config->interface[i].altsetting[0];
+		if (ifp->bInterfaceClass != class_id)
+			continue;
+		if (ifp->bInterfaceSubClass != subclass_id)
+			continue;
+		if (ifp->bInterfaceProtocol != protocol_id)
+			continue;
+		idx = ifp->iInterface;
+		break;
+	}
+
+	/* nothing matched */
+	if (idx == 0x00) {
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+			     "no vendor descriptor for class 0x%02x, "
+			     "subclass 0x%02x and protocol 0x%02x",
+			     class_id, subclass_id, protocol_id);
+	}
+
+	libusb_free_config_descriptor (config);
+	return idx;
+}
+
+/**
  * g_usb_device_close:
  * @device: a #GUsbDevice
  * @error: a #GError, or %NULL

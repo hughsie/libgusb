@@ -464,6 +464,65 @@ out:
 	g_object_unref (ctx);
 }
 
+static void
+gusb_device_ch2_func (void)
+{
+	GError *error = NULL;
+	GUsbContext *ctx;
+	GUsbDevice *device;
+	gboolean ret;
+	gchar *tmp = NULL;
+	guint8 idx;
+
+	ctx = g_usb_context_new (&error);
+	g_assert_no_error (error);
+	g_assert (ctx != NULL);
+
+	g_usb_context_set_debug (ctx, G_LOG_LEVEL_ERROR);
+
+	/* coldplug, and get the ColorHug */
+	device = g_usb_context_find_by_vid_pid (ctx,
+						0x273f,
+						0x1004,
+						&error);
+	if (device == NULL &&
+	    error->domain == G_USB_DEVICE_ERROR &&
+	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
+		g_print ("No device detected!\n");
+		g_error_free (error);
+		goto out;
+	}
+	g_assert_no_error (error);
+	g_assert (device != NULL);
+
+	/* open */
+	ret = g_usb_device_open (device, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	/* get vendor data */
+	idx = g_usb_device_get_custom_index (device,
+					     G_USB_DEVICE_CLASS_VENDOR,
+					     'F', 'W', &error);
+	g_assert_no_error (error);
+	g_assert_cmpint (idx, ==, 3);
+
+	/* get the firmware version */
+	tmp = g_usb_device_get_string_descriptor (device, idx, &error);
+	g_assert_no_error (error);
+	g_assert_cmpstr (tmp, ==, "2.0.3");
+	g_free (tmp);
+
+	/* close */
+	ret = g_usb_device_close (device, &error);
+	g_assert_no_error (error);
+	g_assert (ret);
+
+	g_object_unref (device);
+out:
+	g_object_unref (ctx);
+}
+
 int
 main (int    argc,
       char **argv)
@@ -479,6 +538,7 @@ main (int    argc,
 	g_test_add_func ("/gusb/device", gusb_device_func);
 	g_test_add_func ("/gusb/device[huey]", gusb_device_huey_func);
 	g_test_add_func ("/gusb/device[munki]", gusb_device_munki_func);
+	g_test_add_func ("/gusb/device[colorhug2]", gusb_device_ch2_func);
 
 	return g_test_run ();
 }

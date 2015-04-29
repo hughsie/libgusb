@@ -100,6 +100,8 @@ typedef enum {
 	G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER		= 1 << 0,
 } GUsbDeviceClaimInterfaceFlags;
 
+#define G_USB_DEVICE_CLASS_VENDOR	0xff
+
 struct _GUsbDevice
 {
 	 GObject			 parent;
@@ -139,6 +141,11 @@ guint8                   g_usb_device_get_device_protocol       (GUsbDevice *dev
 guint8			 g_usb_device_get_manufacturer_index	(GUsbDevice *device);
 guint8			 g_usb_device_get_product_index		(GUsbDevice *device);
 guint8			 g_usb_device_get_serial_number_index	(GUsbDevice *device);
+guint8			 g_usb_device_get_custom_index	(GUsbDevice	*device,
+							 guint8		 class_id,
+							 guint8		 subclass_id,
+							 guint8		 protocol_id,
+							 GError		**error);
 
 gboolean		 g_usb_device_open		(GUsbDevice	*device,
 							 GError		**error);
