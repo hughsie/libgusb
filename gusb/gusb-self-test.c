@@ -502,7 +502,7 @@ gusb_device_ch2_func (void)
 
 	/* get vendor data */
 	idx = g_usb_device_get_custom_index (device,
-					     G_USB_DEVICE_CLASS_VENDOR,
+					     G_USB_DEVICE_CLASS_VENDOR_SPECIFIC,
 					     'F', 'W', &error);
 	g_assert_no_error (error);
 	g_assert_cmpint (idx, ==, 3);
