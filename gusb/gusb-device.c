@@ -800,7 +800,7 @@ g_usb_device_control_transfer (GUsbDevice            *device,
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
-	helper.context = g_main_context_new ();
+	helper.context = g_usb_context_get_main_context (device->priv->context);
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 	helper.finish_func = g_usb_device_control_transfer_finish;
@@ -863,7 +863,7 @@ g_usb_device_bulk_transfer (GUsbDevice    *device,
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
-	helper.context = g_main_context_new ();
+	helper.context = g_usb_context_get_main_context (device->priv->context);
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 	helper.finish_func = g_usb_device_bulk_transfer_finish;
@@ -921,7 +921,7 @@ g_usb_device_interrupt_transfer	(GUsbDevice    *device,
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
-	helper.context = g_main_context_new ();
+	helper.context = g_usb_context_get_main_context (device->priv->context);
 	helper.loop = g_main_loop_new (helper.context, FALSE);
 	helper.error = error;
 	helper.finish_func = g_usb_device_interrupt_transfer_finish;

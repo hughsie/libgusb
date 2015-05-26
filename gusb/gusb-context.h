@@ -71,6 +71,9 @@ GUsbContext	*g_usb_context_new			(GError		**error);
 G_DEPRECATED
 GUsbSource	*g_usb_context_get_source		(GUsbContext	*context,
 							 GMainContext	*main_ctx);
+GMainContext	*g_usb_context_get_main_context		(GUsbContext	*context);
+void		 g_usb_context_set_main_context		(GUsbContext	*context,
+							 GMainContext	*main_ctx);
 
 void		 g_usb_context_enumerate		(GUsbContext	*context);
 

@@ -55,6 +55,7 @@ enum {
  **/
 struct _GUsbContextPrivate
 {
+	GMainContext			*main_ctx;
 	GPtrArray			*devices;
 	GHashTable			*dict_usb_ids;
 	GThread				*thread_event;
@@ -102,6 +103,7 @@ g_usb_context_dispose (GObject *object)
 		priv->hotplug_poll_id = 0;
 	}
 
+	g_clear_pointer (&priv->main_ctx, g_main_context_unref);
 	g_clear_pointer (&priv->devices, g_ptr_array_unref);
 	g_clear_pointer (&priv->dict_usb_ids, g_hash_table_unref);
 	g_clear_pointer (&priv->ctx, libusb_exit);
@@ -399,6 +401,44 @@ g_usb_context_rescan_cb (gpointer user_data)
 	return TRUE;
 }
 
+
+/**
+ * g_usb_context_get_main_context:
+ * @context: a #GUsbContext
+ *
+ * Gets the internal GMainContext to use for syncronous methods.
+ * By default the value is set to the value of g_main_context_default()
+ *
+ * Return value: (transfer none): the #GMainContext
+ *
+ * Since: 0.2.5
+ **/
+GMainContext *
+g_usb_context_get_main_context (GUsbContext *context)
+{
+	GUsbContextPrivate *priv = context->priv;
+	return priv->main_ctx;
+}
+
+
+/**
+ * g_usb_context_set_main_context:
+ * @context: a #GUsbContext
+ *
+ * Sets the internal GMainContext to use for syncronous methods.
+ *
+ * Since: 0.2.5
+ **/
+void
+g_usb_context_set_main_context (GUsbContext *context, GMainContext *main_ctx)
+{
+	GUsbContextPrivate *priv = context->priv;
+	if (main_ctx != priv->main_ctx){
+		g_main_context_unref (priv->main_ctx);
+		priv->main_ctx = g_main_context_ref (main_ctx);
+	}
+}
+
 /**
  * g_usb_context_enumerate:
  * @context: a #GUsbContext
@@ -473,6 +513,7 @@ g_usb_context_initable_init (GInitable     *initable,
 		return FALSE;
 	}
 
+	priv->main_ctx = g_main_context_ref (g_main_context_default ());
 	priv->ctx = ctx;
 	priv->thread_event_run = 1;
 	priv->thread_event = g_thread_new ("GUsbEventThread",
