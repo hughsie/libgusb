@@ -820,7 +820,6 @@ g_usb_device_control_transfer (GUsbDevice            *device,
 					     &helper);
 	g_main_loop_run (helper.loop);
 	g_main_loop_unref (helper.loop);
-	g_main_context_unref (helper.context);
 
 	if (actual_length != NULL)
 		*actual_length = (gsize) helper.ret;
@@ -878,7 +877,6 @@ g_usb_device_bulk_transfer (GUsbDevice    *device,
 					  &helper);
 	g_main_loop_run (helper.loop);
 	g_main_loop_unref (helper.loop);
-	g_main_context_unref (helper.context);
 
 	if (actual_length != NULL)
 		*actual_length = (gsize) helper.ret;
@@ -936,7 +934,6 @@ g_usb_device_interrupt_transfer	(GUsbDevice    *device,
 					       &helper);
 	g_main_loop_run (helper.loop);
 	g_main_loop_unref (helper.loop);
-	g_main_context_unref (helper.context);
 
 	if (actual_length != NULL)
 		*actual_length = helper.ret;
