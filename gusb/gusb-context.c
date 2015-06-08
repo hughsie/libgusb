@@ -417,6 +417,7 @@ GMainContext *
 g_usb_context_get_main_context (GUsbContext *context)
 {
 	GUsbContextPrivate *priv = context->priv;
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
 	return priv->main_ctx;
 }
 
@@ -430,9 +431,13 @@ g_usb_context_get_main_context (GUsbContext *context)
  * Since: 0.2.5
  **/
 void
-g_usb_context_set_main_context (GUsbContext *context, GMainContext *main_ctx)
+g_usb_context_set_main_context (GUsbContext  *context,
+                                GMainContext *main_ctx)
 {
 	GUsbContextPrivate *priv = context->priv;
+
+	g_return_if_fail (G_USB_IS_CONTEXT (context));
+
 	if (main_ctx != priv->main_ctx){
 		g_main_context_unref (priv->main_ctx);
 		priv->main_ctx = g_main_context_ref (main_ctx);
