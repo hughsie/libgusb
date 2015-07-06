@@ -1,3 +1,10 @@
+Version 0.2.6
+~~~~~~~~~~~~~
+Released: 2015-07-06
+
+Bugfixes:
+ - Do not unref the GMainContext after each request (Richard Hughes)
+
 Version 0.2.5
 ~~~~~~~~~~~~~
 Released: 2015-05-28
