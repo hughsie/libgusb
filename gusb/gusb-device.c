@@ -1433,7 +1433,7 @@ g_usb_device_get_parent (GUsbDevice *device)
  *
  * Gets the device children if any exist.
  *
- * Return value: (transfer full): an array of #GUsbDevice
+ * Return value: (transfer full) (element-type GUsbDevice): an array of #GUsbDevice
  *
  * Since: 0.2.4
  **/

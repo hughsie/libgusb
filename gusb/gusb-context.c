@@ -918,7 +918,7 @@ _g_usb_context_lookup_product (GUsbContext  *context,
  * g_usb_context_get_devices:
  * @context: a #GUsbContext
  *
- * Return value: (transfer full): a new #GPtrArray of #GUsbDevice's.
+ * Return value: (transfer full) (element-type GUsbDevice): a new #GPtrArray of #GUsbDevice's.
  *
  * Since: 0.2.2
  **/

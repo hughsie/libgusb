@@ -181,7 +181,7 @@ g_usb_device_list_init (GUsbDeviceList *list)
  * g_usb_device_list_get_devices:
  * @list: a #GUsbDeviceList
  *
- * Return value: (transfer full): a new #GPtrArray of #GUsbDevice's.
+ * Return value: (transfer full) (element-type GUsbDevice): a new #GPtrArray of #GUsbDevice's.
  *
  * Since: 0.1.0
  **/
