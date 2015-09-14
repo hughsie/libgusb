@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -15,24 +15,22 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GUSB_H__
-#define __GUSB_H__
+#ifndef __GUSB_AUTOCLEANUPS_H__
+#define __GUSB_AUTOCLEANUPS_H__
 
-#define __GUSB_INSIDE__
-
-#include <gusb/gusb-autocleanups.h>
 #include <gusb/gusb-context.h>
-#include <gusb/gusb-source.h>
 #include <gusb/gusb-device.h>
 #include <gusb/gusb-device-list.h>
-#include <gusb/gusb-version.h>
-#include <gusb/gusb-util.h>
 
-#undef __GUSB_INSIDE__
+#ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 
-#endif /* __GUSB_H__ */
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbContext, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbDevice, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbDeviceList, g_object_unref)
 
+#endif
+
+#endif /* __GUSB_AUTOCLEANUPS_H__ */
