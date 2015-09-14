@@ -20,6 +20,7 @@ libgusb_include_HEADERS =					\
 
 libgusbbase_includedir = $(libgusb_includedir)/gusb
 libgusbbase_include_HEADERS =					\
+	gusb-autocleanups.h					\
 	gusb-version.h						\
 	gusb-context.h						\
 	gusb-context-private.h					\
