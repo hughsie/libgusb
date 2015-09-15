@@ -1,3 +1,13 @@
+Version 0.2.7
+~~~~~~~~~~~~~
+Released: 2015-09-15
+
+New Features:
+ - Support g_autoptr() for all gusb object types (Kalev Lember)
+
+Bugfixes:
+ - Add missing element-type annotations (Robert Ancell)
+
 Version 0.2.6
 ~~~~~~~~~~~~~
 Released: 2015-07-06
