@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -15,25 +15,20 @@
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+ * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GUSB_H__
-#define __GUSB_H__
+#ifndef __GUSB_INTERFACE_PRIVATE_H__
+#define __GUSB_INTERFACE_PRIVATE_H__
 
-#define __GUSB_INSIDE__
+#include <libusb-1.0/libusb.h>
 
-#include <gusb/gusb-autocleanups.h>
-#include <gusb/gusb-context.h>
 #include <gusb/gusb-interface.h>
-#include <gusb/gusb-source.h>
-#include <gusb/gusb-device.h>
-#include <gusb/gusb-device-list.h>
-#include <gusb/gusb-version.h>
-#include <gusb/gusb-util.h>
 
-#undef __GUSB_INSIDE__
+G_BEGIN_DECLS
 
-#endif /* __GUSB_H__ */
+GUsbInterface	*_g_usb_interface_new		(const struct libusb_interface_descriptor	*iface);
 
+G_END_DECLS
+
+#endif /* __GUSB_INTERFACE_PRIVATE_H__ */

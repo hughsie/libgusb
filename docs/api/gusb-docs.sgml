@@ -50,6 +50,7 @@
     <xi:include href="xml/gusb-source.xml"/>
     <xi:include href="xml/gusb-device.xml"/>
     <xi:include href="xml/gusb-device-list.xml"/>
+    <xi:include href="xml/gusb-interface.xml"/>
   </reference>
 
   <reference id="libgusb-helpers">

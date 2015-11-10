@@ -29,6 +29,7 @@
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbContext, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbDevice, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbInterface, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbDeviceList, g_object_unref)
 
 #endif
