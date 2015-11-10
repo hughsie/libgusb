@@ -809,6 +809,38 @@ g_usb_device_release_interface (GUsbDevice                     *device,
 }
 
 /**
+ * g_usb_device_set_interface_alt:
+ * @device: a #GUsbDevice
+ * @interface: bInterfaceNumber of the interface you wish to release
+ * @alt: alternative setting number
+ * @error: a #GError, or %NULL
+ *
+ * Sets an alternate setting on an interface.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.2.8
+ **/
+gboolean
+g_usb_device_set_interface_alt (GUsbDevice *device, gint interface,
+                                guint8 alt, GError **error)
+{
+	gint rc;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	if (device->priv->handle == NULL)
+		return g_usb_device_not_open_error (device, error);
+
+	rc = libusb_set_interface_alt_setting (device->priv->handle, interface, (gint) alt);
+	if (rc != LIBUSB_SUCCESS)
+		return g_usb_device_libusb_error_to_gerror (device, rc, error);
+
+	return TRUE;
+}
+
+/**
  * g_usb_device_get_string_descriptor:
  * @desc_index: the index for the string descriptor to retreive
  * @error: a #GError, or %NULL

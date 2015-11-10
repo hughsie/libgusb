@@ -206,6 +206,10 @@ gboolean		 g_usb_device_release_interface	(GUsbDevice	*device,
 							 gint		 interface,
 							 GUsbDeviceClaimInterfaceFlags flags,
 							 GError		**error);
+gboolean		 g_usb_device_set_interface_alt	(GUsbDevice	*device,
+							 gint		 interface,
+							 guint8		 alt,
+							 GError		**error);
 
 gchar			*g_usb_device_get_string_descriptor (GUsbDevice *device,
 							 guint8		 desc_index,
