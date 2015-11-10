@@ -38,6 +38,7 @@
 #include "gusb-util.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
+#include "gusb-interface-private.h"
 
 /**
  * GUsbDevicePrivate:
@@ -475,6 +476,114 @@ g_usb_device_get_custom_index (GUsbDevice *device,
 
 	libusb_free_config_descriptor (config);
 	return idx;
+}
+
+/**
+ * g_usb_device_get_interface:
+ * @device: a #GUsbDevice
+ * @class_id: a device class, e.g. 0xff for VENDOR
+ * @subclass_id: a device subclass
+ * @protocol_id: a protocol number
+ * @error: a #GError, or %NULL
+ *
+ * Gets the first interface that matches the vendor class interface descriptor.
+ * If you want to find all the interfaces that match (there may be other
+ * 'alternate' interfaces you have to use g_usb_device_get_interfaces() and
+ * check each one manally.
+ *
+ * Return value: (transfer full): a #GUsbInterface or %NULL for not found
+ *
+ * Since: 0.2.8
+ **/
+GUsbInterface *
+g_usb_device_get_interface (GUsbDevice *device,
+			    guint8      class_id,
+			    guint8      subclass_id,
+			    guint8      protocol_id,
+			    GError    **error)
+{
+	const struct libusb_interface_descriptor *ifp;
+	gint rc;
+	GUsbInterface *interface = NULL;
+	guint i;
+	struct libusb_config_descriptor *config;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	rc = libusb_get_active_config_descriptor (device->priv->device, &config);
+	if (!g_usb_device_libusb_error_to_gerror (device, rc, error))
+		return NULL;
+
+	/* find the right data */
+	for (i = 0; i < config->bNumInterfaces; i++) {
+		ifp = &config->interface[i].altsetting[0];
+		if (ifp->bInterfaceClass != class_id)
+			continue;
+		if (ifp->bInterfaceSubClass != subclass_id)
+			continue;
+		if (ifp->bInterfaceProtocol != protocol_id)
+			continue;
+		interface = _g_usb_interface_new (ifp);
+		break;
+	}
+
+	/* nothing matched */
+	if (interface == NULL) {
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+			     "no interface for class 0x%02x, "
+			     "subclass 0x%02x and protocol 0x%02x",
+			     class_id, subclass_id, protocol_id);
+	}
+
+	libusb_free_config_descriptor (config);
+	return interface;
+}
+
+/**
+ * g_usb_device_get_interfaces:
+ * @device: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Gets all the interfaces exported by the device.
+ *
+ * Return value: (transfer container) (element-type GUsbInterface): an array of interfaces or %NULL for error
+ *
+ * Since: 0.2.8
+ **/
+GPtrArray *
+g_usb_device_get_interfaces (GUsbDevice *device, GError **error)
+{
+	const struct libusb_interface_descriptor *ifp;
+	gint rc;
+	guint i;
+	guint j;
+	struct libusb_config_descriptor *config;
+	GPtrArray *array = NULL;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	rc = libusb_get_active_config_descriptor (device->priv->device, &config);
+	if (!g_usb_device_libusb_error_to_gerror (device, rc, error))
+		return NULL;
+
+	/* get all interfaces */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	for (i = 0; i < config->bNumInterfaces; i++) {
+		GUsbInterface *interface = NULL;
+		for (j = 0; j < (guint) config->interface[i].num_altsetting; j++) {
+			ifp = &config->interface[i].altsetting[j];
+			interface = _g_usb_interface_new (ifp);
+			g_ptr_array_add (array, interface);
+		}
+		break;
+	}
+
+	libusb_free_config_descriptor (config);
+	return array;
 }
 
 /**

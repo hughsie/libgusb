@@ -26,6 +26,7 @@
 #include <gio/gio.h>
 
 #include <gusb/gusb-util.h>
+#include <gusb/gusb-interface.h>
 
 G_BEGIN_DECLS
 
@@ -173,6 +174,14 @@ guint8			 g_usb_device_get_custom_index	(GUsbDevice	*device,
 							 guint8		 class_id,
 							 guint8		 subclass_id,
 							 guint8		 protocol_id,
+							 GError		**error);
+
+GUsbInterface		*g_usb_device_get_interface	(GUsbDevice	*device,
+							 guint8		 class_id,
+							 guint8		 subclass_id,
+							 guint8		 protocol_id,
+							 GError		**error);
+GPtrArray		*g_usb_device_get_interfaces	(GUsbDevice	*device,
 							 GError		**error);
 
 gboolean		 g_usb_device_open		(GUsbDevice	*device,
