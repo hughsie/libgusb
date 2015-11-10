@@ -116,6 +116,9 @@ g_usb_device_get_property (GObject    *object,
 	case PROP_LIBUSB_DEVICE:
 		g_value_set_pointer (value, priv->device);
 		break;
+	case PROP_CONTEXT:
+		g_value_set_object (value, priv->context);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -195,7 +198,7 @@ g_usb_device_class_init (GUsbDeviceClass *klass)
 		g_param_spec_object ("context", NULL, NULL,
 		                     G_USB_TYPE_CONTEXT,
 		                     G_PARAM_CONSTRUCT_ONLY|
-		                     G_PARAM_WRITABLE);
+		                     G_PARAM_READWRITE);
 
 	/**
 	 * GUsbDevice:platform-id:
