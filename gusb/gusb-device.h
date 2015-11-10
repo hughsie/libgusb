@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2010-2015 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -159,6 +159,7 @@ guint8			 g_usb_device_get_port_number	(GUsbDevice	*device);
 
 guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
+guint16			 g_usb_device_get_release	(GUsbDevice	*device);
 const gchar		*g_usb_device_get_vid_as_str	(GUsbDevice	*device);
 const gchar		*g_usb_device_get_pid_as_str	(GUsbDevice	*device);
 guint8			 g_usb_device_get_device_class	(GUsbDevice	*device);

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2011 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2010-2015 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  * Copyright (C) 2011 Debarshi Ray <debarshir@src.gnome.org>
  *
@@ -1547,6 +1547,24 @@ g_usb_device_get_pid (GUsbDevice *device)
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
 
 	return device->priv->desc.idProduct;
+}
+
+/**
+ * g_usb_device_get_release:
+ * @device: a #GUsbDevice
+ *
+ * Gets the BCD firmware version number for the device.
+ *
+ * Return value: a version number in BCD format.
+ *
+ * Since: 0.2.8
+ **/
+guint16
+g_usb_device_get_release (GUsbDevice *device)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
+	return device->priv->desc.bcdDevice;
 }
 
 /**
