@@ -640,6 +640,8 @@ g_usb_device_reset (GUsbDevice  *device,
 		return g_usb_device_not_open_error (device, error);
 
 	rc = libusb_reset_device (device->priv->handle);
+	if (rc == LIBUSB_ERROR_NOT_FOUND)
+		return TRUE;
 	return g_usb_device_libusb_error_to_gerror (device, rc, error);
 }
 
