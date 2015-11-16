@@ -582,7 +582,6 @@ g_usb_device_get_interfaces (GUsbDevice *device, GError **error)
 			interface = _g_usb_interface_new (ifp);
 			g_ptr_array_add (array, interface);
 		}
-		break;
 	}
 
 	libusb_free_config_descriptor (config);
