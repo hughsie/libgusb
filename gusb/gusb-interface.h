@@ -26,32 +26,8 @@
 
 G_BEGIN_DECLS
 
-#define G_USB_TYPE_INTERFACE		(g_usb_interface_get_type ())
-#define G_USB_INTERFACE(o)		(G_TYPE_CHECK_INSTANCE_CAST ((o), G_USB_TYPE_INTERFACE, GUsbInterface))
-#define G_USB_IS_INTERFACE(o)		(G_TYPE_CHECK_INSTANCE_TYPE ((o), G_USB_TYPE_INTERFACE))
-
-typedef struct _GUsbInterfacePrivate	GUsbInterfacePrivate;
-typedef struct _GUsbInterface		GUsbInterface;
-typedef struct _GUsbInterfaceClass	GUsbInterfaceClass;
-
-struct _GUsbInterface
-{
-	 GObject			 parent;
-	 GUsbInterfacePrivate		*priv;
-};
-
-struct _GUsbInterfaceClass
-{
-	GObjectClass			 parent_class;
-	/*< private >*/
-	/*
-	 * If adding fields to this struct, remove corresponding
-	 * amount of padding to avoid changing overall struct size
-	 */
-	gpointer _gusb_reserved[31];
-};
-
-GType		 g_usb_interface_get_type	(void);
+#define G_USB_TYPE_INTERFACE (g_usb_interface_get_type ())
+G_DECLARE_FINAL_TYPE (GUsbInterface, g_usb_interface, G_USB, INTERFACE, GObject)
 
 guint8		 g_usb_interface_get_length	(GUsbInterface	*interface);
 guint8		 g_usb_interface_get_kind	(GUsbInterface	*interface);
