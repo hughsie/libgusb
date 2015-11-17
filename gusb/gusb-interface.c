@@ -35,26 +35,22 @@
 #include "gusb-interface.h"
 #include "gusb-interface-private.h"
 
-/**
- * GUsbInterfacePrivate:
- *
- * Private #GUsbInterface data
- **/
-struct _GUsbInterfacePrivate
+struct _GUsbInterface
 {
-	struct libusb_interface_descriptor	 iface;
-	GBytes					*extra;
+	GObject parent_instance;
+
+	struct libusb_interface_descriptor iface;
+	GBytes *extra;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE (GUsbInterface, g_usb_interface, G_TYPE_OBJECT)
+G_DEFINE_TYPE (GUsbInterface, g_usb_interface, G_TYPE_OBJECT)
 
 static void
 g_usb_interface_finalize (GObject *object)
 {
 	GUsbInterface *interface = G_USB_INTERFACE (object);
-	GUsbInterfacePrivate *priv = interface->priv;
 
-	g_bytes_unref (priv->extra);
+	g_bytes_unref (interface->extra);
 
 	G_OBJECT_CLASS (g_usb_interface_parent_class)->finalize (object);
 }
@@ -63,13 +59,13 @@ static void
 g_usb_interface_class_init (GUsbInterfaceClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
 	object_class->finalize = g_usb_interface_finalize;
 }
 
 static void
 g_usb_interface_init (GUsbInterface *interface)
 {
-	interface->priv = g_usb_interface_get_instance_private (interface);
 }
 
 /**
@@ -86,10 +82,10 @@ _g_usb_interface_new (const struct libusb_interface_descriptor *iface)
 	interface = g_object_new (G_USB_TYPE_INTERFACE, NULL);
 
 	/* copy the data */
-	memcpy (&interface->priv->iface,
+	memcpy (&interface->iface,
 		iface,
 		sizeof (struct libusb_interface_descriptor));
-	interface->priv->extra = g_bytes_new (iface->extra, iface->extra_length);
+	interface->extra = g_bytes_new (iface->extra, iface->extra_length);
 
 	return G_USB_INTERFACE (interface);
 }
@@ -108,7 +104,7 @@ guint8
 g_usb_interface_get_length (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bLength;
+	return interface->iface.bLength;
 }
 
 /**
@@ -125,7 +121,7 @@ guint8
 g_usb_interface_get_kind (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bDescriptorType;
+	return interface->iface.bDescriptorType;
 }
 
 /**
@@ -142,7 +138,7 @@ guint8
 g_usb_interface_get_number (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bInterfaceNumber;
+	return interface->iface.bInterfaceNumber;
 }
 
 /**
@@ -159,7 +155,7 @@ guint8
 g_usb_interface_get_alternate (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bAlternateSetting;
+	return interface->iface.bAlternateSetting;
 }
 
 /**
@@ -176,7 +172,7 @@ guint8
 g_usb_interface_get_class (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bInterfaceClass;
+	return interface->iface.bInterfaceClass;
 }
 
 /**
@@ -194,7 +190,7 @@ guint8
 g_usb_interface_get_subclass (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bInterfaceSubClass;
+	return interface->iface.bInterfaceSubClass;
 }
 
 /**
@@ -212,7 +208,7 @@ guint8
 g_usb_interface_get_protocol (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.bInterfaceProtocol;
+	return interface->iface.bInterfaceProtocol;
 }
 
 /**
@@ -229,7 +225,7 @@ guint8
 g_usb_interface_get_index (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), 0);
-	return interface->priv->iface.iInterface;
+	return interface->iface.iInterface;
 }
 
 /**
@@ -246,5 +242,5 @@ GBytes *
 g_usb_interface_get_extra (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), NULL);
-	return interface->priv->extra;
+	return interface->extra;
 }
