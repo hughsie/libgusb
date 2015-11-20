@@ -335,19 +335,26 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice  *device,
 	case LIBUSB_ERROR_NO_MEM:
 	case LIBUSB_ERROR_OTHER:
 	case LIBUSB_ERROR_INTERRUPTED:
-		error_code = G_USB_DEVICE_ERROR_INTERNAL; break;
+		error_code = G_USB_DEVICE_ERROR_INTERNAL;
+		break;
 	case LIBUSB_ERROR_IO:
 	case LIBUSB_ERROR_OVERFLOW:
 	case LIBUSB_ERROR_PIPE:
-		error_code = G_USB_DEVICE_ERROR_IO; break;
+		error_code = G_USB_DEVICE_ERROR_IO;
+		break;
 	case LIBUSB_ERROR_TIMEOUT:
-		error_code = G_USB_DEVICE_ERROR_TIMED_OUT; break;
+		error_code = G_USB_DEVICE_ERROR_TIMED_OUT;
+		break;
 	case LIBUSB_ERROR_NOT_SUPPORTED:
-		error_code = G_USB_DEVICE_ERROR_NOT_SUPPORTED; break;
-	case LIBUSB_ERROR_NO_DEVICE:
+		error_code = G_USB_DEVICE_ERROR_NOT_SUPPORTED;
+		break;
 	case LIBUSB_ERROR_ACCESS:
+		error_code = G_USB_DEVICE_ERROR_PERMISSION_DENIED;
+		break;
+	case LIBUSB_ERROR_NO_DEVICE:
 	case LIBUSB_ERROR_BUSY:
-		error_code = G_USB_DEVICE_ERROR_NO_DEVICE; break;
+		error_code = G_USB_DEVICE_ERROR_NO_DEVICE;
+		break;
 	}
 
 	g_set_error (error, G_USB_DEVICE_ERROR, error_code,
