@@ -2,10 +2,10 @@ GUsb Release Notes
 
 * Write NEWS entries for GUsb in the same format as usual.
 
-git shortlog gusb_0_2_7.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog gusb_0_2_8.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.2.8
+Version 0.2.9
 ~~~~~~~~~~~~~
 Released: 2015-xx-xx
 
@@ -42,7 +42,7 @@ git push
 * Send an email to devkit-devel@lists.freedesktop.org
 
 =================================================
-GUsb 0.2.8 released!
+GUsb 0.2.9 released!
 
 GUsb is a GObject wrapper for libusb1 that makes it easy to do
 asynchronous control, bulk and interrupt transfers with proper
