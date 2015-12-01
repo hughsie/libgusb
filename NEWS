@@ -1,3 +1,17 @@
+Version 0.2.8
+~~~~~~~~~~~~~
+Released: 2015-12-01
+
+New Features:
+ - Add a PERMISSION_DENIED error enum (Richard Hughes)
+ - Add a thin glib wrapper around a libusb_interface_descriptor (Richard Hughes)
+ - Add g_usb_device_get_interfaces() (Richard Hughes)
+ - Add g_usb_device_get_release() (Richard Hughes)
+ - Add g_usb_device_set_interface_alt() (Richard Hughes)
+
+Bugfixes:
+ - Ignore the not-found error when resetting a device (Richard Hughes)
+
 Version 0.2.7
 ~~~~~~~~~~~~~
 Released: 2015-09-15
