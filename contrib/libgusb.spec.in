@@ -58,6 +58,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/gusb-1
+%{_bindir}/gusbcmd
 %{_libdir}/libgusb.so
 %{_libdir}/pkgconfig/gusb.pc
 %{_datadir}/gtk-doc/html/gusb

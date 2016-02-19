@@ -16,19 +16,19 @@ AM_CPPFLAGS =						\
 GUSB_LIBS =						\
 	$(top_builddir)/gusb/libgusb.la
 
-noinst_PROGRAMS =					\
-	gusb
+bin_PROGRAMS =						\
+	gusbcmd
 
-gusb_SOURCES =						\
+gusbcmd_SOURCES =					\
 	gusb-main.c
 
-gusb_LDADD =						\
+gusbcmd_LDADD =						\
 	$(USB_LIBS)					\
 	$(GLIB_LIBS)					\
 	$(GUDEV_LIBS)					\
 	$(GUSB_LIBS)
 
-gusb_CFLAGS =						\
+gusbcmd_CFLAGS =					\
 	$(WARNINGFLAGS_C)
 
 clean-local:
