@@ -456,7 +456,7 @@ g_usb_device_get_custom_index (GUsbDevice *device,
 
 	rc = libusb_get_active_config_descriptor (device->priv->device, &config);
 	if (!g_usb_device_libusb_error_to_gerror (device, rc, error))
-		return NULL;
+		return 0x00;
 
 	/* find the right data */
 	for (i = 0; i < config->bNumInterfaces; i++) {
