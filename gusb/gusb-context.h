@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -92,6 +92,11 @@ GUsbDevice	*g_usb_context_find_by_vid_pid		(GUsbContext	*context,
 							 GError		**error);
 GUsbDevice	*g_usb_context_find_by_platform_id	(GUsbContext	*context,
 							 const gchar	*platform_id,
+							 GError		**error);
+
+GUsbDevice	*g_usb_context_wait_for_replug		(GUsbContext	*context,
+							 GUsbDevice	*device,
+							 guint		 timeout_ms,
 							 GError		**error);
 
 G_END_DECLS

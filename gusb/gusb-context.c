@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
@@ -58,6 +58,7 @@ struct _GUsbContextPrivate
 	GMainContext			*main_ctx;
 	GPtrArray			*devices;
 	GHashTable			*dict_usb_ids;
+	GHashTable			*dict_replug;
 	GThread				*thread_event;
 	gboolean			 done_enumerate;
 	volatile gint			 thread_event_run;
@@ -66,6 +67,12 @@ struct _GUsbContextPrivate
 	libusb_context			*ctx;
 	libusb_hotplug_callback_handle	 hotplug_id;
 };
+
+typedef struct {
+	GMainLoop			*loop;
+	GUsbDevice			*device;
+	guint				 timeout_id;
+} GUsbContextReplugHelper;
 
 static guint signals[LAST_SIGNAL] = { 0 };
 static GParamSpec *pspecs[N_PROPERTIES] = { NULL, };
@@ -76,6 +83,19 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
                          G_ADD_PRIVATE (GUsbContext)
                          G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE,
                                                g_usb_context_initable_iface_init))
+
+/**
+ * g_usb_context_replug_helper_free:
+ **/
+static void
+g_usb_context_replug_helper_free (GUsbContextReplugHelper *replug_helper)
+{
+	if (replug_helper->timeout_id != 0)
+		g_source_remove (replug_helper->timeout_id);
+	g_main_loop_unref (replug_helper->loop);
+	g_object_unref (replug_helper->device);
+	g_free (replug_helper);
+}
 
 /**
  * g_usb_context_error_quark:
@@ -106,6 +126,7 @@ g_usb_context_dispose (GObject *object)
 	g_clear_pointer (&priv->main_ctx, g_main_context_unref);
 	g_clear_pointer (&priv->devices, g_ptr_array_unref);
 	g_clear_pointer (&priv->dict_usb_ids, g_hash_table_unref);
+	g_clear_pointer (&priv->dict_replug, g_hash_table_unref);
 	g_clear_pointer (&priv->ctx, libusb_exit);
 
 	G_OBJECT_CLASS (g_usb_context_parent_class)->dispose (object);
@@ -277,6 +298,8 @@ g_usb_context_add_device (GUsbContext          *context,
 {
 	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
+	GUsbContextReplugHelper *replug_helper;
+	const gchar *platform_id;
 	guint8 bus;
 	guint8 address;
 	GError *error = NULL;
@@ -300,6 +323,18 @@ g_usb_context_add_device (GUsbContext          *context,
 		g_error_free (error);
 		goto out;
 	}
+
+	/* if we're waiting for replug, suppress the signal */
+	platform_id = g_usb_device_get_platform_id (device);
+	replug_helper = g_hash_table_lookup (priv->dict_replug, platform_id);
+	if (replug_helper != NULL) {
+		g_debug ("%s is in replug, ignoring add", platform_id);
+		g_object_unref (replug_helper->device);
+		replug_helper->device = g_object_ref (device);
+		g_main_loop_quit (replug_helper->loop);
+		goto out;
+	}
+
 	g_ptr_array_add (priv->devices, g_object_ref (device));
 	g_usb_context_emit_device_add (context, device);
 out:
@@ -313,6 +348,8 @@ g_usb_context_remove_device (GUsbContext          *context,
 {
 	GUsbDevice *device = NULL;
 	GUsbContextPrivate *priv = context->priv;
+	GUsbContextReplugHelper *replug_helper;
+	const gchar *platform_id;
 	guint8 bus;
 	guint8 address;
 
@@ -324,8 +361,18 @@ g_usb_context_remove_device (GUsbContext          *context,
 		g_debug ("%i:%i does not exist", bus, address);
 		return;
 	}
+
+	/* if we're waiting for replug, suppress the signal */
+	platform_id = g_usb_device_get_platform_id (device);
+	replug_helper = g_hash_table_lookup (priv->dict_replug, platform_id);
+	if (replug_helper != NULL) {
+		g_debug ("%s is in replug, ignoring remove", platform_id);
+		goto out;
+	}
+
 	g_usb_context_emit_device_remove (context, device);
 	g_ptr_array_remove (priv->devices, device);
+out:
 	g_object_unref (device);
 }
 
@@ -494,6 +541,8 @@ g_usb_context_init (GUsbContext *context)
 	priv = context->priv = g_usb_context_get_instance_private (context);
 	priv->devices = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->dict_usb_ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+	priv->dict_replug = g_hash_table_new_full (g_str_hash, g_str_equal,
+						   g_free, NULL);
 }
 
 static gboolean
@@ -930,6 +979,83 @@ g_usb_context_get_devices (GUsbContext *context)
 	g_usb_context_enumerate (context);
 
 	return g_ptr_array_ref (context->priv->devices);
+}
+
+/**
+ * g_usb_context_replug_timeout_cb:
+ **/
+static gboolean
+g_usb_context_replug_timeout_cb (gpointer user_data)
+{
+	GUsbContextReplugHelper *replug_helper = (GUsbContextReplugHelper *) user_data;
+	replug_helper->timeout_id = 0;
+	g_main_loop_quit (replug_helper->loop);
+	return FALSE;
+}
+
+/**
+ * g_usb_context_wait_for_replug:
+ * @context: a #GUsbContext
+ * @device: a #GUsbDevice
+ * @timeout_ms: timeout to wait
+ * @error: A #GError or %NULL
+ *
+ * Waits for the device to be replugged.
+ * It may come back with a different VID:PID.
+ *
+ * Warning: This is syncronous and blocks until the device comes
+ * back or the timeout triggers.
+ *
+ * Return value: (transfer full): a new #GUsbDevice, or %NULL for invalid
+ *
+ * Since: 0.2.9
+ **/
+GUsbDevice *
+g_usb_context_wait_for_replug (GUsbContext *context,
+			       GUsbDevice *device,
+			       guint timeout_ms,
+			       GError **error)
+{
+	GUsbDevice *device_new = NULL;
+	GUsbContextPrivate *priv = context->priv;
+	GUsbContextReplugHelper *replug_helper;
+	const gchar *platform_id;
+
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), NULL);
+
+	/* create a helper */
+	replug_helper = g_new0 (GUsbContextReplugHelper, 1);
+	replug_helper->device = g_object_ref (device);
+	replug_helper->loop = g_main_loop_new (NULL, FALSE);
+	replug_helper->timeout_id = g_timeout_add (timeout_ms,
+						   g_usb_context_replug_timeout_cb,
+						   replug_helper);
+
+	/* register */
+	platform_id = g_usb_device_get_platform_id (device);
+	g_hash_table_insert (priv->dict_replug,
+			     g_strdup (platform_id), replug_helper);
+
+	/* wait for timeout, or replug */
+	g_main_loop_run (replug_helper->loop);
+
+	/* unregister */
+	g_hash_table_remove (priv->dict_replug, platform_id);
+
+	/* so we timed out; emit the removal now */
+	if (replug_helper->timeout_id == 0) {
+		g_usb_context_emit_device_remove (context, replug_helper->device);
+		g_ptr_array_remove (priv->devices, replug_helper->device);
+		g_set_error_literal (error,
+				     G_USB_CONTEXT_ERROR,
+				     G_USB_CONTEXT_ERROR_INTERNAL,
+				     "request timed out");
+		goto out;
+	}
+	device_new = g_object_ref (replug_helper->device);
+out:
+	g_usb_context_replug_helper_free (replug_helper);
+	return device_new;
 }
 
 /**

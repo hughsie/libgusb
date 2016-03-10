@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011-2016 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -356,6 +356,51 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 }
 
 /**
+ * gusb_cmd_replug:
+ **/
+static gboolean
+gusb_cmd_replug (GUsbCmdPrivate *priv, gchar **values, GError **error)
+{
+	GUsbDevice *device;
+	GUsbDevice *device_new;
+	guint16 vid, pid;
+
+	/* check args */
+	if (g_strv_length (values) != 2) {
+		g_set_error_literal (error, 1, 0,
+				     "no VID:PID specified");
+		return FALSE;
+	}
+
+	/* get vid:pid */
+	vid = g_ascii_strtoull (values[0], NULL, 16);
+	pid = g_ascii_strtoull (values[1], NULL, 16);
+	device = g_usb_context_find_by_vid_pid (priv->usb_ctx,
+						vid, pid, error);
+	if (device == NULL)
+		return FALSE;
+
+	/* watch for debugging */
+	g_signal_connect (priv->usb_ctx, "device-added",
+			  G_CALLBACK (gusb_device_list_added_cb),
+			  priv);
+	g_signal_connect (priv->usb_ctx, "device-removed",
+			  G_CALLBACK (gusb_device_list_removed_cb),
+			  priv);
+
+	/* wait for replug */
+	device_new = g_usb_context_wait_for_replug (priv->usb_ctx,
+						    device,
+						    5000,
+						    error);
+	if (device_new == NULL)
+		return FALSE;
+
+	g_object_unref (device);
+	return TRUE;
+}
+
+/**
  * gusb_cmd_run:
  **/
 static gboolean
@@ -444,6 +489,10 @@ main (int argc, char *argv[])
 		     "watch",
 		     "Watch devices as they come and go",
 		     gusb_cmd_watch);
+	gusb_cmd_add (priv->cmd_array,
+		     "replug",
+		     "Watch a device as it reconnects",
+		     gusb_cmd_replug);
 
 	/* sort by command name */
 	g_ptr_array_sort (priv->cmd_array,
