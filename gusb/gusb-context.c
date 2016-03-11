@@ -1026,7 +1026,7 @@ g_usb_context_wait_for_replug (GUsbContext *context,
 	/* create a helper */
 	replug_helper = g_new0 (GUsbContextReplugHelper, 1);
 	replug_helper->device = g_object_ref (device);
-	replug_helper->loop = g_main_loop_new (NULL, FALSE);
+	replug_helper->loop = g_main_loop_new (priv->main_ctx, FALSE);
 	replug_helper->timeout_id = g_timeout_add (timeout_ms,
 						   g_usb_context_replug_timeout_cb,
 						   replug_helper);
