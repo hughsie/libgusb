@@ -324,6 +324,9 @@ g_usb_context_add_device (GUsbContext          *context,
 		goto out;
 	}
 
+	/* add to enumerated list */
+	g_ptr_array_add (priv->devices, g_object_ref (device));
+
 	/* if we're waiting for replug, suppress the signal */
 	platform_id = g_usb_device_get_platform_id (device);
 	replug_helper = g_hash_table_lookup (priv->dict_replug, platform_id);
@@ -335,7 +338,7 @@ g_usb_context_add_device (GUsbContext          *context,
 		goto out;
 	}
 
-	g_ptr_array_add (priv->devices, g_object_ref (device));
+	/* emit signal */
 	g_usb_context_emit_device_add (context, device);
 out:
 	if (device != NULL)
@@ -362,6 +365,9 @@ g_usb_context_remove_device (GUsbContext          *context,
 		return;
 	}
 
+	/* remove from enumerated list */
+	g_ptr_array_remove (priv->devices, device);
+
 	/* if we're waiting for replug, suppress the signal */
 	platform_id = g_usb_device_get_platform_id (device);
 	replug_helper = g_hash_table_lookup (priv->dict_replug, platform_id);
@@ -370,8 +376,8 @@ g_usb_context_remove_device (GUsbContext          *context,
 		goto out;
 	}
 
+	/* emit signal */
 	g_usb_context_emit_device_remove (context, device);
-	g_ptr_array_remove (priv->devices, device);
 out:
 	g_object_unref (device);
 }
@@ -1045,7 +1051,6 @@ g_usb_context_wait_for_replug (GUsbContext *context,
 	/* so we timed out; emit the removal now */
 	if (replug_helper->timeout_id == 0) {
 		g_usb_context_emit_device_remove (context, replug_helper->device);
-		g_ptr_array_remove (priv->devices, replug_helper->device);
 		g_set_error_literal (error,
 				     G_USB_CONTEXT_ERROR,
 				     G_USB_CONTEXT_ERROR_INTERNAL,
