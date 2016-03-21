@@ -1,3 +1,11 @@
+Version 0.2.9
+~~~~~~~~~~~~~
+Released: 2016-03-21
+
+New Features:
+ - Add g_usb_context_wait_for_replug() (Richard Hughes)
+ - Install gusbcmd as a debugging aid (Richard Hughes)
+
 Version 0.2.8
 ~~~~~~~~~~~~~
 Released: 2015-12-01
