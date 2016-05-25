@@ -37,4 +37,28 @@ LIBGUSB_0.2.4 {
 LIBGUSB_0.2.5 {
   global:
     g_usb_device_get_custom_index;
+    g_usb_context_get_main_context;
+    g_usb_context_set_main_context;
 } LIBGUSB_0.2.4;
+
+LIBGUSB_0.2.8 {
+  global:
+    g_usb_device_get_interface;
+    g_usb_device_get_interfaces;
+    g_usb_device_get_release;
+    g_usb_device_set_interface_alt;
+    g_usb_interface_get_alternate;
+    g_usb_interface_get_class;
+    g_usb_interface_get_extra;
+    g_usb_interface_get_index;
+    g_usb_interface_get_kind;
+    g_usb_interface_get_length;
+    g_usb_interface_get_number;
+    g_usb_interface_get_protocol;
+    g_usb_interface_get_subclass;
+} LIBGUSB_0.2.5
+
+LIBGUSB_0.2.9 {
+  global:
+    g_usb_context_wait_for_replug;
+} LIBGUSB_0.2.8
