@@ -56,9 +56,9 @@ LIBGUSB_0.2.8 {
     g_usb_interface_get_number;
     g_usb_interface_get_protocol;
     g_usb_interface_get_subclass;
-} LIBGUSB_0.2.5
+} LIBGUSB_0.2.5;
 
 LIBGUSB_0.2.9 {
   global:
     g_usb_context_wait_for_replug;
-} LIBGUSB_0.2.8
+} LIBGUSB_0.2.8;
