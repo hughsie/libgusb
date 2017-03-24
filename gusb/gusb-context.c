@@ -421,10 +421,11 @@ g_usb_context_rescan (GUsbContext *context)
 	}
 
 	/* look for any removed devices */
+	libusb_get_device_list (priv->ctx, &dev_list);
 	for (l = existing_devices; l != NULL; l = l->next) {
 		device = G_USB_DEVICE (l->data);
 		found = FALSE;
-		for (i = 0; dev_list && dev_list[i]; i++) {
+		for (i = 0; dev_list != NULL && dev_list[i] != NULL; i++) {
 			if (libusb_get_bus_number (dev_list[i]) == g_usb_device_get_bus (device) &&
 			    libusb_get_device_address (dev_list[i]) == g_usb_device_get_address (device)) {
 				found = TRUE;
@@ -438,8 +439,7 @@ g_usb_context_rescan (GUsbContext *context)
 	}
 
 	/* add any devices not yet added (duplicates will be filtered */
-	libusb_get_device_list (priv->ctx, &dev_list);
-	for (i = 0; dev_list && dev_list[i]; i++)
+	for (i = 0; dev_list != NULL && dev_list[i] != NULL; i++)
 		g_usb_context_add_device (context, dev_list[i]);
 
 	g_list_free (existing_devices);
