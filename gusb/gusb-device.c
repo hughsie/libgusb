@@ -1095,11 +1095,13 @@ typedef struct {
 	gulong			 cancellable_id;
 	struct libusb_transfer	*transfer;
 	guint8			*data; /* owned by the user */
+	guint8			*data_raw; /* owned by the task */
 } GcmDeviceReq;
 
 static void
 g_usb_device_req_free (GcmDeviceReq *req)
 {
+	g_free (req->data_raw);
 	if (req->cancellable_id > 0) {
 		g_cancellable_disconnect (req->cancellable,
 					  req->cancellable_id);
@@ -1249,7 +1251,6 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
 	GcmDeviceReq *req;
 	gint rc;
 	guint8 request_type_raw = 0;
-	guint8 *data_raw;
 	GError *error = NULL;
 
 	g_return_if_fail (G_USB_IS_DEVICE (device));
@@ -1282,17 +1283,17 @@ g_usb_device_control_transfer_async (GUsbDevice           *device,
 	request_type_raw |= (request_type << 5);
 	request_type_raw |= recipient;
 
-	data_raw = g_malloc0 (length + LIBUSB_CONTROL_SETUP_SIZE);
-	memmove (data_raw + LIBUSB_CONTROL_SETUP_SIZE, data, length);
+	req->data_raw = g_malloc0 (length + LIBUSB_CONTROL_SETUP_SIZE);
+	memmove (req->data_raw + LIBUSB_CONTROL_SETUP_SIZE, data, length);
 
 	/* fill in setup packet */
-	libusb_fill_control_setup (data_raw, request_type_raw,
+	libusb_fill_control_setup (req->data_raw, request_type_raw,
 	                           request, value, idx, length);
 
 	/* fill in transfer details */
 	libusb_fill_control_transfer (req->transfer,
 	                              device->priv->handle,
-	                              data_raw,
+	                              req->data_raw,
 	                              g_usb_device_control_transfer_cb,
 	                              task,
 	                              timeout);
