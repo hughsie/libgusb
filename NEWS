@@ -1,3 +1,13 @@
+Version 0.2.10
+~~~~~~~~~~~~~~
+Released: 2017-04-10
+
+Bugfixes:
+ - Correctly detect removed devices when rescanning (Richard Hughes)
+ - Fix a memory leak when using control tranfers (Richard Hughes)
+ - Fix gtk-doc build when builddir != srcdir (Ting-Wei Lan)
+ - Fix symbol version table up to version 0.2.9 (Dominique Leuenberger)
+
 Version 0.2.9
 ~~~~~~~~~~~~~
 Released: 2016-03-21

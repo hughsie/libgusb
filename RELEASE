@@ -7,7 +7,7 @@ git shortlog gusb_0_2_9.. | grep -i -v trivial | grep -v Merge > NEWS.new
 --------------------------------------------------------------------------------
 Version 0.2.10
 ~~~~~~~~~~~~~~
-Released: 2015-xx-xx
+Released: 2017-xx-xx
 
 Notes:
 
