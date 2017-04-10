@@ -3,7 +3,7 @@ AC_PREREQ(2.63)
 
 m4_define([gusb_major_version], [0])
 m4_define([gusb_minor_version], [2])
-m4_define([gusb_micro_version], [10])
+m4_define([gusb_micro_version], [11])
 m4_define([gusb_version],
           [gusb_major_version.gusb_minor_version.gusb_micro_version])
 
