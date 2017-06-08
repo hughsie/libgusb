@@ -98,7 +98,7 @@ AC_SUBST(WARNINGFLAGS_C)
 dnl ---------------------------------------------------------------------------
 dnl - Check library dependencies
 dnl ---------------------------------------------------------------------------
-PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.38.0 gobject-2.0 gthread-2.0 gio-2.0)
+PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.44.0 gobject-2.0 gthread-2.0 gio-2.0)
 PKG_CHECK_MODULES(USB, libusb-1.0 >= 1.0.19)
 
 dnl ---------------------------------------------------------------------------
