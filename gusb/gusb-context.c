@@ -64,6 +64,7 @@ struct _GUsbContextPrivate
 	volatile gint			 thread_event_run;
 	guint				 hotplug_poll_id;
 	int				 debug_level;
+	GUsbContextFlags		 flags;
 	libusb_context			*ctx;
 	libusb_hotplug_callback_handle	 hotplug_id;
 };
@@ -324,6 +325,16 @@ g_usb_context_add_device (GUsbContext          *context,
 		goto out;
 	}
 
+	/* auto-open */
+	if (priv->flags & G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES) {
+		g_debug ("auto-opening %i:%i", bus, address);
+		if (!_g_usb_device_open_internal (device, &error)) {
+			g_warning ("cannot open the device: %s", error->message);
+			g_error_free (error);
+			goto out;
+		}
+	}
+
 	/* add to enumerated list */
 	g_ptr_array_add (priv->devices, g_object_ref (device));
 
@@ -527,6 +538,38 @@ g_usb_context_enumerate (GUsbContext *context)
 	priv->done_enumerate = TRUE;
 }
 
+/**
+ * g_usb_context_set_flags:
+ * @context: a #GUsbContext
+ * @flags: some #GUsbContextFlags, e.g. %G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES
+ *
+ * Sets the flags to use for the context. These should be set before
+ * g_usb_context_enumerate() is called.
+ *
+ * Since: 0.2.11
+ **/
+void
+g_usb_context_set_flags (GUsbContext *context, GUsbContextFlags flags)
+{
+	context->priv->flags = flags;
+}
+
+/**
+ * g_usb_context_get_flags:
+ * @context: a #GUsbContext
+ *
+ * Sets the flags to use for the context.
+ *
+ * Return value: the #GUsbContextFlags, e.g. %G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES
+ *
+ * Since: 0.2.11
+ **/
+GUsbContextFlags
+g_usb_context_get_flags (GUsbContext *context)
+{
+	return context->priv->flags;
+}
+
 static gpointer
 g_usb_context_event_thread_cb (gpointer data)
 {
@@ -545,6 +588,7 @@ g_usb_context_init (GUsbContext *context)
 	GUsbContextPrivate *priv;
 
 	priv = context->priv = g_usb_context_get_instance_private (context);
+	priv->flags = G_USB_CONTEXT_FLAGS_NONE;
 	priv->devices = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->dict_usb_ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	priv->dict_replug = g_hash_table_new_full (g_str_hash, g_str_equal,

@@ -63,10 +63,26 @@ typedef enum {
 	G_USB_CONTEXT_ERROR_INTERNAL
 } GUsbContextError;
 
+/**
+ * GUsbContextFlags:
+ *
+ * The flags to use for the context.
+ **/
+typedef enum {
+	G_USB_CONTEXT_FLAGS_NONE		= 0,
+	G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES	= 1 << 0,
+	/*< private >*/
+	G_USB_CONTEXT_FLAGS_LAST
+} GUsbContextFlags;
+
 GType		 g_usb_context_get_type			(void);
 GQuark		 g_usb_context_error_quark		(void);
 
 GUsbContext	*g_usb_context_new			(GError		**error);
+
+void		 g_usb_context_set_flags		(GUsbContext	*context,
+							 GUsbContextFlags flags);
+GUsbContextFlags g_usb_context_get_flags		(GUsbContext	*context);
 
 G_DEPRECATED
 GUsbSource	*g_usb_context_get_source		(GUsbContext	*context,

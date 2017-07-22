@@ -390,27 +390,10 @@ g_usb_device_async_not_open_error (GUsbDevice          *device,
 	                         g_usb_device_get_pid (device));
 }
 
-/**
- * g_usb_device_open:
- * @device: a #GUsbDevice
- * @error: a #GError, or %NULL
- *
- * Opens the device for use.
- *
- * Warning: this function is synchronous.
- *
- * Return value: %TRUE on success
- *
- * Since: 0.1.0
- **/
 gboolean
-g_usb_device_open (GUsbDevice  *device,
-                   GError     **error)
+_g_usb_device_open_internal (GUsbDevice *device, GError **error)
 {
 	gint rc;
-
-	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
 
 	if (device->priv->handle != NULL) {
 		g_set_error (error,
@@ -425,6 +408,35 @@ g_usb_device_open (GUsbDevice  *device,
 	/* open device */
 	rc = libusb_open (device->priv->device, &device->priv->handle);
 	return g_usb_device_libusb_error_to_gerror (device, rc, error);
+}
+
+/**
+ * g_usb_device_open:
+ * @device: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Opens the device for use.
+ *
+ * Warning: this function is synchronous.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
+ **/
+gboolean
+g_usb_device_open (GUsbDevice *device, GError **error)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ignore */
+	if (g_usb_context_get_flags (device->priv->context) & G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES) {
+		g_debug ("using AUTO_OPEN_DEVICES, ignoring");
+		return TRUE;
+	}
+
+	/* open */
+	return _g_usb_device_open_internal (device, error);
 }
 
 /**
@@ -607,6 +619,12 @@ g_usb_device_close (GUsbDevice  *device,
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), FALSE);
 	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	/* ignore */
+	if (g_usb_context_get_flags (device->priv->context) & G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES) {
+		g_debug ("using AUTO_OPEN_DEVICES, ignoring");
+		return TRUE;
+	}
 
 	if (device->priv->handle == NULL)
 		return g_usb_device_not_open_error (device, error);

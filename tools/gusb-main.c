@@ -158,6 +158,32 @@ gusb_cmd_get_descriptions (GPtrArray *array)
 	return g_string_free (string, FALSE);
 }
 
+static void
+gusb_main_device_open (GUsbDevice *device)
+{
+	GError *error = NULL;
+	guint8 idx;
+
+	/* open */
+	if (!g_usb_device_open (device, &error)) {
+		g_print ("failed to open: %s\n", error->message);
+		g_error_free (error);
+		return;
+	}
+
+	/* print info we can only get whilst open */
+	idx = g_usb_device_get_product_index (device);
+	if (idx != 0x00) {
+		gchar *product = g_usb_device_get_string_descriptor (device, idx, &error);
+		if (product == NULL) {
+			g_print ("failed to get string desc: %s\n", error->message);
+			g_error_free (error);
+			return;
+		}
+		g_print ("product: %s\n", product);
+	}
+}
+
 /**
  * gusb_device_list_added_cb:
  **/
@@ -170,6 +196,7 @@ gusb_device_list_added_cb (GUsbContext *context,
 		 g_usb_device_get_platform_id (device),
 		 g_usb_device_get_bus (device),
 		 g_usb_device_get_address (device));
+	gusb_main_device_open (device);
 }
 
 /**
@@ -339,6 +366,7 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 			 g_usb_device_get_platform_id (device),
 			 g_usb_device_get_bus (device),
 			 g_usb_device_get_address (device));
+		gusb_main_device_open (device);
 	}
 
 	loop = g_main_loop_new (NULL, FALSE);
@@ -478,6 +506,7 @@ main (int argc, char *argv[])
 
 	/* GUsbContext */
 	priv->usb_ctx = g_usb_context_new (NULL);
+	g_usb_context_set_flags (priv->usb_ctx, G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES);
 
 	/* add commands */
 	priv->cmd_array = g_ptr_array_new_with_free_func ((GDestroyNotify) gusb_cmd_item_free);

@@ -62,3 +62,9 @@ LIBGUSB_0.2.9 {
   global:
     g_usb_context_wait_for_replug;
 } LIBGUSB_0.2.8;
+
+LIBGUSB_0.2.11 {
+  global:
+    g_usb_context_set_flags;
+    g_usb_context_get_flags;
+} LIBGUSB_0.2.9;
