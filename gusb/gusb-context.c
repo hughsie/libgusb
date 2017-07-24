@@ -327,7 +327,6 @@ g_usb_context_add_device (GUsbContext          *context,
 
 	/* auto-open */
 	if (priv->flags & G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES) {
-		g_debug ("auto-opening %i:%i", bus, address);
 		if (!_g_usb_device_open_internal (device, &error)) {
 			g_warning ("cannot open the device: %s", error->message);
 			g_error_free (error);
