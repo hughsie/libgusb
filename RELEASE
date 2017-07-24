@@ -2,10 +2,10 @@ GUsb Release Notes
 
 * Write NEWS entries for GUsb in the same format as usual.
 
-git shortlog gusb_0_2_10.. | grep -i -v trivial | grep -v Merge > NEWS.new
+git shortlog gusb_0_2_11.. | grep -i -v trivial | grep -v Merge > NEWS.new
 
 --------------------------------------------------------------------------------
-Version 0.2.11
+Version 0.2.12
 ~~~~~~~~~~~~~~
 Released: 2017-xx-xx
 
@@ -20,8 +20,8 @@ Bugfixes:
 
 * Commit changes in git:
 
-git commit -a -m "Release version 0.2.11"
-git tag -s -f -m "Release 0.2.11" gusb_0_2_11
+git commit -a -m "Release version 0.2.12"
+git tag -s -f -m "Release 0.2.12" gusb_0_2_12
 <gpg password>
 git push --tags
 git push
