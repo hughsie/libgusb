@@ -21,7 +21,7 @@
 #ifndef __GUSB_INTERFACE_PRIVATE_H__
 #define __GUSB_INTERFACE_PRIVATE_H__
 
-#include <libusb-1.0/libusb.h>
+#include <libusb.h>
 
 #include <gusb/gusb-interface.h>
 
