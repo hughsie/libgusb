@@ -23,6 +23,7 @@
 
 #include <glib.h>
 #include <gusb/gusb.h>
+#include <locale.h>
 #include <string.h>
 
 /**
@@ -481,6 +482,8 @@ main (int argc, char *argv[])
 			"Show extra debugging information", NULL },
 		{ NULL}
 	};
+
+	setlocale (LC_ALL, "");
 
 	/* create helper object */
 	priv = g_slice_new0 (GUsbCmdPrivate);
