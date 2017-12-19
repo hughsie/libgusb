@@ -44,7 +44,7 @@ GLib headers and libraries for gusb.
 
 %files
 %defattr(-,root,root,-)
-%doc README AUTHORS NEWS COPYING
+%doc README.md AUTHORS NEWS COPYING
 %{_libdir}/libgusb.so.?
 %{_libdir}/libgusb.so.?.0.*
 %{_libdir}/girepository-1.0/GUsb-1.0.typelib
