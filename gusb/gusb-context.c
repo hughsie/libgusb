@@ -882,7 +882,7 @@ g_usb_context_load_usb_ids (GUsbContext  *context,
 		return TRUE;
 
 	/* parse */
-	if (!g_file_get_contents ("/usr/share/hwdata/usb.ids", &data, NULL, error))
+	if (!g_file_get_contents (USB_IDS, &data, NULL, error))
 		return FALSE;
 
 	lines = g_strsplit (data, "\n", -1);

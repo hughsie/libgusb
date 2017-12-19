@@ -109,6 +109,14 @@ AC_ARG_ENABLE(tests, AS_HELP_STRING([--enable-tests],[enable unit test code]),
 AM_CONDITIONAL(GUSB_BUILD_TESTS, test x$enable_tests = xyes)
 
 dnl ---------------------------------------------------------------------------
+dnl - Path to usb.ids file
+dnl ---------------------------------------------------------------------------
+AC_ARG_WITH(usb-ids, AS_HELP_STRING([--with-usb-ids=PATH],
+	   [path to usb.ids file @<:@default=/usr/share/hwdata/usb.ids@:>@]),
+	    with_usb_ids=$withval,with_usb_ids=/usr/share/hwdata/usb.ids)
+AC_DEFINE_UNQUOTED(USB_IDS, ["$with_usb_ids"], [Path to usb.ids file])
+
+dnl ---------------------------------------------------------------------------
 dnl - Makefiles, etc.
 dnl ---------------------------------------------------------------------------
 AC_CONFIG_FILES([
@@ -134,4 +142,5 @@ echo "
         cflags:                    ${CFLAGS}
         cppflags:                  ${CPPFLAGS}
         Building unit tests:       ${enable_tests}
+        Path to usb.ids file:      ${with_usb_ids}
 "
