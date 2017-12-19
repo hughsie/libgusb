@@ -9,9 +9,10 @@ URL:       https://gitorious.org/gusb/
 Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.xz
 
 BuildRequires: glib2-devel >= 2.38.0
-BuildRequires: libtool
-BuildRequires: libusb1-devel >= 1.0.19
 BuildRequires: gobject-introspection-devel
+BuildRequires: gtk-doc
+BuildRequires: libusb1-devel >= 1.0.19
+BuildRequires: meson
 BuildRequires: vala-devel
 BuildRequires: vala-tools
 
@@ -31,19 +32,12 @@ GLib headers and libraries for gusb.
 %setup -q
 
 %build
-%configure \
-        --disable-static                \
-        --enable-vala=yes               \
-        --enable-introspection=yes      \
-        --disable-gtk-doc               \
-        --disable-dependency-tracking
+%meson -Dvapi=true -Dtests=true
 
-make %{?_smp_mflags}
+%meson_build
 
 %install
-make install DESTDIR=$RPM_BUILD_ROOT
-
-rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
+%meson_install
 
 %post -p /sbin/ldconfig
 %postun -p /sbin/ldconfig
@@ -63,6 +57,7 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/libgusb.la
 %{_libdir}/pkgconfig/gusb.pc
 %{_datadir}/gtk-doc/html/gusb
 %{_datadir}/gir-1.0/GUsb-1.0.gir
+%{_datadir}/vala/vapi/gusb.deps
 %{_datadir}/vala/vapi/gusb.vapi
 
 %changelog
