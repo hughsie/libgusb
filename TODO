@@ -1,2 +1,0 @@
--configure check for libusb, add pkg-pkgconfig libusb-1.0 --cflags to CFLAGS,
- then replace all #include <libusb-1.0/libusb.h> with #include <libusb.h>
