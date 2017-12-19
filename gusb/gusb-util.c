@@ -61,6 +61,8 @@ g_usb_strerror (gint error_code)
         return "Operation not supported or unimplemented on this platform";
     case LIBUSB_ERROR_OTHER:
         return "Other error";
+    default:
+        break;
     }
     return "Unknown error";
 }

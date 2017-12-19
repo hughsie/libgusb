@@ -352,6 +352,8 @@ g_usb_device_libusb_error_to_gerror (GUsbDevice  *device,
 	case LIBUSB_ERROR_BUSY:
 		error_code = G_USB_DEVICE_ERROR_NO_DEVICE;
 		break;
+	default:
+		break;
 	}
 
 	g_set_error (error, G_USB_DEVICE_ERROR, error_code,
