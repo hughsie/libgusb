@@ -57,7 +57,6 @@ gusb = shared_library(
   ],
   c_args : [
       cargs,
-#      '-DLOCALSTATEDIR="' + localstatedir + '"',
     ],
   include_directories : [
       root_incdir,
