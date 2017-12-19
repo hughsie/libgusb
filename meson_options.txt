@@ -1,3 +1,4 @@
 option('tests', type : 'boolean', value : true, description : 'Build self tests')
 option('vapi', type : 'boolean', value : true, description : 'Build VAPI')
 option('usb_ids', type : 'string', value : '/usr/share/hwdata/usb.ids', description : 'Path to usb.ids file')
+option('docs', type : 'boolean', value : true, description : 'Generate documentation')
