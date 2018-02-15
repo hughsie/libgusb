@@ -1,3 +1,15 @@
+Version 0.3.0
+~~~~~~~~~~~~~
+Released: 2018-02-14
+
+New Features:
+ - Add Travis integration (Richard Hughes)
+ - Allow changing the path to usb.ids file (Ting-Wei Lan)
+ - Port to the Meson build system (Richard Hughes)
+
+Bugfixes:
+ - Replace libusb-1.0/libusb.h with libusb.h (Ting-Wei Lan)
+
 Version 0.2.11
 ~~~~~~~~~~~~~~
 Released: 2017-07-24
