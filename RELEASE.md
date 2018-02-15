@@ -3,11 +3,11 @@ GUsb Release Notes
 
 Write `NEWS` entries for GUsb in the same format as usual.
 
-    git shortlog gusb_0_2_11.. | grep -i -v trivial | grep -v Merge > NEWS.new
+    git shortlog gusb_0_3_0.. | grep -i -v trivial | grep -v Merge > NEWS.new
     =================================================
-    Version 0.2.12
-    ~~~~~~~~~~~~~~
-    Released: 2017-xx-xx
+    Version 0.3.1
+    ~~~~~~~~~~~~~
+    Released: 2018-xx-xx
 
     Notes:
 
@@ -19,9 +19,9 @@ Write `NEWS` entries for GUsb in the same format as usual.
 Update library version if new ABI or API in `meson.build`, commit, and build tarball:
 
     # MAKE SURE THIS IS CORRECT
-    export release_ver="0.2.12"
+    export release_ver="0.3.1"
 
-    git commit -a -m "Release version ${release_ver"
+    git commit -a -m "Release version ${release_ver}"
     git tag -s -f -m "Release ${release_ver}" "${release_ver}"
     <gpg password>
     ninja dist
