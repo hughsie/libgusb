@@ -5,7 +5,7 @@ Name:      libgusb
 Version:   #VERSION#
 Release:   0.#BUILD#%{?alphatag}%{?dist}
 License:   LGPLv2+
-URL:       https://gitorious.org/gusb/
+URL:       https://github.com/hughsie/libgusb
 Source0:   http://people.freedesktop.org/~hughsient/releases/%{name}-%{version}.tar.xz
 
 BuildRequires: glib2-devel >= 2.38.0
@@ -39,8 +39,7 @@ GLib headers and libraries for gusb.
 %install
 %meson_install
 
-%post -p /sbin/ldconfig
-%postun -p /sbin/ldconfig
+%ldconfig_scriptlets
 
 %files
 %defattr(-,root,root,-)
