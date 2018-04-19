@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2010-2018 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
@@ -34,6 +34,8 @@
 #ifndef __GUSB_VERSION_H
 #define __GUSB_VERSION_H
 
+#include <glib.h>
+
 /**
  * G_USB_MAJOR_VERSION:
  *
@@ -66,5 +68,7 @@
      (G_USB_MAJOR_VERSION == (major) && G_USB_MINOR_VERSION > (minor)) || \
      (G_USB_MAJOR_VERSION == (major) && G_USB_MINOR_VERSION == (minor) && \
       G_USB_MICRO_VERSION >= (micro)))
+
+const gchar	*g_usb_version_string	(void);
 
 #endif /* __GUSB_VERSION_H */

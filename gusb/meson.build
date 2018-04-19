@@ -48,6 +48,7 @@ gusb = shared_library(
     'gusb-interface.c',
     'gusb-source.c',
     'gusb-util.c',
+    'gusb-version.c',
   ],
   soversion : lt_current,
   version : lt_version,
