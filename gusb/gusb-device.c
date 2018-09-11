@@ -1550,7 +1550,6 @@ g_usb_device_interrupt_transfer_finish (GUsbDevice    *device,
  * @device: a #GUsbDevice
  *
  * Gets the platform identifier for the device.
- * On Linux, this is the full sysfs path of the device
  *
  * When the device is removed and then replugged, this value is not expected to
  * be different.
