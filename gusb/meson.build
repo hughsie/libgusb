@@ -79,6 +79,7 @@ pkgg.generate(
   description : 'GUsb is a GLib binding for libusb1',
 )
 
+if get_option('introspection')
 libgusb_girtarget = gnome.generate_gir(gusb,
   sources : [
     gusb_version_h,
@@ -121,6 +122,7 @@ libgusb_girtarget = gnome.generate_gir(gusb,
 )
 libgusb_gir = libgusb_girtarget[0]
 libgusb_typelib = libgusb_girtarget[1]
+endif
 
 if get_option('vapi')
 gnome.generate_vapi('gusb',
