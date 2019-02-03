@@ -106,6 +106,7 @@ libgusb_girtarget = gnome.generate_gir(gusb,
   export_packages : 'gusb',
   extra_args : [
     '--c-include=gusb.h',
+    '-DGUSB_COMPILATION',
     ],
   link_with : gusb,
   dependencies : [
