@@ -26,7 +26,7 @@ Released: 2017-04-10
 
 Bugfixes:
  - Correctly detect removed devices when rescanning (Richard Hughes)
- - Fix a memory leak when using control tranfers (Richard Hughes)
+ - Fix a memory leak when using control transfers (Richard Hughes)
  - Fix gtk-doc build when builddir != srcdir (Ting-Wei Lan)
  - Fix symbol version table up to version 0.2.9 (Dominique Leuenberger)
 
@@ -256,7 +256,7 @@ New Features:
  - GUsbDeviceList: Ref the device returned by g_usb_device_list_get_dev_by_bus_n_address() (Richard Hughes)
  - GUsbDevice: Make several methods cancellable (Debarshi Ray)
  - GUsbDevice: Move setting config / claiming of interface to their own methods (Hans de Goede)
- - GUsbDevice: Set the GUsbContext for instal use in GUsbDevice (Richard Hughes)
+ - GUsbDevice: Set the GUsbContext for install use in GUsbDevice (Richard Hughes)
  - GUsbDevice: Turn into a wrapper around libusb_device (Hans de Goede)
  - GUsbSource: Add a GError parameter to g_usb_source_new() (Richard Hughes)
  - GUsbSource: g_usb_source_new won't return NULL (Debarshi Ray)

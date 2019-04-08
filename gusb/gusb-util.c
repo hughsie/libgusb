@@ -24,7 +24,7 @@
 
 #include "gusb-util.h"
 
-/* libusb_strerror is not going upstream in the forseeable future because of
+/* libusb_strerror is not going upstream in the foreseeable future because of
    i18n worries, provide our own implementation for now, later this can
    hopefully became just a wrapper of the upstream version */
 const gchar *

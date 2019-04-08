@@ -57,7 +57,7 @@
     <title>libgusb glib helpers</title>
     <partintro>
       <para>
-        This part documents helper funtions in libgusb.
+        This part documents helper functions in libgusb.
       </para>
     </partintro>
     <xi:include href="xml/gusb-version.xml"/>

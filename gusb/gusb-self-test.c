@@ -97,7 +97,7 @@ gusb_context_func (void)
 	g_assert_cmpint (array->len, >, 0);
 	old_number_of_devices = array->len;
 
-	/* Print a list (also excercising various bits of g_usb_device) */
+	/* Print a list (also exercising various bits of g_usb_device) */
 	g_print ("\n");
 	for (i = 0; i < array->len; i++) {
 		device = G_USB_DEVICE (g_ptr_array_index (array, i));

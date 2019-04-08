@@ -866,7 +866,7 @@ g_usb_device_set_interface_alt (GUsbDevice *device, gint interface,
 
 /**
  * g_usb_device_get_string_descriptor:
- * @desc_index: the index for the string descriptor to retreive
+ * @desc_index: the index for the string descriptor to retrieve
  * @error: a #GError, or %NULL
  *
  * Get a string descriptor from the device. The returned string should be freed

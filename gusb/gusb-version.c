@@ -28,7 +28,7 @@
  *
  * Gets the GUsb installed runtime version.
  *
- * Returns: a version numer, e.g. "0.3.1"
+ * Returns: a version number, e.g. "0.3.1"
  *
  * Since: 0.3.1
  **/

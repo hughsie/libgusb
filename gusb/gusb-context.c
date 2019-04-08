@@ -469,7 +469,7 @@ g_usb_context_rescan_cb (gpointer user_data)
  * g_usb_context_get_main_context:
  * @context: a #GUsbContext
  *
- * Gets the internal GMainContext to use for syncronous methods.
+ * Gets the internal GMainContext to use for synchronous methods.
  * By default the value is set to the value of g_main_context_default()
  *
  * Return value: (transfer none): the #GMainContext
@@ -489,7 +489,7 @@ g_usb_context_get_main_context (GUsbContext *context)
  * g_usb_context_set_main_context:
  * @context: a #GUsbContext
  *
- * Sets the internal GMainContext to use for syncronous methods.
+ * Sets the internal GMainContext to use for synchronous methods.
  *
  * Since: 0.2.5
  **/
@@ -1052,7 +1052,7 @@ g_usb_context_replug_timeout_cb (gpointer user_data)
  * Waits for the device to be replugged.
  * It may come back with a different VID:PID.
  *
- * Warning: This is syncronous and blocks until the device comes
+ * Warning: This is synchronous and blocks until the device comes
  * back or the timeout triggers.
  *
  * Return value: (transfer full): a new #GUsbDevice, or %NULL for invalid
