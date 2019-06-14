@@ -59,6 +59,7 @@ test_args = [
   '-Wstrict-aliasing',
   '-Wstrict-prototypes',
   '-Wswitch-default',
+  '-Wswitch-enum',
   '-Wtype-limits',
   '-Wundef',
   '-Wuninitialized',
