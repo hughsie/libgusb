@@ -932,7 +932,7 @@ g_usb_device_sync_transfer_cb (GUsbDevice     *device,
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
  * @length: the length field for the setup packet.
- * @actual_length: the actual number of bytes sent, or %NULL
+ * @actual_length: (out) (optional): the actual number of bytes sent, or %NULL
  * @timeout: timeout timeout (in millseconds) that this function should wait
  * before giving up due to no response being received. For an unlimited
  * timeout, use 0.
@@ -999,7 +999,7 @@ g_usb_device_control_transfer (GUsbDevice            *device,
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
  * @length: the length field for the setup packet.
- * @actual_length: the actual number of bytes sent, or %NULL
+ * @actual_length: (out) (optional): the actual number of bytes sent, or %NULL
  * @timeout: timeout timeout (in millseconds) that this function should wait
  * before giving up due to no response being received. For an unlimited
  * timeout, use 0.
@@ -1056,7 +1056,7 @@ g_usb_device_bulk_transfer (GUsbDevice    *device,
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
  * @length: the length field for the setup packet.
- * @actual_length: the actual number of bytes sent, or %NULL
+ * @actual_length: (out) (optional): the actual number of bytes sent, or %NULL
  * @timeout: timeout timeout (in millseconds) that this function should wait
  * before giving up due to no response being received. For an unlimited
  * timeout, use 0.
