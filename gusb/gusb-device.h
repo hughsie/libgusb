@@ -162,6 +162,7 @@ guint8			 g_usb_device_get_port_number	(GUsbDevice	*device);
 guint16			 g_usb_device_get_vid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_pid		(GUsbDevice	*device);
 guint16			 g_usb_device_get_release	(GUsbDevice	*device);
+guint16			 g_usb_device_get_spec		(GUsbDevice	*device);
 const gchar		*g_usb_device_get_vid_as_str	(GUsbDevice	*device);
 const gchar		*g_usb_device_get_pid_as_str	(GUsbDevice	*device);
 guint8			 g_usb_device_get_device_class	(GUsbDevice	*device);
