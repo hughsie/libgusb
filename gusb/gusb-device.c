@@ -1733,6 +1733,25 @@ g_usb_device_get_release (GUsbDevice *device)
 }
 
 /**
+ * g_usb_device_get_spec:
+ * @device: a #GUsbDevice
+ *
+ * Gets the BCD specification revision for the device. For example,
+ * `0x0110` indicates USB 1.1 and 0x0320 indicates USB 3.2
+ *
+ * Return value: a specification revision in BCD format.
+ *
+ * Since: 0.3.1
+ **/
+guint16
+g_usb_device_get_spec (GUsbDevice *device)
+{
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
+	return device->priv->desc.bcdUSB;
+}
+
+/**
  * g_usb_device_get_vid_as_str:
  * @device: a #GUsbDevice
  *

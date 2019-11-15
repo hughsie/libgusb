@@ -68,3 +68,8 @@ LIBGUSB_0.2.11 {
     g_usb_context_set_flags;
     g_usb_context_get_flags;
 } LIBGUSB_0.2.9;
+
+LIBGUSB_0.3.1 {
+  global:
+    g_usb_device_get_spec;
+} LIBGUSB_0.2.11;
