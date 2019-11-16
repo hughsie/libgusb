@@ -3,7 +3,7 @@ GUsb Release Notes
 
 Write `NEWS` entries for GUsb in the same format as usual.
 
-    git shortlog gusb_0_3_0.. | grep -i -v trivial | grep -v Merge > NEWS.new
+    git shortlog 0.3.0.. | grep -i -v trivial | grep -v Merge > NEWS.new
     =================================================
     Version 0.3.1
     ~~~~~~~~~~~~~

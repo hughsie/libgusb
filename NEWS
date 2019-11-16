@@ -1,3 +1,16 @@
+Version 0.3.1
+~~~~~~~~~~~~~
+Released: 2018-11-16
+
+New Features:
+ - Add g_usb_device_get_spec() (Richard Hughes)
+ - Add g_usb_version_string() for fwupd (Richard Hughes)
+
+Bugfixes:
+ - Add -Wswitch-enum (Benjamin Berg)
+ - Fix GI length introspection annotations (grindhold)
+ - Make gir generation optional (maxice8)
+
 Version 0.3.0
 ~~~~~~~~~~~~~
 Released: 2018-02-14
