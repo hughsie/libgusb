@@ -68,6 +68,15 @@ gusb = shared_library(
   install : true
 )
 
+gusb_dep = declare_dependency(
+  link_with : gusb,
+  include_directories : [
+      root_incdir,
+      lib_incdir,
+  ],
+  dependencies : gusb_deps
+)
+
 pkgg = import('pkgconfig')
 pkgg.generate(
   libraries : gusb,

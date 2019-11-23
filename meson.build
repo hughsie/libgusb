@@ -88,13 +88,18 @@ foreach arg: test_link_args
     global_link_args += arg
   endif
 endforeach
-add_global_link_arguments(
+add_project_link_arguments(
   global_link_args,
   language: 'c'
 )
 
 libgio = dependency('gio-2.0', version : '>= 2.44.0')
 libusb = dependency('libusb-1.0', version : '>= 1.0.19')
+
+gusb_deps = [
+  libgio,
+  libusb,
+]
 
 gnome = import('gnome')
 
