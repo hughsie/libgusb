@@ -6,9 +6,9 @@ services:
   - docker
 
 before_script:
-  - docker build -t appstream-glib-fedora-26 -f contrib/ci/Dockerfile-fedora-26 .
-#  - docker build -t appstream-glib-debian-stretch -f contrib/ci/Dockerfile-debian-stretch .
+  - docker build -t gusb-fedora -f contrib/ci/Dockerfile-fedora .
+#  - docker build -t gusb-debian-stretch -f contrib/ci/Dockerfile-debian-stretch .
 
 script:
-  - docker run -t -v `pwd`:/build appstream-glib-fedora-26 ./contrib/ci/build_and_test.sh -Dtests=false
-#  - docker run -t -v `pwd`:/build appstream-glib-debian-stretch ./contrib/ci/build_and_test.sh -Dtests=false
+  - docker run -t -v `pwd`:/build gusb-fedora ./contrib/ci/build_and_test.sh -Dtests=false
+#  - docker run -t -v `pwd`:/build gusb-debian-stretch ./contrib/ci/build_and_test.sh -Dtests=false
