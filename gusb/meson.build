@@ -39,7 +39,7 @@ install_headers([
 
 mapfile = 'libgusb.ver'
 vflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
-gusb = shared_library(
+gusb = library(
   'gusb',
   sources : [
     'gusb-context.c',
