@@ -167,7 +167,11 @@ g_usb_context_set_property (GObject      *object,
 	switch (prop_id) {
 	case PROP_DEBUG_LEVEL:
 		priv->debug_level = g_value_get_int (value);
+#ifdef HAVE_LIBUSB_1_0_22
+		libusb_set_option (priv->ctx, LIBUSB_OPTION_LOG_LEVEL, priv->debug_level);
+#else
 		libusb_set_debug (priv->ctx, priv->debug_level);
+#endif
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -718,7 +722,11 @@ g_usb_context_set_debug (GUsbContext    *context,
 
 	if (debug_level != priv->debug_level) {
 		priv->debug_level = debug_level;
+#ifdef HAVE_LIBUSB_1_0_22
+		libusb_set_option (priv->ctx, LIBUSB_OPTION_LOG_LEVEL, debug_level);
+#else
 		libusb_set_debug (priv->ctx, debug_level);
+#endif
 
 		g_object_notify_by_pspec (G_OBJECT (context), pspecs[PROP_DEBUG_LEVEL]);
 	}
