@@ -44,8 +44,9 @@ install_headers([
 
 mapfile = 'libgusb.ver'
 vflag = []
-if host_machine.system() not in ['darwin']
-  vflag += '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
+vflag_test = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
+if cc.has_link_argument(vflag_test)
+  vflag += vflag_test
 endif
 gusb = library(
   'gusb',
