@@ -43,10 +43,11 @@ install_headers([
 )
 
 mapfile = 'libgusb.ver'
+mapfile_test = 'libgusb_meson.ver'
 vflag = []
-vflag_test = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
+vflag_test = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile_test)
 if cc.has_link_argument(vflag_test)
-  vflag += vflag_test
+  vflag += '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
 endif
 gusb = library(
   'gusb',
