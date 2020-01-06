@@ -7,7 +7,7 @@ Write `NEWS` entries for GUsb in the same format as usual.
     =================================================
     Version 0.3.2
     ~~~~~~~~~~~~~
-    Released: 2018-xx-xx
+    Released: 2020-xx-xx
 
     Notes:
 
@@ -19,7 +19,7 @@ Write `NEWS` entries for GUsb in the same format as usual.
 Update library version if new ABI or API in `meson.build`, commit, and build tarball:
 
     # MAKE SURE THIS IS CORRECT
-    export release_ver="0.3.1"
+    export release_ver="0.3.2"
 
     git commit -a -m "Release version ${release_ver}"
     git tag -s -f -m "Release ${release_ver}" "${release_ver}"
