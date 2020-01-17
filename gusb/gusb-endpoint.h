@@ -18,28 +18,28 @@
  * License along with this library; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __GUSB_INTERFACE_H__
-#define __GUSB_INTERFACE_H__
+#ifndef __GUSB_ENDPOINT_H__
+#define __GUSB_ENDPOINT_H__
 
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <gusb-device.h>
 
 G_BEGIN_DECLS
 
-#define G_USB_TYPE_INTERFACE (g_usb_interface_get_type ())
-G_DECLARE_FINAL_TYPE (GUsbInterface, g_usb_interface, G_USB, INTERFACE, GObject)
+#define G_USB_TYPE_ENDPOINT (g_usb_endpoint_get_type ())
+G_DECLARE_FINAL_TYPE (GUsbEndpoint, g_usb_endpoint, G_USB, ENDPOINT, GObject)
 
-guint8		 g_usb_interface_get_length	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_kind	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_number	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_alternate	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_class	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_subclass	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_protocol	(GUsbInterface	*interface);
-guint8		 g_usb_interface_get_index	(GUsbInterface	*interface);
-GBytes		*g_usb_interface_get_extra	(GUsbInterface	*interface);
-GPtrArray 	*g_usb_interface_get_endpoints 	(GUsbInterface	*interface);
+guint8			g_usb_endpoint_get_kind			(GUsbEndpoint *endpoint);
+guint16			g_usb_endpoint_get_maximum_packet_size 	(GUsbEndpoint *endpoint);
+guint8 			g_usb_endpoint_get_polling_interval	(GUsbEndpoint *endpoint);
+guint8 			g_usb_endpoint_get_refresh		(GUsbEndpoint *endpoint);
+guint8 			g_usb_endpoint_get_synch_address	(GUsbEndpoint *endpoint);
+guint8		 	g_usb_endpoint_get_address		(GUsbEndpoint *endpoint);
+guint8		 	g_usb_endpoint_get_number		(GUsbEndpoint *endpoint);
+GUsbDeviceDirection	g_usb_endpoint_get_direction		(GUsbEndpoint *endpoint);
+GBytes *		g_usb_endpoint_get_extra		(GUsbEndpoint *endpoint);
 
 G_END_DECLS
 
-#endif /* __GUSB_INTERFACE_H__ */
+#endif /* __GUSB_ENDPOINT_H__ */
