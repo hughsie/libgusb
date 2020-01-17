@@ -34,6 +34,7 @@
 
 #include "gusb-interface.h"
 #include "gusb-interface-private.h"
+#include "gusb-endpoint-private.h"
 
 struct _GUsbInterface
 {
@@ -41,6 +42,8 @@ struct _GUsbInterface
 
 	struct libusb_interface_descriptor iface;
 	GBytes *extra;
+
+	GPtrArray *endpoints;
 };
 
 G_DEFINE_TYPE (GUsbInterface, g_usb_interface, G_TYPE_OBJECT)
@@ -51,6 +54,7 @@ g_usb_interface_finalize (GObject *object)
 	GUsbInterface *interface = G_USB_INTERFACE (object);
 
 	g_bytes_unref (interface->extra);
+	g_ptr_array_unref (interface->endpoints);
 
 	G_OBJECT_CLASS (g_usb_interface_parent_class)->finalize (object);
 }
@@ -86,6 +90,10 @@ _g_usb_interface_new (const struct libusb_interface_descriptor *iface)
 		iface,
 		sizeof (struct libusb_interface_descriptor));
 	interface->extra = g_bytes_new (iface->extra, iface->extra_length);
+
+	interface->endpoints = g_ptr_array_new_with_free_func (g_object_unref);
+	for (guint i = 0; i < iface->bNumEndpoints; i++)
+		g_ptr_array_add (interface->endpoints, _g_usb_endpoint_new (&iface->endpoint[i]));
 
 	return G_USB_INTERFACE (interface);
 }
@@ -243,4 +251,21 @@ g_usb_interface_get_extra (GUsbInterface *interface)
 {
 	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), NULL);
 	return interface->extra;
+}
+
+/**
+ * g_usb_interface_get_endpoints:
+ * @interface: a #GUsbInterface
+ *
+ * Gets interface endpoints.
+ *
+ * Return value: (transfer container) (element-type GUsbEndpoint): an array of endpoints, or %NULL on failure
+ *
+ * Since: 0.3.3
+ **/
+GPtrArray *
+g_usb_interface_get_endpoints (GUsbInterface	*interface)
+{
+	g_return_val_if_fail (G_USB_IS_INTERFACE (interface), NULL);
+	return g_ptr_array_ref (interface->endpoints);
 }

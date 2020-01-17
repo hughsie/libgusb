@@ -73,3 +73,14 @@ LIBGUSB_0.3.1 {
   global:
     g_usb_device_get_spec;
 } LIBGUSB_0.2.11;
+
+LIBGUSB_0.3.3 {
+  global:
+    g_usb_interface_get_endpoints;
+    g_usb_endpoint_get_kind;
+    g_usb_endpoint_get_maximum_packet_size;
+    g_usb_endpoint_get_polling_interval;
+    g_usb_endpoint_get_address;
+    g_usb_endpoint_get_direction;
+    g_usb_endpoint_get_extra;
+} LIBGUSB_0.3.1;
