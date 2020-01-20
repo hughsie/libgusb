@@ -579,8 +579,8 @@ g_usb_context_event_thread_cb (gpointer data)
 	GUsbContext *context = G_USB_CONTEXT (data);
 	GUsbContextPrivate *priv = context->priv;
 	struct timeval tv = {
-		.tv_sec = 0,
-		.tv_usec = 1000,
+		.tv_usec = 0,
+		.tv_sec = 2,
 	};
 
 	while (g_atomic_int_get (&priv->thread_event_run) > 0)
