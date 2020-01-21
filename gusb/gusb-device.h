@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_DEVICE_H__
-#define __GUSB_DEVICE_H__
+#pragma once
 
 #include <glib-object.h>
 #include <gio/gio.h>
@@ -281,5 +280,3 @@ gssize		 g_usb_device_interrupt_transfer_finish	(GUsbDevice	*device,
 							 GError		**error);
 
 G_END_DECLS
-
-#endif /* __GUSB_DEVICE_H__ */

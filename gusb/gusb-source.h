@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_SOURCE_H__
-#define __GUSB_SOURCE_H__
+#pragma once
 
 #include <glib.h>
 
@@ -36,5 +35,3 @@ void		 g_usb_source_set_callback	(GUsbSource	*source,
 						 GDestroyNotify	 notify);
 
 G_END_DECLS
-
-#endif /* __GUSB_SOURCE_H__ */
