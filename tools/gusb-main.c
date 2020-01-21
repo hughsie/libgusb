@@ -12,18 +12,12 @@
 #include <locale.h>
 #include <string.h>
 
-/**
- * gusb_log_ignore_cb:
- **/
 static void
 gusb_log_ignore_cb (const gchar *log_domain, GLogLevelFlags log_level,
 		    const gchar *message, gpointer user_data)
 {
 }
 
-/**
- * gusb_log_handler_cb:
- **/
 static void
 gusb_log_handler_cb (const gchar *log_domain, GLogLevelFlags log_level,
 		    const gchar *message, gpointer user_data)
@@ -63,9 +57,6 @@ typedef struct {
 	GUsbCmdPrivateCb	 callback;
 } GUsbCmdItem;
 
-/**
- * gusb_cmd_item_free:
- **/
 static void
 gusb_cmd_item_free (GUsbCmdItem *item)
 {
@@ -83,9 +74,6 @@ gusb_sort_command_name_cb (GUsbCmdItem **item1, GUsbCmdItem **item2)
 	return g_strcmp0 ((*item1)->name, (*item2)->name);
 }
 
-/**
- * gusb_cmd_add:
- **/
 static void
 gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUsbCmdPrivateCb callback)
 {
@@ -111,9 +99,6 @@ gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUs
 	g_strfreev (names);
 }
 
-/**
- * gusb_cmd_get_descriptions:
- **/
 static gchar *
 gusb_cmd_get_descriptions (GPtrArray *array)
 {
@@ -171,9 +156,6 @@ gusb_main_device_open (GUsbDevice *device)
 	}
 }
 
-/**
- * gusb_device_list_added_cb:
- **/
 static void
 gusb_device_list_added_cb (GUsbContext *context,
 			   GUsbDevice *device,
@@ -186,9 +168,6 @@ gusb_device_list_added_cb (GUsbContext *context,
 	gusb_main_device_open (device);
 }
 
-/**
- * gusb_device_list_removed_cb:
- **/
 static void
 gusb_device_list_removed_cb (GUsbContext *context,
 			     GUsbDevice *device,
@@ -200,9 +179,6 @@ gusb_device_list_removed_cb (GUsbContext *context,
 		 g_usb_device_get_address (device));
 }
 
-/**
- * gusb_devices_sort_by_platform_id_cb:
- **/
 static gint
 gusb_devices_sort_by_platform_id_cb (gconstpointer a, gconstpointer b)
 {
@@ -290,9 +266,6 @@ moo_cb (GNode *node, gpointer data)
 	return FALSE;
 }
 
-/**
- * gusb_cmd_show:
- **/
 static gboolean
 gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
@@ -334,9 +307,6 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * gusb_cmd_watch:
- **/
 static gboolean
 gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
@@ -370,9 +340,6 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	return ret;
 }
 
-/**
- * gusb_cmd_replug:
- **/
 static gboolean
 gusb_cmd_replug (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
@@ -415,9 +382,6 @@ gusb_cmd_replug (GUsbCmdPrivate *priv, gchar **values, GError **error)
 	return TRUE;
 }
 
-/**
- * gusb_cmd_run:
- **/
 static gboolean
 gusb_cmd_run (GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError **error)
 {
@@ -449,9 +413,6 @@ out:
 	return ret;
 }
 
-/**
- * main:
- **/
 int
 main (int argc, char *argv[])
 {
