@@ -23,7 +23,7 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
-#include <gusb-device.h>
+#include <gusb/gusb-device.h>
 
 G_BEGIN_DECLS
 
