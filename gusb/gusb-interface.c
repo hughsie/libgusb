@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2020 Emmanuel Pacaud <emmanuel@gnome.org>
  *
  * Licensed under the GNU Lesser General Public License Version 2.1
  *
