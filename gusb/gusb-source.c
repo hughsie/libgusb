@@ -47,9 +47,9 @@ g_usb_source_error_quark (void)
  **/
 void
 g_usb_source_set_callback (GUsbSource     *source,
-                           GSourceFunc     func,
-                           gpointer        data,
-                           GDestroyNotify  notify)
+			   GSourceFunc     func,
+			   gpointer	data,
+			   GDestroyNotify  notify)
 {
 	g_source_set_callback ((GSource *)source, func, data, notify);
 }

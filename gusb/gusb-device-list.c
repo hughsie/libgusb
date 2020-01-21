@@ -47,9 +47,9 @@ G_DEFINE_TYPE_WITH_PRIVATE (GUsbDeviceList, g_usb_device_list, G_TYPE_OBJECT);
 
 static void
 g_usb_device_list_get_property (GObject    *object,
-                                guint       prop_id,
-                                GValue     *value,
-                                GParamSpec *pspec)
+				guint       prop_id,
+				GValue     *value,
+				GParamSpec *pspec)
 {
 	GUsbDeviceList *list = G_USB_DEVICE_LIST (object);
 	GUsbDeviceListPrivate *priv = list->priv;
@@ -66,25 +66,25 @@ g_usb_device_list_get_property (GObject    *object,
 
 static void
 g_usb_device_added_cb (GUsbContext    *context,
-                       GUsbDevice     *device,
-                       GUsbDeviceList *list)
+		       GUsbDevice     *device,
+		       GUsbDeviceList *list)
 {
 	g_signal_emit (list, signals[DEVICE_ADDED_SIGNAL], 0, device);
 }
 
 static void
 g_usb_device_removed_cb (GUsbContext    *context,
-                         GUsbDevice     *device,
-                         GUsbDeviceList *list)
+			 GUsbDevice     *device,
+			 GUsbDeviceList *list)
 {
 	g_signal_emit (list, signals[DEVICE_REMOVED_SIGNAL], 0, device);
 }
 
 static void
 g_usb_device_list_set_property (GObject      *object,
-                                guint         prop_id,
-                                const GValue *value,
-                                GParamSpec   *pspec)
+				guint	 prop_id,
+				const GValue *value,
+				GParamSpec   *pspec)
 {
 	GUsbDeviceList *list = G_USB_DEVICE_LIST (object);
 	GUsbDeviceListPrivate *priv = list->priv;
@@ -209,15 +209,15 @@ g_usb_device_list_coldplug (GUsbDeviceList *list)
  **/
 GUsbDevice *
 g_usb_device_list_find_by_bus_address (GUsbDeviceList  *list,
-                                       guint8           bus,
-                                       guint8           address,
-                                       GError         **error)
+				       guint8	   bus,
+				       guint8	   address,
+				       GError	 **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE_LIST (list), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	return g_usb_context_find_by_bus_address (list->priv->context,
-	                                          bus, address, error);
+						  bus, address, error);
 }
 
 /**
@@ -235,15 +235,15 @@ g_usb_device_list_find_by_bus_address (GUsbDeviceList  *list,
  **/
 GUsbDevice *
 g_usb_device_list_find_by_vid_pid (GUsbDeviceList  *list,
-                                   guint16          vid,
-                                   guint16          pid,
-                                   GError         **error)
+				   guint16	  vid,
+				   guint16	  pid,
+				   GError	 **error)
 {
 	g_return_val_if_fail (G_USB_IS_DEVICE_LIST (list), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	return g_usb_context_find_by_vid_pid (list->priv->context,
-	                                      vid, pid, error);
+					      vid, pid, error);
 }
 
 /**

@@ -276,8 +276,8 @@ typedef struct {
 
 static void
 g_usb_device_print_data (const gchar  *title,
-                         const guchar *data,
-                         gsize         length)
+			 const guchar *data,
+			 gsize	 length)
 {
 	guint i;
 
@@ -297,8 +297,8 @@ g_usb_device_print_data (const gchar  *title,
 
 static void
 g_usb_test_button_pressed_cb (GObject      *source_object,
-                              GAsyncResult *res,
-                              gpointer      user_data)
+			      GAsyncResult *res,
+			      gpointer      user_data)
 {
 	gboolean ret;
 	GError *error = NULL;

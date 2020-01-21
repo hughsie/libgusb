@@ -13,7 +13,7 @@ G_BEGIN_DECLS
 
 GUsbDevice	*_g_usb_device_new		(GUsbContext	*context,
 						 libusb_device	*device,
-                                                 GError        **error);
+						 GError	**error);
 
 libusb_device	*_g_usb_device_get_device	(GUsbDevice	*device);
 gboolean	 _g_usb_device_open_internal	(GUsbDevice	*device,
