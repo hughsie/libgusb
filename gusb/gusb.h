@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_H__
-#define __GUSB_H__
+#pragma once
 
 #define __GUSB_INSIDE__
 
@@ -21,6 +20,3 @@
 #include <gusb/gusb-util.h>
 
 #undef __GUSB_INSIDE__
-
-#endif /* __GUSB_H__ */
-

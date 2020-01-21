@@ -17,8 +17,7 @@
 #error "Only <gusb.h> can be included directly."
 #endif
 
-#ifndef __GUSB_VERSION_H
-#define __GUSB_VERSION_H
+#pragma once
 
 #include <glib.h>
 
@@ -56,5 +55,3 @@
       G_USB_MICRO_VERSION >= (micro)))
 
 const gchar	*g_usb_version_string	(void);
-
-#endif /* __GUSB_VERSION_H */

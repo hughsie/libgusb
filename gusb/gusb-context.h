@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_CONTEXT_H__
-#define __GUSB_CONTEXT_H__
+#pragma once
 
 #include <glib-object.h>
 
@@ -103,5 +102,3 @@ GUsbDevice	*g_usb_context_wait_for_replug		(GUsbContext	*context,
 							 GError		**error);
 
 G_END_DECLS
-
-#endif /* __GUSB_CONTEXT_H__ */

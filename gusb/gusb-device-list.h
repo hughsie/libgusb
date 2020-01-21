@@ -6,8 +6,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_DEVICE_LIST_H__
-#define __GUSB_DEVICE_LIST_H__
+#pragma once
 
 #include <glib-object.h>
 
@@ -70,5 +69,3 @@ GUsbDevice		*g_usb_device_list_find_by_vid_pid	(GUsbDeviceList	*list,
 								 GError		**error);
 
 G_END_DECLS
-
-#endif /* __GUSB_DEVICE_LIST_H__ */

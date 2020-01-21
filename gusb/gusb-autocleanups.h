@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_AUTOCLEANUPS_H__
-#define __GUSB_AUTOCLEANUPS_H__
+#pragma once
 
 #include <gusb/gusb-context.h>
 #include <gusb/gusb-device.h>
@@ -19,5 +18,3 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbDevice, g_object_unref)
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbDeviceList, g_object_unref)
 
 #endif
-
-#endif /* __GUSB_AUTOCLEANUPS_H__ */

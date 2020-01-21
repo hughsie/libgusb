@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: LGPL-2.1+
  */
 
-#ifndef __GUSB_CONTEXT_PRIVATE_H__
-#define __GUSB_CONTEXT_PRIVATE_H__
+#pragma once
 
 #include <libusb.h>
 
@@ -25,5 +24,3 @@ const gchar	*_g_usb_context_lookup_product	(GUsbContext	*context,
 						 GError		**error);
 
 G_END_DECLS
-
-#endif /* __GUSB_CONTEXT_PRIVATE_H__ */
