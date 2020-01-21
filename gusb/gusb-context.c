@@ -72,9 +72,6 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE,
                                                g_usb_context_initable_iface_init))
 
-/**
- * g_usb_context_replug_helper_free:
- **/
 static void
 g_usb_context_replug_helper_free (GUsbContextReplugHelper *replug_helper)
 {
@@ -1029,9 +1026,6 @@ g_usb_context_get_devices (GUsbContext *context)
 	return g_ptr_array_ref (context->priv->devices);
 }
 
-/**
- * g_usb_context_replug_timeout_cb:
- **/
 static gboolean
 g_usb_context_replug_timeout_cb (gpointer user_data)
 {
