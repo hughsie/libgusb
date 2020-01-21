@@ -85,6 +85,7 @@ typedef enum {
  * g_usb_device_release_interface methods flags parameters.
  **/
 typedef enum {
+	G_USB_DEVICE_CLAIM_INTERFACE_NONE			= 0,
 	G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER		= 1 << 0,
 } GUsbDeviceClaimInterfaceFlags;
 
