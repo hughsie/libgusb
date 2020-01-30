@@ -1,3 +1,15 @@
+Version 0.3.3
+~~~~~~~~~~~~~
+Released: 2020-01-30
+
+New Features:
+ - Add a thin glib wrapper around libusb_endpoint_descriptor (Emmanuel Pacaud)
+
+Bugfixes:
+ - Fix high number of wakeups when checking the GUsbContext (Richard Hughes)
+ - Use '#pragma once' to reduce boilerplate (Richard Hughes)
+ - Wrap the upstream libusb_strerror() (Richard Hughes)
+
 Version 0.3.2
 ~~~~~~~~~~~~~
 Released: 2020-01-06
