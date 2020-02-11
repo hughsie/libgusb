@@ -83,4 +83,8 @@ LIBGUSB_0.3.3 {
     g_usb_endpoint_get_address;
     g_usb_endpoint_get_direction;
     g_usb_endpoint_get_extra;
+    g_usb_endpoint_get_number;
+    g_usb_endpoint_get_refresh;
+    g_usb_endpoint_get_synch_address;
+    g_usb_endpoint_get_type;
 } LIBGUSB_0.3.1;
