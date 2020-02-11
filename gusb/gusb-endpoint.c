@@ -6,7 +6,7 @@
  */
 
 /**
- * SECTION:gusb-endponit
+ * SECTION:gusb-endpoint
  * @short_description: GLib wrapper around a USB endpoint.
  *
  * This object is a thin glib wrapper around a libusb_endpoint_descriptor.
