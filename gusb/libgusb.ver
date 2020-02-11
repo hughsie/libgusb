@@ -72,6 +72,7 @@ LIBGUSB_0.2.11 {
 LIBGUSB_0.3.1 {
   global:
     g_usb_device_get_spec;
+    g_usb_version_string;
 } LIBGUSB_0.2.11;
 
 LIBGUSB_0.3.3 {
