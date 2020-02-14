@@ -594,6 +594,8 @@ g_usb_device_get_interfaces (GUsbDevice *device, GError **error)
  * Closes the device when it is no longer required.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_close (GUsbDevice  *device,
@@ -628,6 +630,8 @@ g_usb_device_close (GUsbDevice  *device,
  * This is a blocking function which usually incurs a noticeable delay.
  *
  * Return value: %TRUE on success
+ *
+ * Since: 0.1.0
  **/
 gboolean
 g_usb_device_reset (GUsbDevice  *device,
