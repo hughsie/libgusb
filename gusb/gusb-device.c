@@ -203,18 +203,12 @@ g_usb_device_init (GUsbDevice *device)
 }
 
 static void
-g_usb_device_build_platform_id_cb (GString *str, libusb_device *dev)
+g_usb_device_build_parent_port_number (GString *str, libusb_device *dev)
 {
-	libusb_device *parent;
-	parent = libusb_get_parent (dev);
+	libusb_device *parent = libusb_get_parent (dev);
 	if (parent != NULL)
-		g_usb_device_build_platform_id_cb (str, parent);
-	if (str->len == 0) {
-		g_string_append_printf (str, "%02x:",
-					libusb_get_bus_number (dev));
-	}
-	g_string_append_printf (str, "%02x:",
-				libusb_get_port_number (dev));
+		g_usb_device_build_parent_port_number (str, parent);
+	g_string_append_printf (str, "%02x:", libusb_get_port_number (dev));
 }
 
 static gchar *
@@ -224,7 +218,8 @@ g_usb_device_build_platform_id (struct libusb_device *dev)
 
 	/* build a topology of the device */
 	platform_id = g_string_new ("usb:");
-	g_usb_device_build_platform_id_cb (platform_id, dev);
+	g_string_append_printf (platform_id, "%02x:", libusb_get_bus_number (dev));
+	g_usb_device_build_parent_port_number (platform_id, dev);
 	g_string_truncate (platform_id, platform_id->len - 1);
 	return g_string_free (platform_id, FALSE);
 }
