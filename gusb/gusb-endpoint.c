@@ -75,7 +75,7 @@ _g_usb_endpoint_new (const struct libusb_endpoint_descriptor *endpoint_descripto
 	return G_USB_ENDPOINT (endpoint);
 }
 
-/*
+/**
  * g_usb_endpoint_get_kind:
  * @endpoint: a #GUsbEndpoint
  *
@@ -92,7 +92,7 @@ g_usb_endpoint_get_kind	(GUsbEndpoint *endpoint)
 	return endpoint->endpoint_descriptor.bDescriptorType;
 }
 
-/*
+/**
  * g_usb_endpoint_get_maximum_packet_size:
  * @endpoint: a #GUsbEndpoint
  *
@@ -109,7 +109,7 @@ g_usb_endpoint_get_maximum_packet_size (GUsbEndpoint *endpoint)
 	return endpoint->endpoint_descriptor.wMaxPacketSize;
 }
 
-/*
+/**
  * g_usb_endpoint_get_polling_interval:
  * @endpoint: a #GUsbEndpoint
  *
@@ -126,7 +126,7 @@ g_usb_endpoint_get_polling_interval (GUsbEndpoint *endpoint)
 	return endpoint->endpoint_descriptor.bInterval;
 }
 
-/*
+/**
  * g_usb_endpoint_get_refresh:
  * @endpoint: a #GUsbEndpoint
  *
@@ -143,7 +143,7 @@ g_usb_endpoint_get_refresh (GUsbEndpoint *endpoint)
 	return endpoint->endpoint_descriptor.bRefresh;
 }
 
-/*
+/**
  * g_usb_endpoint_get_synch_address:
  * @endpoint: a #GUsbEndpoint
  *
