@@ -1,17 +1,59 @@
+# generated automatically, do not edit!
+
 LIBGUSB_0.1.0 {
   global:
-    g_usb_*;
+    g_usb_context_error_quark;
+    g_usb_context_get_source;
+    g_usb_context_get_type;
+    g_usb_context_new;
+    g_usb_context_set_debug;
+    g_usb_device_bulk_transfer;
+    g_usb_device_bulk_transfer_async;
+    g_usb_device_bulk_transfer_finish;
+    g_usb_device_claim_interface;
+    g_usb_device_close;
+    g_usb_device_control_transfer;
+    g_usb_device_control_transfer_async;
+    g_usb_device_control_transfer_finish;
+    g_usb_device_error_quark;
+    g_usb_device_get_address;
+    g_usb_device_get_bus;
+    g_usb_device_get_configuration;
+    g_usb_device_get_manufacturer_index;
+    g_usb_device_get_pid;
+    g_usb_device_get_product_index;
+    g_usb_device_get_serial_number_index;
+    g_usb_device_get_string_descriptor;
+    g_usb_device_get_type;
+    g_usb_device_get_vid;
+    g_usb_device_interrupt_transfer;
+    g_usb_device_interrupt_transfer_async;
+    g_usb_device_interrupt_transfer_finish;
+    g_usb_device_list_coldplug;
+    g_usb_device_list_find_by_bus_address;
+    g_usb_device_list_find_by_vid_pid;
+    g_usb_device_list_get_devices;
+    g_usb_device_list_get_type;
+    g_usb_device_list_new;
+    g_usb_device_open;
+    g_usb_device_release_interface;
+    g_usb_device_reset;
+    g_usb_device_set_configuration;
+    g_usb_source_error_quark;
+    g_usb_strerror;
   local: *;
 };
 
 LIBGUSB_0.1.1 {
   global:
     g_usb_device_get_platform_id;
+  local: *;
 } LIBGUSB_0.1.0;
 
 LIBGUSB_0.1.7 {
   global:
     g_usb_device_get_device_class;
+  local: *;
 } LIBGUSB_0.1.1;
 
 LIBGUSB_0.2.2 {
@@ -20,25 +62,28 @@ LIBGUSB_0.2.2 {
     g_usb_context_find_by_bus_address;
     g_usb_context_find_by_vid_pid;
     g_usb_context_get_devices;
+  local: *;
 } LIBGUSB_0.1.7;
 
 LIBGUSB_0.2.4 {
   global:
-    g_usb_device_get_parent;
+    g_usb_context_find_by_platform_id;
     g_usb_device_get_children;
+    g_usb_device_get_device_protocol;
+    g_usb_device_get_device_subclass;
+    g_usb_device_get_parent;
+    g_usb_device_get_pid_as_str;
     g_usb_device_get_port_number;
     g_usb_device_get_vid_as_str;
-    g_usb_device_get_pid_as_str;
-    g_usb_device_get_device_subclass;
-    g_usb_device_get_device_protocol;
-    g_usb_context_find_by_platform_id;
+  local: *;
 } LIBGUSB_0.2.2;
 
 LIBGUSB_0.2.5 {
   global:
-    g_usb_device_get_custom_index;
     g_usb_context_get_main_context;
     g_usb_context_set_main_context;
+    g_usb_device_get_custom_index;
+  local: *;
 } LIBGUSB_0.2.4;
 
 LIBGUSB_0.2.8 {
@@ -56,36 +101,42 @@ LIBGUSB_0.2.8 {
     g_usb_interface_get_number;
     g_usb_interface_get_protocol;
     g_usb_interface_get_subclass;
+    g_usb_interface_get_type;
+  local: *;
 } LIBGUSB_0.2.5;
 
 LIBGUSB_0.2.9 {
   global:
     g_usb_context_wait_for_replug;
+  local: *;
 } LIBGUSB_0.2.8;
 
 LIBGUSB_0.2.11 {
   global:
-    g_usb_context_set_flags;
     g_usb_context_get_flags;
+    g_usb_context_set_flags;
+  local: *;
 } LIBGUSB_0.2.9;
 
 LIBGUSB_0.3.1 {
   global:
     g_usb_device_get_spec;
     g_usb_version_string;
+  local: *;
 } LIBGUSB_0.2.11;
 
 LIBGUSB_0.3.3 {
   global:
-    g_usb_interface_get_endpoints;
-    g_usb_endpoint_get_kind;
-    g_usb_endpoint_get_maximum_packet_size;
-    g_usb_endpoint_get_polling_interval;
     g_usb_endpoint_get_address;
     g_usb_endpoint_get_direction;
     g_usb_endpoint_get_extra;
+    g_usb_endpoint_get_kind;
+    g_usb_endpoint_get_maximum_packet_size;
     g_usb_endpoint_get_number;
+    g_usb_endpoint_get_polling_interval;
     g_usb_endpoint_get_refresh;
     g_usb_endpoint_get_synch_address;
     g_usb_endpoint_get_type;
+    g_usb_interface_get_endpoints;
+  local: *;
 } LIBGUSB_0.3.1;

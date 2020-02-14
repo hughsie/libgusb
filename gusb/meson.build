@@ -117,6 +117,7 @@ libgusb_girtarget = gnome.generate_gir(gusb,
     'gusb-source.h',
     'gusb-util.c',
     'gusb-util.h',
+    'gusb-version.c',
   ],
   nsversion : '1.0',
   namespace : 'GUsb',
@@ -140,6 +141,34 @@ libgusb_girtarget = gnome.generate_gir(gusb,
 )
 libgusb_gir = libgusb_girtarget[0]
 libgusb_typelib = libgusb_girtarget[1]
+
+# Verify the map file is correct -- note we can't actually use the generated
+# file for two reasons:
+#
+#  1. We don't hard depend on GObject Introspection
+#  2. The map file is required to build the lib that the GIR is built from
+#
+# To avoid the circular dep, and to ensure we don't change exported API
+# accidentally actually check in a version of the version script to git.
+mapfile_target = custom_target('gusb_mapfile',
+  input: libgusb_girtarget[0],
+  output: 'libgusb.ver',
+  command: [
+    join_paths(meson.source_root(), 'contrib', 'generate-version-script.py'),
+    'LIBGUSB',
+    '@INPUT@',
+    '@OUTPUT@',
+  ],
+)
+diffcmd = find_program('diff')
+test('gusb-exported-api', diffcmd,
+     args : [
+      '-urNp',
+      join_paths(meson.current_source_dir(), 'libgusb.ver'),
+      mapfile_target,
+      ],
+    )
+
 endif
 
 if get_option('vapi')
