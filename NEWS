@@ -1,3 +1,19 @@
+Version 0.3.4
+~~~~~~~~~~~~~
+Released: 2020-02-20
+
+Notes:
+ - This fixes the symbol version for g_usb_version_string() to be in the right
+   place, so update this library alongside with external programs if you've
+   already started using this symbol for example in fwupd. We've put a mechanism
+   in place so this kind of thing can't happen again. Sorry!
+
+New Features:
+ - Validate the exported symbol list during check (Richard Hughes)
+
+Bugfixes:
+ - Include the USB bus in the generated platform_id (Richard Hughes)
+
 Version 0.3.3
 ~~~~~~~~~~~~~
 Released: 2020-01-30
