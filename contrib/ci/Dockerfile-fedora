@@ -2,6 +2,7 @@ FROM fedora:31
 
 RUN dnf -y update
 RUN dnf -y install \
+	diffutils \
 	glib2-devel \
 	gobject-introspection-devel \
 	gtk-doc \
