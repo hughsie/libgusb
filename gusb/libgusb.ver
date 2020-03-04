@@ -40,6 +40,7 @@ LIBGUSB_0.1.0 {
     g_usb_device_reset;
     g_usb_device_set_configuration;
     g_usb_source_error_quark;
+    g_usb_source_set_callback;
     g_usb_strerror;
   local: *;
 };
