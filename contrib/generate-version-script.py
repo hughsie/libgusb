@@ -5,6 +5,7 @@
 #
 # SPDX-License-Identifier: LGPL-2.1+
 
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -19,7 +20,7 @@ def usage(return_code):
         out = sys.stdout
     else:
         out = sys.stderr
-    out.write("usage: %s <NAME> <INPUT> <OUTPUT>\n" % sys.argv[0])
+    out.write("usage: %s <NAME> <INPUT> <COMPAT> <OUTPUT>\n" % sys.argv[0])
     sys.exit(return_code)
 
 class LdVersionScript:
@@ -28,6 +29,7 @@ class LdVersionScript:
     def __init__(self, library_name):
         self.library_name = library_name
         self.releases = {}
+        self.compat_symbols = set()
 
     def _add_node(self, node):
         identifier = node.attrib[XMLNS_C + 'identifier']
@@ -84,6 +86,17 @@ class LdVersionScript:
             for cls in ns.findall(XMLNS + 'class'):
                 self._add_cls(cls)
 
+    def import_compat(self, filename):
+        REDIRECT_PATTERN = re.compile(r'^#define *([a-zA-Z0-9_]+) _default_\1$')
+
+        with open(filename) as reader:
+            for line in reader:
+                match = REDIRECT_PATTERN.match(line)
+
+                if match is not None:
+                    assert match.group(1) not in self.compat_symbols, line
+                    self.compat_symbols.add(match.group(1))
+
     def render(self):
 
         # get a sorted list of all the versions
@@ -100,6 +113,9 @@ class LdVersionScript:
             verout += '  global:\n'
             for symbol in symbols:
                 verout += '    %s;\n' % symbol
+            if not oldversion:
+                for symbol in sorted(self.compat_symbols):
+                    verout += '    %s; /* really added in a later version */\n' % symbol
             verout += '  local: *;\n'
             if oldversion:
                 verout += '} %s_%s;\n' % (self.library_name, oldversion)
@@ -111,9 +127,11 @@ class LdVersionScript:
 if __name__ == '__main__':
     if {'-?', '--help', '--usage'}.intersection(set(sys.argv)):
         usage(0)
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 5:
         usage(1)
 
     ld = LdVersionScript(library_name=sys.argv[1])
     ld.import_gir(sys.argv[2])
-    open(sys.argv[3], 'w').write(ld.render())
+    ld.import_compat(sys.argv[3])
+    with open(sys.argv[4], 'w') as writer:
+        writer.write(ld.render())

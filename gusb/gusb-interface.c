@@ -20,9 +20,26 @@
 
 #include <string.h>
 
+#include "gusb-abi-compat.h"
 #include "gusb-interface.h"
 #include "gusb-interface-private.h"
 #include "gusb-endpoint-private.h"
+
+/* New in 0.2.8, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/cfaab3e523c11800b6d77c1d10ce0c71799a4482 */
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_alternate, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_class, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_extra, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_index, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_kind, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_length, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_number, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_protocol, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_subclass, "0.2.8")
+
+/* New in 0.2.8, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/3ee71729cf44bdd6d4956a1aad47ea5214cd61f9 */
+_GUSB_COMPAT_ALIAS (g_usb_interface_get_type, "0.2.8")
 
 struct _GUsbInterface
 {

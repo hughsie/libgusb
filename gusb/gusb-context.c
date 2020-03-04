@@ -17,10 +17,20 @@
 
 #include <libusb.h>
 
+#include "gusb-abi-compat.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-device-private.h"
 #include "gusb-util.h"
+
+/* New in 0.2.5, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/cfaab3e523c11800b6d77c1d10ce0c71799a4482 */
+_GUSB_COMPAT_ALIAS (g_usb_context_get_main_context, "0.2.5")
+_GUSB_COMPAT_ALIAS (g_usb_context_set_main_context, "0.2.5")
+
+/* New in 0.2.9, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/cfaab3e523c11800b6d77c1d10ce0c71799a4482 */
+_GUSB_COMPAT_ALIAS (g_usb_context_wait_for_replug, "0.2.9")
 
 enum {
 	PROP_0,

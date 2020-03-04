@@ -17,8 +17,16 @@
 
 #include "config.h"
 
+#include "gusb-abi-compat.h"
 #include "gusb-endpoint.h"
 #include "gusb-endpoint-private.h"
+
+/* New in 0.3.3, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/f8fcf4b857fb002c1da5657d8b2f639f4b5f3f67 */
+_GUSB_COMPAT_ALIAS (g_usb_endpoint_get_number, "0.3.3")
+_GUSB_COMPAT_ALIAS (g_usb_endpoint_get_refresh, "0.3.3")
+_GUSB_COMPAT_ALIAS (g_usb_endpoint_get_synch_address, "0.3.3")
+_GUSB_COMPAT_ALIAS (g_usb_endpoint_get_type, "0.3.3")
 
 struct _GUsbEndpoint
 {
