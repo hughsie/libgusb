@@ -41,8 +41,10 @@ install_headers([
 
 mapfile = 'libgusb.ver'
 vflag = []
+extra_cargs = []
 if host_machine.system() in ['linux', 'windows']
   vflag += '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
+  extra_cargs += '-D_GUSB_VERSIONED_SYMBOLS'
 endif
 gusb = library(
   'gusb',
@@ -64,7 +66,7 @@ gusb = library(
   ],
   c_args : [
       cargs,
-    ],
+    ] + extra_cargs,
   include_directories : [
       root_incdir,
       lib_incdir,
@@ -151,7 +153,7 @@ libgusb_typelib = libgusb_girtarget[1]
 # To avoid the circular dep, and to ensure we don't change exported API
 # accidentally actually check in a version of the version script to git.
 mapfile_target = custom_target('gusb_mapfile',
-  input: libgusb_girtarget[0],
+  input: [libgusb_girtarget[0], 'gusb-abi-compat.h'],
   output: 'libgusb.ver',
   command: [
     join_paths(meson.source_root(), 'contrib', 'generate-version-script.py'),

@@ -20,12 +20,20 @@
 
 #include <libusb.h>
 
+#include "gusb-abi-compat.h"
 #include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-util.h"
 #include "gusb-device.h"
 #include "gusb-device-private.h"
 #include "gusb-interface-private.h"
+
+/* New in 0.2.8, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/cfaab3e523c11800b6d77c1d10ce0c71799a4482 */
+_GUSB_COMPAT_ALIAS (g_usb_device_get_interface, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_device_get_interfaces, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_device_get_release, "0.2.8")
+_GUSB_COMPAT_ALIAS (g_usb_device_set_interface_alt, "0.2.8")
 
 /**
  * GUsbDevicePrivate:

@@ -42,6 +42,28 @@ LIBGUSB_0.1.0 {
     g_usb_source_error_quark;
     g_usb_source_set_callback;
     g_usb_strerror;
+    g_usb_context_get_main_context; /* really added in a later version */
+    g_usb_context_set_main_context; /* really added in a later version */
+    g_usb_context_wait_for_replug; /* really added in a later version */
+    g_usb_device_get_interface; /* really added in a later version */
+    g_usb_device_get_interfaces; /* really added in a later version */
+    g_usb_device_get_release; /* really added in a later version */
+    g_usb_device_set_interface_alt; /* really added in a later version */
+    g_usb_endpoint_get_number; /* really added in a later version */
+    g_usb_endpoint_get_refresh; /* really added in a later version */
+    g_usb_endpoint_get_synch_address; /* really added in a later version */
+    g_usb_endpoint_get_type; /* really added in a later version */
+    g_usb_interface_get_alternate; /* really added in a later version */
+    g_usb_interface_get_class; /* really added in a later version */
+    g_usb_interface_get_extra; /* really added in a later version */
+    g_usb_interface_get_index; /* really added in a later version */
+    g_usb_interface_get_kind; /* really added in a later version */
+    g_usb_interface_get_length; /* really added in a later version */
+    g_usb_interface_get_number; /* really added in a later version */
+    g_usb_interface_get_protocol; /* really added in a later version */
+    g_usb_interface_get_subclass; /* really added in a later version */
+    g_usb_interface_get_type; /* really added in a later version */
+    g_usb_version_string; /* really added in a later version */
   local: *;
 };
 

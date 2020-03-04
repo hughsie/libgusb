@@ -7,7 +7,12 @@
 
 #include "config.h"
 
+#include "gusb-abi-compat.h"
 #include "gusb-version.h"
+
+/* New in 0.3.1, but originally versioned as 0.1.0 */
+/* https://github.com/hughsie/libgusb/commit/3bf1467c775ef889f136dd20e97fce61068e0189 */
+_GUSB_COMPAT_ALIAS (g_usb_version_string, "0.3.1")
 
 /**
  * g_usb_version_string:
