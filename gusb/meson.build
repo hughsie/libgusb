@@ -142,6 +142,9 @@ libgusb_girtarget = gnome.generate_gir(gusb,
 libgusb_gir = libgusb_girtarget[0]
 libgusb_typelib = libgusb_girtarget[1]
 
+pymod = import('python')
+py_installation = pymod.find_installation('python3')
+
 # Verify the map file is correct -- note we can't actually use the generated
 # file for two reasons:
 #
@@ -154,6 +157,7 @@ mapfile_target = custom_target('gusb_mapfile',
   input: libgusb_girtarget[0],
   output: 'libgusb.ver',
   command: [
+    py_installation,
     join_paths(meson.source_root(), 'contrib', 'generate-version-script.py'),
     'LIBGUSB',
     '@INPUT@',
