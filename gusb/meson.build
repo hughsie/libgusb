@@ -3,6 +3,9 @@ cargs = [
   '-DUSB_IDS="' + get_option('usb_ids') + '"',
 ]
 
+gusb_source_dir = meson.current_source_dir()
+gusb_build_dir = meson.current_build_dir()
+
 con2 = configuration_data()
 con2.set('G_USB_MAJOR_VERSION', gusb_major_version)
 con2.set('G_USB_MINOR_VERSION', gusb_minor_version)

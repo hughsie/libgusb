@@ -7,8 +7,8 @@ gusb_version_xml = configure_file(
 gnome.gtkdoc(
   'gusb',
   src_dir : [
-    join_paths(meson.source_root(), 'gusb'),
-    join_paths(meson.build_root(), 'gusb'),
+    gusb_source_dir,
+    gusb_build_dir,
   ],
   main_sgml : 'gusb-docs.sgml',
   install : true
