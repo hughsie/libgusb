@@ -156,6 +156,7 @@ guint8			 g_usb_device_get_device_class	(GUsbDevice	*device);
 guint8			 g_usb_device_get_device_subclass	(GUsbDevice *device);
 guint8			 g_usb_device_get_device_protocol	(GUsbDevice *device);
 
+guint8			 g_usb_device_get_configuration_index	(GUsbDevice *device);
 guint8			 g_usb_device_get_manufacturer_index	(GUsbDevice *device);
 guint8			 g_usb_device_get_product_index		(GUsbDevice *device);
 guint8			 g_usb_device_get_serial_number_index	(GUsbDevice *device);

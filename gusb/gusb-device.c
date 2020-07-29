@@ -1777,6 +1777,36 @@ g_usb_device_get_pid_as_str (GUsbDevice *device)
 }
 
 /**
+ * g_usb_device_get_configuration_index
+ * @device: a #GUsbDevice
+ *
+ * Get the index for the active Configuration string descriptor
+ * ie, iConfiguration.
+ *
+ * Return value: a string descriptor index.
+ *
+ * Since: 0.3.5
+ **/
+guint8
+g_usb_device_get_configuration_index (GUsbDevice *device)
+{
+	struct libusb_config_descriptor *config;
+	gint rc;
+	guint8 index;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), 0);
+
+	rc = libusb_get_active_config_descriptor (device->priv->device, &config);
+	g_return_val_if_fail (rc == 0, 0);
+
+	index = config->iConfiguration;
+
+	libusb_free_config_descriptor (config);
+	return index;
+}
+
+
+/**
  * g_usb_device_get_manufacturer_index:
  * @device: a #GUsbDevice
  *
