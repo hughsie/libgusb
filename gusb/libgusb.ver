@@ -141,3 +141,9 @@ LIBGUSB_0.3.3 {
     g_usb_interface_get_endpoints;
   local: *;
 } LIBGUSB_0.3.1;
+
+LIBGUSB_0.3.5 {
+  global:
+    g_usb_device_get_configuration_index;
+  local: *;
+} LIBGUSB_0.3.3;
