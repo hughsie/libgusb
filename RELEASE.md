@@ -3,9 +3,9 @@ GUsb Release Notes
 
 Write `NEWS` entries for GUsb in the same format as usual.
 
-    git shortlog 0.3.4.. | grep -i -v trivial | grep -v Merge > NEWS.new
+    git shortlog 0.3.5.. | grep -i -v trivial | grep -v Merge > NEWS.new
     =================================================
-    Version 0.3.5
+    Version 0.3.6
     ~~~~~~~~~~~~~
     Released: 2020-xx-xx
 
@@ -19,7 +19,7 @@ Write `NEWS` entries for GUsb in the same format as usual.
 Update library version if new ABI or API in `meson.build`, commit, and build tarball:
 
     # MAKE SURE THIS IS CORRECT
-    export release_ver="0.3.5"
+    export release_ver="0.3.6"
 
     git commit -a -m "Release version ${release_ver}"
     git tag -s -f -m "Release ${release_ver}" "${release_ver}"
