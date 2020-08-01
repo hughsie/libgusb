@@ -61,6 +61,7 @@ gusb = library(
   ],
   soversion : lt_current,
   version : lt_version,
+  darwin_versions: [lt_current + 1, '@0@.@1@.0'.format(lt_current + 1, lt_revision)],
   dependencies : [
     libgio,
     libusb,

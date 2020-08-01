@@ -15,9 +15,9 @@ conf = configuration_data()
 conf.set_quoted('VERSION', gusb_version)
 
 # libtool versioning - this applies to libgusb
-lt_current = '2'
-lt_revision = '10'
-lt_age = '0'
+lt_current = 2
+lt_revision = 10
+lt_age = 0
 lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
 
 # get supported warning flags
