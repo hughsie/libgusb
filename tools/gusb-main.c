@@ -437,7 +437,12 @@ main (int argc, char *argv[])
 
 	priv->context = g_option_context_new ("GUSB Console Program");
 	g_option_context_add_main_entries (priv->context, options, NULL);
-	g_option_context_parse (priv->context, &argc, &argv, NULL);
+	if (!g_option_context_parse (priv->context, &argc, &argv, &error)) {
+		g_printerr ("Failed to parse arguments: %s\n", error->message);
+		g_error_free (error);
+		retval = 2;
+		goto out;
+	}
 
 	/* verbose? */
 	if (verbose) {
