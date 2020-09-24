@@ -13,7 +13,7 @@
  * This object is a thin glib wrapper around a libusb_interface_descriptor.
  *
  * All the data is copied when the object is created and the original
- * descriptor can be destoyed any at point.
+ * descriptor can be destroyed any at point.
  */
 
 #include "config.h"
