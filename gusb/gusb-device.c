@@ -1267,17 +1267,13 @@ g_usb_device_control_transfer_async (GUsbDevice	   *device,
 	req->transfer = libusb_alloc_transfer (0);
 	req->data = data;
 
-	/* setup cancellation */
-	if (cancellable != NULL) {
-		req->cancellable = g_object_ref (cancellable);
-		req->cancellable_id = g_cancellable_connect (req->cancellable,
-							     G_CALLBACK (g_usb_device_cancelled_cb),
-							     req,
-							     NULL);
-	}
-
 	task = g_task_new (device, cancellable, callback, user_data);
 	g_task_set_task_data (task, req, (GDestroyNotify)g_usb_device_req_free);
+
+	if (g_task_return_error_if_cancelled (task)) {
+		g_object_unref (task);
+		return;
+	}
 
 	/* munge back to flags */
 	if (direction == G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST)
@@ -1306,6 +1302,15 @@ g_usb_device_control_transfer_async (GUsbDevice	   *device,
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
 		g_task_return_error (task, error);
 		g_object_unref (task);
+	}
+
+	/* setup cancellation after submission */
+	if (cancellable != NULL) {
+		req->cancellable = g_object_ref (cancellable);
+		req->cancellable_id = g_cancellable_connect (req->cancellable,
+							     G_CALLBACK (g_usb_device_cancelled_cb),
+							     req,
+							     NULL);
 	}
 }
 
@@ -1377,17 +1382,13 @@ g_usb_device_bulk_transfer_async (GUsbDevice	  *device,
 	req = g_slice_new0 (GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer (0);
 
-	/* setup cancellation */
-	if (cancellable != NULL) {
-		req->cancellable = g_object_ref (cancellable);
-		req->cancellable_id = g_cancellable_connect (req->cancellable,
-							     G_CALLBACK (g_usb_device_cancelled_cb),
-							     req,
-							     NULL);
-	}
-
 	task = g_task_new (device, cancellable, callback, user_data);
 	g_task_set_task_data (task, req, (GDestroyNotify)g_usb_device_req_free);
+
+	if (g_task_return_error_if_cancelled (task)) {
+		g_object_unref (task);
+		return;
+	}
 
 	/* fill in transfer details */
 	libusb_fill_bulk_transfer (req->transfer,
@@ -1405,6 +1406,15 @@ g_usb_device_bulk_transfer_async (GUsbDevice	  *device,
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
 		g_task_return_error (task, error);
 		g_object_unref (task);
+	}
+
+	/* setup cancellation after submission */
+	if (cancellable != NULL) {
+		req->cancellable = g_object_ref (cancellable);
+		req->cancellable_id = g_cancellable_connect (req->cancellable,
+							     G_CALLBACK (g_usb_device_cancelled_cb),
+							     req,
+							     NULL);
 	}
 }
 
@@ -1476,17 +1486,13 @@ g_usb_device_interrupt_transfer_async (GUsbDevice	  *device,
 	req = g_slice_new0 (GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer (0);
 
-	/* setup cancellation */
-	if (cancellable != NULL) {
-		req->cancellable = g_object_ref (cancellable);
-		req->cancellable_id = g_cancellable_connect (req->cancellable,
-							     G_CALLBACK (g_usb_device_cancelled_cb),
-							     req,
-							     NULL);
-	}
-
 	task = g_task_new (device, cancellable, callback, user_data);
 	g_task_set_task_data (task, req, (GDestroyNotify)g_usb_device_req_free);
+
+	if (g_task_return_error_if_cancelled (task)) {
+		g_object_unref (task);
+		return;
+	}
 
 	/* fill in transfer details */
 	libusb_fill_interrupt_transfer (req->transfer,
@@ -1504,6 +1510,15 @@ g_usb_device_interrupt_transfer_async (GUsbDevice	  *device,
 		g_usb_device_libusb_error_to_gerror (device, rc, &error);
 		g_task_return_error (task, error);
 		g_object_unref (task);
+	}
+
+	/* setup cancellation after submission */
+	if (cancellable != NULL) {
+		req->cancellable = g_object_ref (cancellable);
+		req->cancellable_id = g_cancellable_connect (req->cancellable,
+							     G_CALLBACK (g_usb_device_cancelled_cb),
+							     req,
+							     NULL);
 	}
 }
 
