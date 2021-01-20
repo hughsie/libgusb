@@ -118,6 +118,17 @@ typedef enum {
 	G_USB_DEVICE_CLASS_VENDOR_SPECIFIC		= 0xff
 } GUsbDeviceClassCode;
 
+
+/**
+ * GUsbDeviceLangid:
+ *
+ * The USB language ID.
+ **/
+typedef enum {
+	G_USB_DEVICE_LANGID_INVALID			= 0x0000,
+	G_USB_DEVICE_LANGID_ENGLISH_UNITED_STATES	= 0x0409,
+} GUsbDeviceLangid;
+
 struct _GUsbDevice
 {
 	 GObject			 parent;
@@ -203,6 +214,10 @@ gboolean		 g_usb_device_set_interface_alt	(GUsbDevice	*device,
 
 gchar			*g_usb_device_get_string_descriptor (GUsbDevice *device,
 							 guint8		 desc_index,
+							 GError		**error);
+GBytes			*g_usb_device_get_string_descriptor_bytes (GUsbDevice *device,
+							 guint8		 desc_index,
+							 guint16	 langid,
 							 GError		**error);
 
 /* sync -- TODO: use GCancellable and GUsbSource */
