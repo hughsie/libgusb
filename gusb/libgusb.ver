@@ -147,3 +147,9 @@ LIBGUSB_0.3.5 {
     g_usb_device_get_configuration_index;
   local: *;
 } LIBGUSB_0.3.3;
+
+LIBGUSB_0.3.6 {
+  global:
+    g_usb_device_get_string_descriptor_bytes;
+  local: *;
+} LIBGUSB_0.3.5;
