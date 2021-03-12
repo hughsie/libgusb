@@ -3,11 +3,11 @@ GUsb Release Notes
 
 Write `NEWS` entries for GUsb in the same format as usual.
 
-    git shortlog 0.3.5.. | grep -i -v trivial | grep -v Merge > NEWS.new
+    git shortlog 0.3.6.. | grep -i -v trivial | grep -v Merge > NEWS.new
     =================================================
-    Version 0.3.6
+    Version 0.3.7
     ~~~~~~~~~~~~~
-    Released: 2020-xx-xx
+    Released: 2021-xx-xx
 
     Notes:
 
@@ -41,7 +41,7 @@ Do post release version bump in `meson.build` and commit changes:
 Send an email to devkit-devel@lists.freedesktop.org
 
     =================================================
-    GUsb 0.3.5 released!
+    GUsb 0.3.7 released!
 
     GUsb is a GObject wrapper for libusb1 that makes it easy to do
     asynchronous control, bulk and interrupt transfers with proper
