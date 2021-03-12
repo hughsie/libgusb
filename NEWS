@@ -1,3 +1,14 @@
+Version 0.3.6
+~~~~~~~~~~~~~
+Released: 2021-03-12
+
+New Features:
+ - Add g_usb_device_get_string_descriptor_bytes() (Richard Hughes)
+
+Bugfixes:
+ - Properly set dylib versions on darwin (Caleb Xu)
+ - Fix cancellation if cancellable is already cancelled (Benjamin Berg)
+
 Version 0.3.5
 ~~~~~~~~~~~~~
 Released: 2020-07-30
