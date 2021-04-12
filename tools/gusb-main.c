@@ -153,6 +153,7 @@ gusb_main_device_open (GUsbDevice *device)
 			return;
 		}
 		g_print ("product: %s\n", product);
+		g_free (product);
 	}
 }
 
