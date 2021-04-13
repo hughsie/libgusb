@@ -146,8 +146,6 @@ g_usb_device_constructed (GObject *object)
 	if (!priv->device)
 		g_error("constructed without a libusb_device");
 
-	libusb_ref_device(priv->device);
-
 	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
 	if (rc != LIBUSB_SUCCESS)
 		g_warning ("Failed to get USB descriptor for device: %s",
