@@ -110,6 +110,18 @@ g_usb_device_get_property (GObject    *object,
 }
 
 static void
+set_libusb_device (GUsbDevice           *device,
+		   struct libusb_device *dev)
+{
+	GUsbDevicePrivate *priv = device->priv;
+
+	g_clear_pointer (&priv->device, libusb_unref_device);
+
+	if (dev != NULL)
+		priv->device = libusb_ref_device (dev);
+}
+
+static void
 g_usb_device_set_property (GObject      *object,
 			   guint	 prop_id,
 			   const GValue *value,
@@ -120,7 +132,7 @@ g_usb_device_set_property (GObject      *object,
 
 	switch (prop_id) {
 	case PROP_LIBUSB_DEVICE:
-		priv->device = g_value_get_pointer (value);
+		set_libusb_device (device, g_value_get_pointer (value));
 		break;
 	case PROP_CONTEXT:
 		priv->context = g_value_dup_object (value);
@@ -238,8 +250,6 @@ g_usb_device_initable_init (GInitable     *initable,
 				     "Constructed without a libusb_device");
 		return FALSE;
 	}
-
-	libusb_ref_device (priv->device);
 
 	rc = libusb_get_device_descriptor (priv->device, &priv->desc);
 	if (rc != LIBUSB_SUCCESS) {
