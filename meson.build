@@ -94,9 +94,15 @@ add_project_link_arguments(
 )
 
 libgio = dependency('gio-2.0', version : '>= 2.44.0')
-libusb = dependency('libusb-1.0', version : '>= 1.0.19')
-if libusb.version().version_compare ('>= 1.0.22')
-  conf.set('HAVE_LIBUSB_1_0_22', '1')
+libusb = dependency('libusb-1.0', version : '>= 1.0.9')
+if cc.has_header_symbol('libusb-1.0/libusb.h', 'LIBUSB_CAP_HAS_HOTPLUG')
+  conf.set('HAVE_LIBUSB_CAP_HAS_HOTPLUG', '1')
+endif
+if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_has_capability')
+  conf.set('HAVE_LIBUSB_HAS_CAPABILITY', '1')
+endif
+if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_set_option')
+  conf.set('HAVE_LIBUSB_SET_OPTION', '1')
 endif
 
 gusb_deps = [
