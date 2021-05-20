@@ -56,6 +56,11 @@ struct _GUsbContextPrivate
 	libusb_hotplug_callback_handle	 hotplug_id;
 };
 
+/* not defined in FreeBSD */
+#ifndef HAVE_LIBUSB_CAP_HAS_HOTPLUG
+#define LIBUSB_CAP_HAS_HOTPLUG 0x0001
+#endif
+
 typedef struct {
 	GMainLoop			*loop;
 	GUsbDevice			*device;
@@ -71,6 +76,17 @@ G_DEFINE_TYPE_WITH_CODE (GUsbContext, g_usb_context, G_TYPE_OBJECT,
 			 G_ADD_PRIVATE (GUsbContext)
 			 G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE,
 					       g_usb_context_initable_iface_init))
+
+/* not defined in FreeBSD */
+#ifndef HAVE_LIBUSB_HAS_CAPABILITY
+static gboolean
+libusb_has_capability (int cap)
+{
+	if (cap == LIBUSB_CAP_HAS_HOTPLUG)
+		return TRUE;
+	return FALSE;
+}
+#endif
 
 static void
 g_usb_context_replug_helper_free (GUsbContextReplugHelper *replug_helper)
@@ -151,7 +167,7 @@ g_usb_context_set_property (GObject      *object,
 	switch (prop_id) {
 	case PROP_DEBUG_LEVEL:
 		priv->debug_level = g_value_get_int (value);
-#ifdef HAVE_LIBUSB_1_0_22
+#ifdef HAVE_LIBUSB_SET_OPTION
 		libusb_set_option (priv->ctx, LIBUSB_OPTION_LOG_LEVEL, priv->debug_level);
 #else
 		libusb_set_debug (priv->ctx, priv->debug_level);
@@ -452,7 +468,6 @@ g_usb_context_rescan_cb (gpointer user_data)
 	return TRUE;
 }
 
-
 /**
  * g_usb_context_get_main_context:
  * @context: a #GUsbContext
@@ -710,7 +725,7 @@ g_usb_context_set_debug (GUsbContext    *context,
 
 	if (debug_level != priv->debug_level) {
 		priv->debug_level = debug_level;
-#ifdef HAVE_LIBUSB_1_0_22
+#ifdef HAVE_LIBUSB_SET_OPTION
 		libusb_set_option (priv->ctx, LIBUSB_OPTION_LOG_LEVEL, debug_level);
 #else
 		libusb_set_debug (priv->ctx, debug_level);
