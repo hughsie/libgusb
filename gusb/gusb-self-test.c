@@ -21,6 +21,11 @@ gusb_device_func (void)
 	GUsbContext *ctx;
 	GUsbDevice *device;
 
+#ifdef __FreeBSD__
+	g_test_skip ("Root hubs on FreeBSD have vid and pid set to zero");
+	return;
+#endif
+
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
 	g_assert (ctx != NULL);
@@ -70,6 +75,11 @@ gusb_context_func (void)
 	gchar *manufacturer;
 	gchar *product;
 	guint i;
+
+#ifdef __FreeBSD__
+	g_test_skip ("Root hubs on FreeBSD have vid and pid set to zero");
+	return;
+#endif
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
