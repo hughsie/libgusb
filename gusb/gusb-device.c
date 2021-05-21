@@ -214,10 +214,19 @@ g_usb_device_init (GUsbDevice *device)
 
 /* not defined in FreeBSD */
 #ifndef HAVE_LIBUSB_GET_PARENT
-libusb_device *
+static libusb_device *
 libusb_get_parent (libusb_device *dev)
 {
 	return NULL;
+}
+#endif
+
+/* not defined in DragonFlyBSD */
+#ifndef HAVE_LIBUSB_GET_PORT_NUMBER
+static guint8
+libusb_get_port_number (libusb_device *dev)
+{
+	return 0xff;
 }
 #endif
 
