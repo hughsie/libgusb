@@ -95,19 +95,19 @@ add_project_link_arguments(
 
 libgio = dependency('gio-2.0', version : '>= 2.44.0')
 libusb = dependency('libusb-1.0', version : '>= 1.0.9')
-if cc.has_header_symbol('libusb-1.0/libusb.h', 'LIBUSB_CAP_HAS_HOTPLUG')
+if cc.has_header_symbol('libusb.h', 'LIBUSB_CAP_HAS_HOTPLUG', dependencies: libusb)
   conf.set('HAVE_LIBUSB_CAP_HAS_HOTPLUG', '1')
 endif
-if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_has_capability')
+if cc.has_header_symbol('libusb.h', 'libusb_has_capability', dependencies: libusb)
   conf.set('HAVE_LIBUSB_HAS_CAPABILITY', '1')
 endif
-if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_set_option')
+if cc.has_header_symbol('libusb.h', 'libusb_set_option', dependencies: libusb)
   conf.set('HAVE_LIBUSB_SET_OPTION', '1')
 endif
-if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_get_parent')
+if cc.has_header_symbol('libusb.h', 'libusb_get_parent', dependencies: libusb)
   conf.set('HAVE_LIBUSB_GET_PARENT', '1')
 endif
-if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_get_port_number')
+if cc.has_header_symbol('libusb.h', 'libusb_get_port_number', dependencies: libusb)
   conf.set('HAVE_LIBUSB_GET_PORT_NUMBER', '1')
 endif
 
