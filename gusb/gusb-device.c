@@ -212,6 +212,15 @@ g_usb_device_init (GUsbDevice *device)
 	device->priv = g_usb_device_get_instance_private (device);
 }
 
+/* not defined in FreeBSD */
+#ifndef HAVE_LIBUSB_GET_PARENT
+libusb_device *
+libusb_get_parent (libusb_device *dev)
+{
+	return NULL;
+}
+#endif
+
 static void
 g_usb_device_build_parent_port_number (GString *str, libusb_device *dev)
 {
