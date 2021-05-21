@@ -147,7 +147,7 @@ libgusb_gir = libgusb_girtarget[0]
 libgusb_typelib = libgusb_girtarget[1]
 
 pymod = import('python')
-py_installation = pymod.find_installation('python3')
+py_installation = pymod.find_installation()
 
 # Verify the map file is correct -- note we can't actually use the generated
 # file for two reasons:
