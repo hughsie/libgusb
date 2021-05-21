@@ -104,6 +104,9 @@ endif
 if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_set_option')
   conf.set('HAVE_LIBUSB_SET_OPTION', '1')
 endif
+if cc.has_header_symbol('libusb-1.0/libusb.h', 'libusb_get_parent')
+  conf.set('HAVE_LIBUSB_GET_PARENT', '1')
+endif
 
 gusb_deps = [
   libgio,
