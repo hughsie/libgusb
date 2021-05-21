@@ -1,0 +1,19 @@
+name: Build and Test
+
+on: [push, pull_request]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        distro:
+          - fedora
+          - debian-stretch
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build -t libgusb-${{ matrix.distro }} -f contrib/ci/Dockerfile-${{ matrix.distro }} .
+      - run: docker run -t -v `pwd`:/build libgusb-${{ matrix.distro }} ./contrib/ci/build_and_test.sh -Dtests=false
