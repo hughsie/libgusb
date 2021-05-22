@@ -88,8 +88,7 @@ gusb_dep = declare_dependency(
 )
 
 pkgg = import('pkgconfig')
-pkgg.generate(
-  libraries : gusb,
+pkgg.generate(gusb,
   requires : [ 'gio-2.0', 'gobject-2.0', 'libusb-1.0' ],
   subdirs : 'gusb-1',
   version : meson.project_version(),
