@@ -1,3 +1,17 @@
+Version 0.3.7
+~~~~~~~~~~~~~
+Released: 2021-05-24
+
+New Features:
+ - Add a FreeBSD CI target (Richard Hughes)
+
+Bugfixes:
+ - Do not depend on libusb_get_parent() to fix FreeBSD compile (Richard Hughes)
+ - Do not depend on libusb_get_port_number() to fix DragonFlyBSD compile (Richard Hughes)
+ - Do not double-reference USB devices (Marco Trevisan)
+ - Do not run the tests on FreeBSD (Richard Hughes)
+ - Require *any* python3 to fix FreeBSD build (Richard Hughes)
+
 Version 0.3.6
 ~~~~~~~~~~~~~
 Released: 2021-03-12
