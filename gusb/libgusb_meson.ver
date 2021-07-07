@@ -1,0 +1,7 @@
+LIBGUSB_0.1.0 {
+  global:
+    g_usb_*;
+    environ;
+    __progname;
+  local: *;
+};
