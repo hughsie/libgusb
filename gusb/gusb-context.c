@@ -242,59 +242,26 @@ g_usb_context_class_init (GUsbContextClass *klass)
 			G_USB_TYPE_DEVICE);
 }
 
-typedef struct {
-	GUsbContext	*context;
-	GUsbDevice	*device;
-	guint		 signal_id;
-} GUsbContextIdleHelper;
-
-static void
-g_usb_context_idle_helper_free (GUsbContextIdleHelper *helper)
-{
-	g_object_unref (helper->context);
-	g_object_unref (helper->device);
-	g_free (helper);
-}
-
-static gboolean
-g_usb_context_idle_signal_cb (gpointer user_data)
-{
-	GUsbContextIdleHelper *helper = (GUsbContextIdleHelper *) user_data;
-	g_signal_emit (helper->context, signals[helper->signal_id], 0, helper->device);
-	g_usb_context_idle_helper_free (helper);
-	return FALSE;
-}
-
 static void
 g_usb_context_emit_device_add (GUsbContext *context,
 			       GUsbDevice  *device)
 {
-	GUsbContextIdleHelper *helper;
-	helper = g_new0 (GUsbContextIdleHelper, 1);
-	helper->context = g_object_ref (context);
-	helper->device = g_object_ref (device);
-	helper->signal_id = DEVICE_ADDED_SIGNAL;
-	if (!context->priv->done_enumerate) {
-		g_usb_context_idle_signal_cb (helper);
+	/* emitted directly by g_usb_context_enumerate */
+	if (!context->priv->done_enumerate)
 		return;
-	}
-	g_idle_add (g_usb_context_idle_signal_cb, helper);
+
+	g_signal_emit (context, signals[DEVICE_ADDED_SIGNAL], 0, device);
 }
 
 static void
 g_usb_context_emit_device_remove (GUsbContext *context,
 				  GUsbDevice  *device)
 {
-	GUsbContextIdleHelper *helper;
-	helper = g_new0 (GUsbContextIdleHelper, 1);
-	helper->context = g_object_ref (context);
-	helper->device = g_object_ref (device);
-	helper->signal_id = DEVICE_REMOVED_SIGNAL;
-	if (!context->priv->done_enumerate) {
-		g_usb_context_idle_signal_cb (helper);
+	/* should not happen, if it does we would not fire any signal */
+	if (!context->priv->done_enumerate)
 		return;
-	}
-	g_idle_add (g_usb_context_idle_signal_cb, helper);
+
+	g_signal_emit (context, signals[DEVICE_REMOVED_SIGNAL], 0, device);
 }
 
 static void
@@ -396,6 +363,40 @@ out:
 	g_object_unref (device);
 }
 
+typedef struct {
+	GUsbContext		*context;
+	libusb_device		*dev;
+	libusb_hotplug_event	 event;
+} GUsbContextIdleHelper;
+
+static void
+g_usb_context_idle_helper_free (GUsbContextIdleHelper *helper)
+{
+	g_object_unref (helper->context);
+	libusb_unref_device (helper->dev);
+	g_free (helper);
+}
+
+static gboolean
+g_usb_context_idle_hotplug_cb (gpointer user_data)
+{
+	GUsbContextIdleHelper *helper = (GUsbContextIdleHelper *) user_data;
+
+	switch (helper->event) {
+	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
+		g_usb_context_add_device (helper->context, helper->dev);
+		break;
+	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
+		g_usb_context_remove_device (helper->context, helper->dev);
+		break;
+	default:
+		break;
+	}
+
+	g_usb_context_idle_helper_free (helper);
+	return FALSE;
+}
+
 static int
 g_usb_context_hotplug_cb (struct libusb_context *ctx,
 			  struct libusb_device  *dev,
@@ -403,17 +404,15 @@ g_usb_context_hotplug_cb (struct libusb_context *ctx,
 			  void		  *user_data)
 {
 	GUsbContext *context = G_USB_CONTEXT (user_data);
+	GUsbContextIdleHelper *helper;
 
-	switch (event) {
-	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		g_usb_context_add_device (context, dev);
-		break;
-	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		g_usb_context_remove_device (context, dev);
-		break;
-	default:
-		break;
-	}
+	helper = g_new0 (GUsbContextIdleHelper, 1);
+	helper->context = context;
+	helper->dev = libusb_ref_device (dev);
+	helper->event = event;
+
+	g_idle_add (g_usb_context_idle_hotplug_cb, helper);
+
 	return 0;
 }
 
@@ -538,6 +537,13 @@ g_usb_context_enumerate (GUsbContext *context)
 							       context);
 	}
 	priv->done_enumerate = TRUE;
+
+	/* emit device-added signals before returning */
+	for (guint i = 0; i < priv->devices->len; i++)
+		g_signal_emit (context, signals[DEVICE_ADDED_SIGNAL], 0,
+			       g_ptr_array_index (priv->devices, i));
+
+	/* any queued up hotplug events are queued as idle handlers */
 }
 
 /**
