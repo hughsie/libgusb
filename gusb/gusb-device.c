@@ -916,9 +916,10 @@ g_usb_device_get_string_descriptor (GUsbDevice  *device,
 }
 
 /**
- * g_usb_device_get_string_descriptor_bytes:
+ * g_usb_device_get_string_descriptor_bytes_full:
  * @desc_index: the index for the string descriptor to retrieve
  * @langid: the language ID
+ * @length: size of the request data buffer
  * @error: a #GError, or %NULL
  *
  * Get a raw string descriptor from the device. The returned string should be freed
@@ -926,16 +927,17 @@ g_usb_device_get_string_descriptor (GUsbDevice  *device,
  *
  * Return value: (transfer full): a possibly UTF-16 string, or NULL on error.
  *
- * Since: 0.3.6
+ * Since: 0.3.8
  **/
 GBytes *
-g_usb_device_get_string_descriptor_bytes (GUsbDevice  *device,
-					  guint8       desc_index,
-					  guint16      langid,
-					  GError     **error)
+g_usb_device_get_string_descriptor_bytes_full (GUsbDevice  *device,
+					       guint8       desc_index,
+					       guint16      langid,
+					       gsize        length,
+					       GError     **error)
 {
 	gint rc;
-	unsigned char buf[128];
+	g_autofree guint8 *buf = g_malloc0(length);
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
@@ -947,13 +949,42 @@ g_usb_device_get_string_descriptor_bytes (GUsbDevice  *device,
 
 	rc = libusb_get_string_descriptor (device->priv->handle,
 					   desc_index, langid,
-					   buf, sizeof(buf));
+					   buf, length);
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror (device, rc, error);
 		return NULL;
 	}
 
 	return g_bytes_new (buf, rc);
+}
+
+/**
+ * g_usb_device_get_string_descriptor_bytes:
+ * @desc_index: the index for the string descriptor to retrieve
+ * @langid: the language ID
+ * @error: a #GError, or %NULL
+ *
+ * Get a raw string descriptor from the device. The returned string should be freed
+ * with g_bytes_unref() when no longer needed.
+ * The descriptor will be at most 128 btes in length, if you need to
+ * issue a request with either a smaller or larger descriptor, you can
+ * use g_usb_device_get_string_descriptor_bytes_full instead.
+ *
+ * Return value: (transfer full): a possibly UTF-16 string, or NULL on error.
+ *
+ * Since: 0.3.6
+ **/
+GBytes *
+g_usb_device_get_string_descriptor_bytes (GUsbDevice  *device,
+					  guint8       desc_index,
+					  guint16      langid,
+					  GError     **error)
+{
+	return g_usb_device_get_string_descriptor_bytes_full(device,
+							     desc_index,
+							     langid,
+							     128,
+							     error);
 }
 
 typedef gssize (GUsbDeviceTransferFinishFunc) (GUsbDevice *device, GAsyncResult *res, GError **error);
