@@ -212,13 +212,18 @@ gboolean		 g_usb_device_set_interface_alt	(GUsbDevice	*device,
 							 guint8		 alt,
 							 GError		**error);
 
-gchar			*g_usb_device_get_string_descriptor (GUsbDevice *device,
-							 guint8		 desc_index,
-							 GError		**error);
-GBytes			*g_usb_device_get_string_descriptor_bytes (GUsbDevice *device,
-							 guint8		 desc_index,
-							 guint16	 langid,
-							 GError		**error);
+gchar			*g_usb_device_get_string_descriptor		(GUsbDevice	*device,
+									 guint8		 desc_index,
+									 GError		**error);
+GBytes			*g_usb_device_get_string_descriptor_bytes	(GUsbDevice	*device,
+									 guint8		 desc_index,
+									 guint16	 langid,
+									 GError		**error);
+GBytes			*g_usb_device_get_string_descriptor_bytes_full	(GUsbDevice	*device,
+									 guint8		 desc_index,
+									 guint16	 langid,
+									 gsize		 length,
+									 GError		**error);
 
 /* sync -- TODO: use GCancellable and GUsbSource */
 gboolean		 g_usb_device_control_transfer	(GUsbDevice	*device,
