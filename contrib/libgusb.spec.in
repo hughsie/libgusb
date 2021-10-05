@@ -14,7 +14,6 @@ BuildRequires: gtk-doc
 BuildRequires: libusb1-devel >= 1.0.19
 BuildRequires: meson
 BuildRequires: vala-devel
-BuildRequires: vala-tools
 
 %description
 GUsb is a GObject wrapper for libusb1 that makes it easy to do
