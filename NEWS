@@ -1,3 +1,14 @@
+Version 0.3.8
+~~~~~~~~~~~~~
+Released: 2021-10-06
+
+New Features:
+ - Add g_usb_device_get_string_descriptor_bytes_full (Ricardo Cañuelo)
+
+Bugfixes:
+ - Add the GUsbEndpoint methods to the docs (Richard Hughes)
+ - Fix hotplug handling and signal emission during enumerate (Benjamin Berg)
+
 Version 0.3.7
 ~~~~~~~~~~~~~
 Released: 2021-05-24
