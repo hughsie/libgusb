@@ -180,7 +180,7 @@ test('gusb-exported-api', diffcmd,
 
 endif
 
-if get_option('vapi')
+if get_option('introspection') and get_option('vapi')
 gnome.generate_vapi('gusb',
   sources: libgusb_girtarget[0],
   packages: ['gio-2.0'],
