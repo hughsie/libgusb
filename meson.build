@@ -116,6 +116,10 @@ gusb_deps = [
   libusb,
 ]
 
+if not get_option('introspection') and get_option('vapi')
+  error('-Dvapi=true requires -Dintrospection=true')
+endif
+
 gnome = import('gnome')
 
 add_project_arguments('-DGUSB_COMPILATION', language: 'c')
