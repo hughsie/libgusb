@@ -407,7 +407,7 @@ g_usb_context_hotplug_cb (struct libusb_context *ctx,
 	GUsbContextIdleHelper *helper;
 
 	helper = g_new0 (GUsbContextIdleHelper, 1);
-	helper->context = context;
+	helper->context = g_object_ref (context);
 	helper->dev = libusb_ref_device (dev);
 	helper->event = event;
 
