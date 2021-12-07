@@ -1,3 +1,12 @@
+Version 0.3.9
+~~~~~~~~~~~~~
+Released: 2021-12-07
+
+Bugfixes:
+ - Don't hard-code the list of OS supporting --version-script (Ting-Wei Lan)
+ - Fix hotplug after threaded device removal (Richard Hughes)
+ - Fix version script check for GNU BFD linker on FreeBSD (Ting-Wei Lan)
+
 Version 0.3.8
 ~~~~~~~~~~~~~
 Released: 2021-10-06
