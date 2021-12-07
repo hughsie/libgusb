@@ -13,7 +13,7 @@ BuildRequires: gobject-introspection-devel
 BuildRequires: gtk-doc
 BuildRequires: libusb1-devel >= 1.0.19
 BuildRequires: meson
-BuildRequires: vala-devel
+BuildRequires: vala
 
 %description
 GUsb is a GObject wrapper for libusb1 that makes it easy to do
@@ -41,14 +41,12 @@ GLib headers and libraries for gusb.
 %ldconfig_scriptlets
 
 %files
-%defattr(-,root,root,-)
 %doc README.md AUTHORS NEWS COPYING
 %{_libdir}/libgusb.so.?
 %{_libdir}/libgusb.so.?.0.*
 %{_libdir}/girepository-1.0/GUsb-1.0.typelib
 
 %files devel
-%defattr(-,root,root,-)
 %{_includedir}/gusb-1
 %{_bindir}/gusbcmd
 %{_libdir}/libgusb.so
