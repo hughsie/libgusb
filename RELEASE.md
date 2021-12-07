@@ -3,10 +3,10 @@ GUsb Release Notes
 
 Write `NEWS` entries for GUsb in the same format as usual.
 
-    git shortlog 0.3.8.. | grep -i -v trivial | grep -v Merge > NEWS.new
+    git shortlog 0.3.9.. | grep -i -v trivial | grep -v Merge > NEWS.new
     =================================================
-    Version 0.3.9
-    ~~~~~~~~~~~~~
+    Version 0.3.10
+    ~~~~~~~~~~~~~~
     Released: 2021-xx-xx
 
     Notes:
@@ -19,7 +19,7 @@ Write `NEWS` entries for GUsb in the same format as usual.
 Update library version if new ABI or API in `meson.build`, commit, and build tarball:
 
     # MAKE SURE THIS IS CORRECT
-    export release_ver="0.3.9"
+    export release_ver="0.3.10"
 
     git commit -a -m "Release version ${release_ver}"
     git tag -s -f -m "Release ${release_ver}" "${release_ver}"
@@ -41,7 +41,7 @@ Do post release version bump in `meson.build` and commit changes:
 Send an email to devkit-devel@lists.freedesktop.org
 
     =================================================
-    GUsb 0.3.9 released!
+    GUsb 0.3.10 released!
 
     GUsb is a GObject wrapper for libusb1 that makes it easy to do
     asynchronous control, bulk and interrupt transfers with proper
