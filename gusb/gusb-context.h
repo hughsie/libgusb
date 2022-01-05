@@ -76,6 +76,9 @@ GUsbSource	*g_usb_context_get_source		(GUsbContext	*context,
 GMainContext	*g_usb_context_get_main_context		(GUsbContext	*context);
 void		 g_usb_context_set_main_context		(GUsbContext	*context,
 							 GMainContext	*main_ctx);
+guint		 g_usb_context_get_hotplug_poll_interval(GUsbContext	*context);
+void		 g_usb_context_set_hotplug_poll_interval(GUsbContext	*context,
+							 guint		 hotplug_poll_interval);
 
 void		 g_usb_context_enumerate		(GUsbContext	*context);
 

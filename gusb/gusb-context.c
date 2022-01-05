@@ -35,6 +35,8 @@ enum {
 	LAST_SIGNAL
 };
 
+#define G_USB_CONTEXT_HOTPLUG_POLL_INTERVAL_DEFAULT 1000 /* ms */
+
 /**
  * GUsbContextPrivate:
  *
@@ -50,6 +52,7 @@ struct _GUsbContextPrivate
 	gboolean			 done_enumerate;
 	volatile gint			 thread_event_run;
 	guint				 hotplug_poll_id;
+	guint				 hotplug_poll_interval;
 	int				 debug_level;
 	GUsbContextFlags		 flags;
 	libusb_context			*ctx;
@@ -509,6 +512,70 @@ g_usb_context_set_main_context (GUsbContext  *context,
 	}
 }
 
+static void
+g_usb_context_ensure_rescan_timeout (GUsbContext *context)
+{
+	GUsbContextPrivate *priv = context->priv;
+
+	if (priv->hotplug_poll_id > 0) {
+		g_source_remove (priv->hotplug_poll_id);
+		priv->hotplug_poll_id = 0;
+	}
+	if (priv->hotplug_poll_interval > 0) {
+		priv->hotplug_poll_id = g_timeout_add (priv->hotplug_poll_interval,
+						       g_usb_context_rescan_cb,
+						       context);
+	}
+}
+
+/**
+ * g_usb_context_get_hotplug_poll_interval:
+ * @context: a #GUsbContext
+ *
+ * Gets the poll interval for platforms like Windows that do not support `LIBUSB_CAP_HAS_HOTPLUG`.
+ *
+ * Return value: (transfer none): the interval in ms
+ *
+ * Since: 0.3.10
+ **/
+guint
+g_usb_context_get_hotplug_poll_interval (GUsbContext *context)
+{
+	GUsbContextPrivate *priv = context->priv;
+	g_return_val_if_fail (G_USB_IS_CONTEXT (context), G_MAXUINT);
+	return priv->hotplug_poll_id;
+}
+
+/**
+ * g_usb_context_set_hotplug_poll_interval:
+ * @context: a #GUsbContext
+ * @hotplug_poll_interval: the interval in ms
+ *
+ * Sets the poll interval for platforms like Windows that do not support `LIBUSB_CAP_HAS_HOTPLUG`.
+ * This defaults to 1000ms and can be changed before or after g_usb_context_enumerate() has been
+ * called.
+ *
+ * Since: 0.3.10
+ **/
+void
+g_usb_context_set_hotplug_poll_interval (GUsbContext  *context,
+					 guint hotplug_poll_interval)
+{
+	GUsbContextPrivate *priv = context->priv;
+
+	g_return_if_fail (G_USB_IS_CONTEXT (context));
+
+	/* same */
+	if (priv->hotplug_poll_interval == hotplug_poll_interval)
+		return;
+
+	priv->hotplug_poll_interval = hotplug_poll_interval;
+
+	/* if already running then change the existing timeout */
+	if (priv->hotplug_poll_id > 0)
+		g_usb_context_ensure_rescan_timeout (context);
+}
+
 /**
  * g_usb_context_enumerate:
  * @context: a #GUsbContext
@@ -532,9 +599,7 @@ g_usb_context_enumerate (GUsbContext *context)
 	g_usb_context_rescan (context);
 	if (!libusb_has_capability (LIBUSB_CAP_HAS_HOTPLUG)) {
 		g_debug ("platform does not do hotplug, using polling");
-		priv->hotplug_poll_id = g_timeout_add_seconds (1,
-							       g_usb_context_rescan_cb,
-							       context);
+		g_usb_context_ensure_rescan_timeout (context);
 	}
 	priv->done_enumerate = TRUE;
 
@@ -601,6 +666,7 @@ g_usb_context_init (GUsbContext *context)
 
 	priv = context->priv = g_usb_context_get_instance_private (context);
 	priv->flags = G_USB_CONTEXT_FLAGS_NONE;
+	priv->hotplug_poll_interval = G_USB_CONTEXT_HOTPLUG_POLL_INTERVAL_DEFAULT;
 	priv->devices = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->dict_usb_ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	priv->dict_replug = g_hash_table_new_full (g_str_hash, g_str_equal,

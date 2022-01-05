@@ -159,3 +159,10 @@ LIBGUSB_0.3.8 {
     g_usb_device_get_string_descriptor_bytes_full;
   local: *;
 } LIBGUSB_0.3.6;
+
+LIBGUSB_0.3.10 {
+  global:
+    g_usb_context_get_hotplug_poll_interval;
+    g_usb_context_set_hotplug_poll_interval;
+  local: *;
+} LIBGUSB_0.3.8;
