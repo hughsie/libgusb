@@ -285,10 +285,8 @@ g_usb_context_add_device (GUsbContext	  *context,
 
 	if (priv->done_enumerate)
 		device = g_usb_context_find_by_bus_address (context, bus, address, NULL);
-	if (device != NULL) {
-		g_debug ("%i:%i already exists", bus, address);
+	if (device != NULL)
 		goto out;
-	}
 
 	/* add the device */
 	device = _g_usb_device_new (context, dev, &error);
