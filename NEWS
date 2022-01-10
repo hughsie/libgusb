@@ -1,3 +1,10 @@
+Version 0.3.10
+~~~~~~~~~~~~~~
+Released: 2021-01-10
+
+New Features:
+ - Add API to change the hotplug poll interval (Richard Hughes)
+
 Version 0.3.9
 ~~~~~~~~~~~~~
 Released: 2021-12-07
