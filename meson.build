@@ -1,7 +1,7 @@
 project('libgusb', 'c',
   version : '0.3.10',
   license : 'LGPL-2.1+',
-  meson_version : '>=0.46.0',
+  meson_version : '>=0.49.0',
   default_options : ['c_std=c99']
 )
 
@@ -93,6 +93,11 @@ add_project_link_arguments(
   language: 'c'
 )
 
+if get_option('tests')
+  umockdev = dependency('umockdev-1.0', version: '>= 0.17.7', disabler: true, required: get_option('umockdev'))
+else
+  umockdev = disabler()
+endif
 libgio = dependency('gio-2.0', version : '>= 2.44.0')
 libusb = dependency('libusb-1.0', version : '>= 1.0.9')
 if cc.has_header_symbol('libusb.h', 'LIBUSB_CAP_HAS_HOTPLUG', dependencies: libusb)
