@@ -373,7 +373,8 @@ typedef struct {
 static void
 g_usb_context_idle_helper_free (GUsbContextIdleHelper *helper)
 {
-	g_object_unref (helper->context);
+	if (helper->context)
+		g_object_remove_weak_pointer (G_OBJECT (helper->context), (gpointer*) &helper->context);
 	libusb_unref_device (helper->dev);
 	g_free (helper);
 }
@@ -382,6 +383,10 @@ static gboolean
 g_usb_context_idle_hotplug_cb (gpointer user_data)
 {
 	GUsbContextIdleHelper *helper = (GUsbContextIdleHelper *) user_data;
+
+	/* Prevent running after dispose (or finalize). */
+	if (!helper->context)
+		goto out;
 
 	switch (helper->event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
@@ -394,6 +399,7 @@ g_usb_context_idle_hotplug_cb (gpointer user_data)
 		break;
 	}
 
+out:
 	g_usb_context_idle_helper_free (helper);
 	return FALSE;
 }
@@ -408,7 +414,8 @@ g_usb_context_hotplug_cb (struct libusb_context *ctx,
 	GUsbContextIdleHelper *helper;
 
 	helper = g_new0 (GUsbContextIdleHelper, 1);
-	helper->context = g_object_ref (context);
+	helper->context = context;
+	g_object_add_weak_pointer (G_OBJECT (context), (gpointer*) &helper->context);
 	helper->dev = libusb_ref_device (dev);
 	helper->event = event;
 
