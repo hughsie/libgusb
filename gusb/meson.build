@@ -214,4 +214,17 @@ if get_option('tests')
     ],
   )
   test('gusb-self-test', e)
+
+  # Umockdev based tests
+  test_env = environment()
+  test_env.prepend('LD_PRELOAD', 'libumockdev-preload.so.0')
+
+  test_umockdev = executable(
+      'gusb-umockdev-test',
+      'gusb-umockdev-test.c',
+      dependencies: [ umockdev, gusb_dep ])
+
+  test('gusb-umockdev-test',
+      test_umockdev,
+      env: test_env)
 endif
