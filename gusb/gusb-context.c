@@ -552,7 +552,7 @@ g_usb_context_ensure_rescan_timeout (GUsbContext *context)
  *
  * Gets the poll interval for platforms like Windows that do not support `LIBUSB_CAP_HAS_HOTPLUG`.
  *
- * Return value: (transfer none): the interval in ms
+ * Return value: interval in ms
  *
  * Since: 0.3.10
  **/
