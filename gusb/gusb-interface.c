@@ -20,7 +20,6 @@
 
 #include <string.h>
 
-#include "gusb-interface.h"
 #include "gusb-interface-private.h"
 #include "gusb-endpoint-private.h"
 

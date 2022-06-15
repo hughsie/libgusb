@@ -7,11 +7,7 @@
 
 #include "config.h"
 
-#include <glib-object.h>
-
-#include "gusb-context.h"
 #include "gusb-context-private.h"
-#include "gusb-device.h"
 
 static void
 gusb_device_func (void)

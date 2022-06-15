@@ -9,7 +9,6 @@
 #pragma once
 
 #include <glib-object.h>
-#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
