@@ -57,6 +57,9 @@ struct _GUsbContextPrivate
 	GUsbContextFlags		 flags;
 	libusb_context			*ctx;
 	libusb_hotplug_callback_handle	 hotplug_id;
+	GPtrArray			*idle_events;
+	GMutex				 idle_events_mutex;
+	guint				 idle_events_id;
 };
 
 /* not defined in FreeBSD */
@@ -126,12 +129,18 @@ g_usb_context_dispose (GObject *object)
 		g_source_remove (priv->hotplug_poll_id);
 		priv->hotplug_poll_id = 0;
 	}
+	if (priv->idle_events_id > 0) {
+		g_source_remove (priv->idle_events_id);
+		priv->idle_events_id = 0;
+	}
 
 	g_clear_pointer (&priv->main_ctx, g_main_context_unref);
 	g_clear_pointer (&priv->devices, g_ptr_array_unref);
 	g_clear_pointer (&priv->dict_usb_ids, g_hash_table_unref);
 	g_clear_pointer (&priv->dict_replug, g_hash_table_unref);
 	g_clear_pointer (&priv->ctx, libusb_exit);
+	g_clear_pointer (&priv->idle_events, g_ptr_array_unref);
+	g_mutex_clear(&priv->idle_events_mutex);
 
 	G_OBJECT_CLASS (g_usb_context_parent_class)->dispose (object);
 }
@@ -381,23 +390,31 @@ g_usb_context_idle_helper_free (GUsbContextIdleHelper *helper)
 static gboolean
 g_usb_context_idle_hotplug_cb (gpointer user_data)
 {
-	GUsbContextIdleHelper *helper = (GUsbContextIdleHelper *) user_data;
+	GUsbContext *context = G_USB_CONTEXT (user_data);
+	GUsbContextPrivate *priv = context->priv;
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->idle_events_mutex);
 
-	switch (helper->event) {
-	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		g_usb_context_add_device (helper->context, helper->dev);
-		break;
-	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		g_usb_context_remove_device (helper->context, helper->dev);
-		break;
-	default:
-		break;
+	for (guint i = 0; i < priv->idle_events->len; i++) {
+		GUsbContextIdleHelper *helper = g_ptr_array_index(priv->idle_events, i);
+		switch (helper->event) {
+		case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
+			g_usb_context_add_device (helper->context, helper->dev);
+			break;
+		case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
+			g_usb_context_remove_device (helper->context, helper->dev);
+			break;
+		default:
+			break;
+		}
 	}
 
-	g_usb_context_idle_helper_free (helper);
+	/* all done */
+	g_ptr_array_set_size (priv->idle_events, 0);
+	priv->idle_events_id = 0;
 	return FALSE;
 }
 
+/* this is run in the libusb thread */
 static int
 g_usb_context_hotplug_cb (struct libusb_context *ctx,
 			  struct libusb_device  *dev,
@@ -406,13 +423,17 @@ g_usb_context_hotplug_cb (struct libusb_context *ctx,
 {
 	GUsbContext *context = G_USB_CONTEXT (user_data);
 	GUsbContextIdleHelper *helper;
+	GUsbContextPrivate *priv = context->priv;
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->idle_events_mutex);
 
 	helper = g_new0 (GUsbContextIdleHelper, 1);
 	helper->context = g_object_ref (context);
 	helper->dev = libusb_ref_device (dev);
 	helper->event = event;
 
-	g_idle_add (g_usb_context_idle_hotplug_cb, helper);
+	g_ptr_array_add(priv->idle_events, helper);
+	if (priv->idle_events_id == 0)
+		priv->idle_events_id = g_idle_add (g_usb_context_idle_hotplug_cb, context);
 
 	return 0;
 }
@@ -669,6 +690,10 @@ g_usb_context_init (GUsbContext *context)
 	priv->dict_usb_ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
 	priv->dict_replug = g_hash_table_new_full (g_str_hash, g_str_equal,
 						   g_free, NULL);
+
+	/* to escape the thread into the mainloop */
+	g_mutex_init(&priv->idle_events_mutex);
+	priv->idle_events = g_ptr_array_new_with_free_func ((GDestroyNotify) g_usb_context_idle_helper_free);
 }
 
 static gboolean
