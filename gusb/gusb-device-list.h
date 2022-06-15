@@ -1,7 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
- * Copyright (C) 2011-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2011 Richard Hughes <richard@hughsie.com>
  *
  * SPDX-License-Identifier: LGPL-2.1+
  */
