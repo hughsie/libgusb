@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2010-2015 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2010 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  * Copyright (C) 2011 Debarshi Ray <debarshir@src.gnome.org>
  *
