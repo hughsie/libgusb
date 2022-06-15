@@ -44,23 +44,23 @@ test_fixture_setup_empty (UMockdevTestbedFixture *fixture, UNUSED_DATA)
 static void
 test_fixture_teardown (UMockdevTestbedFixture *fixture, UNUSED_DATA)
 {
-	/* Break context -> device -> context cycle */
+	/* break context -> device -> context cycle */
 	if (fixture->ctx)
 		g_object_run_dispose (G_OBJECT (fixture->ctx));
 	g_clear_object (&fixture->ctx);
 	g_clear_object (&fixture->testbed);
 
-	/* Running the mainloop is needed to ensure everything is cleaned up. */
+	/* running the mainloop is needed to ensure everything is cleaned up */
 	while (g_main_context_iteration (NULL, FALSE)) { }
 }
 
 static void
 test_fixture_add_canon (UMockdevTestbedFixture *fixture)
 {
-	/* NOTE: There is no device file, so cannot be opened */
+	/* NOTE: there is no device file, so cannot be opened */
 
 	/* NOTE: add_device would not create a file, needed for device emulation */
-	/* XXX: Racy, see https://github.com/martinpitt/umockdev/issues/173 */
+	/* XXX: racy, see https://github.com/martinpitt/umockdev/issues/173 */
 	umockdev_testbed_add_from_string (fixture->testbed,
 		"P: /devices/usb1\n"
 		"N: bus/usb/001/001\n"
@@ -121,16 +121,16 @@ test_ctx_hotplug (UMockdevTestbedFixture *fixture, UNUSED_DATA)
 	g_clear_pointer (&devices, g_ptr_array_unref);
 
 	test_fixture_add_canon (fixture);
-	/* Ensure the event was processed by helper thread. */
+	/* ensure the event was processed by helper thread */
 	g_usleep (G_USEC_PER_SEC / 2);
 
-	/* Still not returned (and no event fired). */
+	/* still not returned (and no event fired) */
 	devices = g_usb_context_get_devices (fixture->ctx);
 	g_assert_cmpint (devices->len, ==, 0);
 	g_assert_cmpint (events, ==, 0);
 	g_clear_pointer (&devices, g_ptr_array_unref);
 
-	/* Run mainloop, which causes the event to be processed. */
+	/* run mainloop, which causes the event to be processed */
 	while (g_main_context_iteration (NULL, FALSE)) { }
 
 	devices = g_usb_context_get_devices (fixture->ctx);
@@ -154,23 +154,23 @@ test_ctx_hotplug_dispose (UMockdevTestbedFixture *fixture, UNUSED_DATA)
 	g_clear_pointer (&devices, g_ptr_array_unref);
 
 	test_fixture_add_canon (fixture);
-	/* Ensure the event was processed by helper thread. */
+	/* ensure the event was processed by helper thread */
 	g_usleep (G_USEC_PER_SEC / 2);
 
-	/* Still not returned (and no event fired). */
+	/* still not returned (and no event fired) */
 	g_usb_context_enumerate (fixture->ctx);
 	devices = g_usb_context_get_devices (fixture->ctx);
 	g_assert_cmpint (devices->len, ==, 0);
 	g_assert_cmpint (events, ==, 0);
 	g_clear_pointer (&devices, g_ptr_array_unref);
 
-	/* The idle handler is pending, we dispose our context reference */
+	/* idle handler is pending, we dispose our context reference */
 	g_object_run_dispose (G_OBJECT (fixture->ctx));
 
-	/* Run mainloop, which causes the event to be processed. */
+	/* run mainloop, which causes the event to be processed */
 	while (g_main_context_iteration (NULL, FALSE)) { }
 
-	/* But no signal is fired. */
+	/* but no signal is fired */
 	g_assert_cmpint (events, ==, 0);
 
 	g_clear_object (&fixture->ctx);
