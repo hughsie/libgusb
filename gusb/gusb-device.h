@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <glib-object.h>
 #include <gio/gio.h>
 
 #include <gusb/gusb-util.h>

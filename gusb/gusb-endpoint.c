@@ -19,7 +19,6 @@
 
 #include <string.h>
 
-#include "gusb-endpoint.h"
 #include "gusb-endpoint-private.h"
 
 struct _GUsbEndpoint

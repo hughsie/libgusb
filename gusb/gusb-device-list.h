@@ -8,10 +8,7 @@
 
 #pragma once
 
-#include <glib-object.h>
-
 #include <gusb/gusb-context.h>
-#include <gusb/gusb-device.h>
 
 G_BEGIN_DECLS
 

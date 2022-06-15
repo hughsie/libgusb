@@ -20,10 +20,8 @@
 
 #include <libusb.h>
 
-#include "gusb-context.h"
 #include "gusb-context-private.h"
 #include "gusb-util.h"
-#include "gusb-device.h"
 #include "gusb-device-private.h"
 #include "gusb-interface-private.h"
 

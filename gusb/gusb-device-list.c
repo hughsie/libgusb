@@ -19,9 +19,7 @@
 #include <stdlib.h>
 #include <libusb.h>
 
-#include "gusb-context.h"
 #include "gusb-context-private.h"
-#include "gusb-device.h"
 #include "gusb-device-list.h"
 #include "gusb-device-private.h"
 

@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <glib-object.h>
-#include <gio/gio.h>
 #include <gusb/gusb-device.h>
 
 G_BEGIN_DECLS

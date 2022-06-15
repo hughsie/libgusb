@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <glib-object.h>
-
 #include <gusb/gusb-device.h>
 #include <gusb/gusb-source.h>
 
