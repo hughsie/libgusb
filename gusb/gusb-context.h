@@ -70,6 +70,11 @@ g_usb_context_set_hotplug_poll_interval(GUsbContext *self, guint hotplug_poll_in
 void
 g_usb_context_enumerate(GUsbContext *self);
 
+gboolean
+g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error);
+gboolean
+g_usb_context_save(GUsbContext *self, JsonBuilder *json_builder, GError **error);
+
 void
 g_usb_context_set_debug(GUsbContext *self, GLogLevelFlags flags);
 GPtrArray *

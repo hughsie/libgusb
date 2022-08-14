@@ -148,17 +148,14 @@ static void
 g_usb_device_constructed(GObject *object)
 {
 	GUsbDevice *self = G_USB_DEVICE(object);
-	GUsbDevicePrivate *priv;
-	gint rc;
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
-	priv = GET_PRIVATE(self);
-
-	if (!priv->device)
-		g_error("constructed without a libusb_device");
-
-	rc = libusb_get_device_descriptor(priv->device, &priv->desc);
-	if (rc != LIBUSB_SUCCESS)
-		g_warning("Failed to get USB descriptor for device: %s", g_usb_strerror(rc));
+	if (priv->device != NULL) {
+		gint rc = libusb_get_device_descriptor(priv->device, &priv->desc);
+		if (rc != LIBUSB_SUCCESS)
+			g_warning("Failed to get USB descriptor for device: %s",
+				  g_usb_strerror(rc));
+	}
 
 	G_OBJECT_CLASS(g_usb_device_parent_class)->constructed(object);
 }
@@ -210,6 +207,190 @@ g_usb_device_init(GUsbDevice *self)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	priv->interfaces = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+}
+
+/**
+ * _g_usb_device_load:
+ * @device: a #GUsbDevice
+ * @json_object: a #JsonObject
+ * @error: a #GError, or %NULL
+ *
+ * Loads the device from a loaded JSON object.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.0
+ **/
+gboolean
+_g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
+	g_return_val_if_fail(json_object != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+#if JSON_CHECK_VERSION(1, 6, 0)
+	/* optional properties */
+	priv->desc.idVendor = json_object_get_int_member_with_default(json_object, "Vendor", 0x0);
+	priv->desc.idProduct = json_object_get_int_member_with_default(json_object, "Product", 0x0);
+	priv->desc.bcdDevice = json_object_get_int_member_with_default(json_object, "Device", 0x0);
+	priv->desc.bcdUSB = json_object_get_int_member_with_default(json_object, "USB", 0x0);
+	priv->desc.iManufacturer =
+	    json_object_get_int_member_with_default(json_object, "Manufacturer", 0x0);
+	priv->desc.bDeviceClass =
+	    json_object_get_int_member_with_default(json_object, "DeviceClass", 0x0);
+	priv->desc.bDeviceSubClass =
+	    json_object_get_int_member_with_default(json_object, "DeviceSubClass", 0x0);
+	priv->desc.bDeviceProtocol =
+	    json_object_get_int_member_with_default(json_object, "DeviceProtocol", 0x0);
+	priv->desc.iProduct = json_object_get_int_member_with_default(json_object, "Product", 0x0);
+	priv->desc.iSerialNumber =
+	    json_object_get_int_member_with_default(json_object, "SerialNumber", 0x0);
+#else
+	g_set_error_literal(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_SUPPORTED,
+			    "json-glib version too old");
+	return FALSE;
+#endif
+
+	/* array of BOS descriptors */
+	if (json_object_has_member(json_object, "UsbBosDescriptors")) {
+		JsonArray *json_array =
+		    json_object_get_array_member(json_object, "UsbBosDescriptors");
+		for (guint i = 0; i < json_array_get_length(json_array); i++) {
+			JsonNode *node_tmp = json_array_get_element(json_array, i);
+			JsonObject *obj_tmp = json_node_get_object(node_tmp);
+			g_autoptr(GUsbBosDescriptor) bos_descriptor =
+			    g_object_new(G_USB_TYPE_BOS_DESCRIPTOR, NULL);
+			if (!_g_usb_bos_descriptor_load(bos_descriptor, obj_tmp, error))
+				return FALSE;
+			g_ptr_array_add(priv->bos_descriptors, g_object_ref(bos_descriptor));
+		}
+	}
+
+	/* array of interfaces */
+	if (json_object_has_member(json_object, "UsbInterfaces")) {
+		JsonArray *json_array = json_object_get_array_member(json_object, "UsbInterfaces");
+		for (guint i = 0; i < json_array_get_length(json_array); i++) {
+			JsonNode *node_tmp = json_array_get_element(json_array, i);
+			JsonObject *obj_tmp = json_node_get_object(node_tmp);
+			g_autoptr(GUsbInterface) interface =
+			    g_object_new(G_USB_TYPE_INTERFACE, NULL);
+			if (!_g_usb_interface_load(interface, obj_tmp, error))
+				return FALSE;
+			g_ptr_array_add(priv->interfaces, g_object_ref(interface));
+		}
+	}
+
+	/* success */
+	return TRUE;
+}
+
+/**
+ * _g_usb_device_save:
+ * @device: a #GUsbDevice
+ * @json_builder: a #JsonBuilder
+ * @error: a #GError, or %NULL
+ *
+ * Saves the device to an existing JSON builder.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.0
+ **/
+gboolean
+_g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_autoptr(GPtrArray) bos_descriptors = NULL;
+	g_autoptr(GPtrArray) interfaces = NULL;
+	g_autoptr(GError) error_bos = NULL;
+	g_autoptr(GError) error_interfaces = NULL;
+
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
+	g_return_val_if_fail(json_builder != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* start */
+	json_builder_begin_object(json_builder);
+
+	/* optional properties */
+	if (priv->desc.idVendor != 0) {
+		json_builder_set_member_name(json_builder, "Vendor");
+		json_builder_add_int_value(json_builder, priv->desc.idVendor);
+	}
+	if (priv->desc.idProduct != 0) {
+		json_builder_set_member_name(json_builder, "Product");
+		json_builder_add_int_value(json_builder, priv->desc.idProduct);
+	}
+	if (priv->desc.bcdDevice != 0) {
+		json_builder_set_member_name(json_builder, "Device");
+		json_builder_add_int_value(json_builder, priv->desc.bcdDevice);
+	}
+	if (priv->desc.bcdUSB != 0) {
+		json_builder_set_member_name(json_builder, "USB");
+		json_builder_add_int_value(json_builder, priv->desc.bcdUSB);
+	}
+	if (priv->desc.iManufacturer != 0) {
+		json_builder_set_member_name(json_builder, "Manufacturer");
+		json_builder_add_int_value(json_builder, priv->desc.iManufacturer);
+	}
+	if (priv->desc.bDeviceClass != 0) {
+		json_builder_set_member_name(json_builder, "DeviceClass");
+		json_builder_add_int_value(json_builder, priv->desc.bDeviceClass);
+	}
+	if (priv->desc.bDeviceSubClass != 0) {
+		json_builder_set_member_name(json_builder, "DeviceSubClass");
+		json_builder_add_int_value(json_builder, priv->desc.bDeviceSubClass);
+	}
+	if (priv->desc.bDeviceProtocol != 0) {
+		json_builder_set_member_name(json_builder, "DeviceProtocol");
+		json_builder_add_int_value(json_builder, priv->desc.bDeviceProtocol);
+	}
+	if (priv->desc.iProduct != 0) {
+		json_builder_set_member_name(json_builder, "Product");
+		json_builder_add_int_value(json_builder, priv->desc.iProduct);
+	}
+	if (priv->desc.iSerialNumber != 0) {
+		json_builder_set_member_name(json_builder, "SerialNumber");
+		json_builder_add_int_value(json_builder, priv->desc.iSerialNumber);
+	}
+
+	/* array of BOS descriptors */
+	bos_descriptors = g_usb_device_get_bos_descriptors(self, &error_bos);
+	if (bos_descriptors == NULL) {
+		g_debug("%s", error_bos->message);
+	} else if (bos_descriptors->len > 0) {
+		json_builder_set_member_name(json_builder, "UsbBosDescriptors");
+		json_builder_begin_array(json_builder);
+		for (guint i = 0; i < bos_descriptors->len; i++) {
+			GUsbBosDescriptor *bos_descriptor = g_ptr_array_index(bos_descriptors, i);
+			if (!_g_usb_bos_descriptor_save(bos_descriptor, json_builder, error))
+				return FALSE;
+		}
+		json_builder_end_array(json_builder);
+	}
+
+	/* array of interfaces */
+	interfaces = g_usb_device_get_interfaces(self, &error_interfaces);
+	if (interfaces == NULL) {
+		g_debug("%s", error_interfaces->message);
+	} else if (interfaces->len > 0) {
+		json_builder_set_member_name(json_builder, "UsbInterfaces");
+		json_builder_begin_array(json_builder);
+		for (guint i = 0; i < interfaces->len; i++) {
+			GUsbInterface *interface = g_ptr_array_index(interfaces, i);
+			if (!_g_usb_interface_save(interface, json_builder, error))
+				return FALSE;
+		}
+		json_builder_end_array(json_builder);
+	}
+
+	/* success */
+	json_builder_end_object(json_builder);
+	return TRUE;
 }
 
 /* not defined in FreeBSD */
@@ -413,6 +594,10 @@ _g_usb_device_open_internal(GUsbDevice *self, GError **error)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 
+	/* sanity check */
+	if (priv->device == NULL)
+		return TRUE;
+
 	if (priv->handle != NULL) {
 		g_set_error(error,
 			    G_USB_DEVICE_ERROR,
@@ -483,6 +668,10 @@ g_usb_device_get_custom_index(GUsbDevice *self,
 	gint rc;
 	guint8 idx = 0x00;
 	struct libusb_config_descriptor *config;
+
+	/* sanity check */
+	if (priv->device == NULL)
+		return 0x0;
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
 	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
@@ -601,6 +790,15 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 		gint rc;
 		struct libusb_config_descriptor *config;
 
+		/* sanity check */
+		if (priv->device == NULL) {
+			g_set_error_literal(error,
+					    G_IO_ERROR,
+					    G_IO_ERROR_NOT_SUPPORTED,
+					    "not supported for emulated device");
+			return NULL;
+		}
+
 		rc = libusb_get_active_config_descriptor(priv->device, &config);
 		if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
 			return NULL;
@@ -705,6 +903,15 @@ g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 		gint rc;
 		guint8 num_device_caps;
 		struct libusb_bos_descriptor *bos = NULL;
+
+		/* sanity check */
+		if (priv->device == NULL) {
+			g_set_error_literal(error,
+					    G_IO_ERROR,
+					    G_IO_ERROR_NOT_SUPPORTED,
+					    "not supported for emulated device");
+			return NULL;
+		}
 
 		rc = libusb_get_bos_descriptor(priv->handle, &bos);
 		if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
@@ -1783,6 +1990,10 @@ g_usb_device_get_parent(GUsbDevice *self)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	libusb_device *parent;
 
+	/* sanity check */
+	if (priv->device == NULL)
+		return NULL;
+
 	parent = libusb_get_parent(priv->device);
 	if (parent == NULL)
 		return NULL;
@@ -1816,6 +2027,8 @@ g_usb_device_get_children(GUsbDevice *self)
 	for (guint i = 0; i < devices->len; i++) {
 		GUsbDevice *device_tmp = g_ptr_array_index(devices, i);
 		GUsbDevicePrivate *priv_tmp = GET_PRIVATE(device_tmp);
+		if (priv->device == NULL)
+			continue;
 		if (priv->device == libusb_get_parent(priv_tmp->device))
 			g_ptr_array_add(children, g_object_ref(device_tmp));
 	}
@@ -1838,6 +2051,9 @@ g_usb_device_get_bus(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
+	/* sanity check */
+	if (priv->device == NULL)
+		return 0x0;
 	return libusb_get_bus_number(priv->device);
 }
 
@@ -1856,6 +2072,9 @@ g_usb_device_get_address(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
+	/* sanity check */
+	if (priv->device == NULL)
+		return 0x0;
 	return libusb_get_device_address(priv->device);
 }
 
@@ -1874,6 +2093,9 @@ g_usb_device_get_port_number(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
+	/* sanity check */
+	if (priv->device == NULL)
+		return 0x0;
 	return libusb_get_port_number(priv->device);
 }
 
@@ -2009,6 +2231,10 @@ g_usb_device_get_configuration_index(GUsbDevice *self)
 	guint8 index;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
+
+	/* sanity check */
+	if (priv->device == NULL)
+		return 0x0;
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
 	g_return_val_if_fail(rc == 0, 0);

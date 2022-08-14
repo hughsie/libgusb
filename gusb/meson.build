@@ -69,6 +69,7 @@ gusb = library(
   dependencies : [
     libgio,
     libusb,
+    libjsonglib,
   ],
   c_args : [
       cargs,
@@ -93,7 +94,7 @@ gusb_dep = declare_dependency(
 
 pkgg = import('pkgconfig')
 pkgg.generate(gusb,
-  requires : [ 'gio-2.0', 'gobject-2.0', 'libusb-1.0' ],
+  requires : [ 'gio-2.0', 'gobject-2.0', 'libusb-1.0', 'json-glib-1.0' ],
   subdirs : 'gusb-1',
   version : meson.project_version(),
   name : 'gusb',
@@ -141,6 +142,7 @@ libgusb_girtarget = gnome.generate_gir(gusb,
   dependencies : [
     libgio,
     libusb,
+    libjsonglib,
   ],
   includes : [
     'Gio-2.0',
@@ -213,6 +215,7 @@ if get_option('tests')
     dependencies : [
       libgio,
       libusb,
+      libjsonglib,
     ],
     c_args : [
       cargs,

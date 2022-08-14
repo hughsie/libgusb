@@ -53,6 +53,70 @@ g_usb_bos_descriptor_init(GUsbBosDescriptor *self)
 {
 }
 
+gboolean
+_g_usb_bos_descriptor_load(GUsbBosDescriptor *self, JsonObject *json_object, GError **error)
+{
+	const gchar *str;
+
+	g_return_val_if_fail(G_USB_IS_BOS_DESCRIPTOR(self), FALSE);
+	g_return_val_if_fail(json_object != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, -1);
+
+#if JSON_CHECK_VERSION(1, 6, 0)
+	/* optional properties */
+	self->bos_cap.bDevCapabilityType =
+	    json_object_get_int_member_with_default(json_object, "DevCapabilityType", 0x0);
+
+	/* extra data */
+	str = json_object_get_string_member_with_default(json_object, "ExtraData", NULL);
+	if (str != NULL) {
+		gsize bufsz = 0;
+		g_autofree guchar *buf = g_base64_decode(str, &bufsz);
+		if (self->extra != NULL)
+			g_bytes_unref(self->extra);
+		self->extra = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
+	}
+#else
+	g_set_error_literal(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_SUPPORTED,
+			    "json-glib version too old");
+	return FALSE;
+#endif
+
+	/* success */
+	return TRUE;
+}
+
+gboolean
+_g_usb_bos_descriptor_save(GUsbBosDescriptor *self, JsonBuilder *json_builder, GError **error)
+{
+	g_return_val_if_fail(G_USB_IS_BOS_DESCRIPTOR(self), FALSE);
+	g_return_val_if_fail(json_builder != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* start */
+	json_builder_begin_object(json_builder);
+
+	/* optional properties */
+	if (self->bos_cap.bDevCapabilityType != 0) {
+		json_builder_set_member_name(json_builder, "DevCapabilityType");
+		json_builder_add_int_value(json_builder, self->bos_cap.bDevCapabilityType);
+	}
+
+	/* extra data */
+	if (self->extra != NULL && g_bytes_get_size(self->extra) > 0) {
+		g_autofree gchar *str = g_base64_encode(g_bytes_get_data(self->extra, NULL),
+							g_bytes_get_size(self->extra));
+		json_builder_set_member_name(json_builder, "ExtraData");
+		json_builder_add_string_value(json_builder, str);
+	}
+
+	/* success */
+	json_builder_end_object(json_builder);
+	return TRUE;
+}
+
 /**
  * _g_usb_bos_descriptor_new:
  *

@@ -12,6 +12,7 @@
 #include <gusb/gusb-bos-descriptor.h>
 #include <gusb/gusb-interface.h>
 #include <gusb/gusb-util.h>
+#include <json-glib/json-glib.h>
 
 G_BEGIN_DECLS
 

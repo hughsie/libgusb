@@ -115,10 +115,12 @@ endif
 if cc.has_header_symbol('libusb.h', 'libusb_get_port_number', dependencies: libusb)
   conf.set('HAVE_LIBUSB_GET_PORT_NUMBER', '1')
 endif
+libjsonglib = dependency('json-glib-1.0', version: '>= 1.1.1')
 
 gusb_deps = [
   libgio,
   libusb,
+  libjsonglib,
 ]
 
 gnome = import('gnome')

@@ -53,6 +53,101 @@ g_usb_endpoint_init(GUsbEndpoint *self)
 {
 }
 
+gboolean
+_g_usb_endpoint_load(GUsbEndpoint *self, JsonObject *json_object, GError **error)
+{
+	const gchar *str;
+
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), FALSE);
+	g_return_val_if_fail(json_object != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+#if JSON_CHECK_VERSION(1, 6, 0)
+	/* optional properties */
+	self->endpoint_descriptor.bDescriptorType =
+	    json_object_get_int_member_with_default(json_object, "DescriptorType", 0x0);
+	self->endpoint_descriptor.bEndpointAddress =
+	    json_object_get_int_member_with_default(json_object, "EndpointAddress", 0x0);
+	self->endpoint_descriptor.bRefresh =
+	    json_object_get_int_member_with_default(json_object, "Refresh", 0x0);
+	self->endpoint_descriptor.bInterval =
+	    json_object_get_int_member_with_default(json_object, "Interval", 0x0);
+	self->endpoint_descriptor.bSynchAddress =
+	    json_object_get_int_member_with_default(json_object, "SynchAddress", 0x0);
+	self->endpoint_descriptor.wMaxPacketSize =
+	    json_object_get_int_member_with_default(json_object, "MaxPacketSize", 0x0);
+
+	/* extra data */
+	str = json_object_get_string_member_with_default(json_object, "ExtraData", NULL);
+	if (str != NULL) {
+		gsize bufsz = 0;
+		g_autofree guchar *buf = g_base64_decode(str, &bufsz);
+		if (self->extra != NULL)
+			g_bytes_unref(self->extra);
+		self->extra = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
+	}
+#else
+	g_set_error_literal(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_SUPPORTED,
+			    "json-glib version too old");
+	return FALSE;
+#endif
+
+	/* success */
+	return TRUE;
+}
+
+gboolean
+_g_usb_endpoint_save(GUsbEndpoint *self, JsonBuilder *json_builder, GError **error)
+{
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), FALSE);
+	g_return_val_if_fail(json_builder != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* start */
+	json_builder_begin_object(json_builder);
+
+	/* optional properties */
+	if (self->endpoint_descriptor.bDescriptorType != 0) {
+		json_builder_set_member_name(json_builder, "DescriptorType");
+		json_builder_add_int_value(json_builder, self->endpoint_descriptor.bDescriptorType);
+	}
+	if (self->endpoint_descriptor.bEndpointAddress != 0) {
+		json_builder_set_member_name(json_builder, "EndpointAddress");
+		json_builder_add_int_value(json_builder,
+					   self->endpoint_descriptor.bEndpointAddress);
+	}
+	if (self->endpoint_descriptor.bRefresh != 0) {
+		json_builder_set_member_name(json_builder, "Refresh");
+		json_builder_add_int_value(json_builder, self->endpoint_descriptor.bRefresh);
+	}
+	if (self->endpoint_descriptor.bInterval != 0) {
+		json_builder_set_member_name(json_builder, "Interval");
+		json_builder_add_int_value(json_builder, self->endpoint_descriptor.bInterval);
+	}
+	if (self->endpoint_descriptor.bSynchAddress != 0) {
+		json_builder_set_member_name(json_builder, "SynchAddress");
+		json_builder_add_int_value(json_builder, self->endpoint_descriptor.bSynchAddress);
+	}
+	if (self->endpoint_descriptor.wMaxPacketSize != 0) {
+		json_builder_set_member_name(json_builder, "MaxPacketSize");
+		json_builder_add_int_value(json_builder, self->endpoint_descriptor.wMaxPacketSize);
+	}
+
+	/* extra data */
+	if (self->extra != NULL && g_bytes_get_size(self->extra) > 0) {
+		g_autofree gchar *str = g_base64_encode(g_bytes_get_data(self->extra, NULL),
+							g_bytes_get_size(self->extra));
+		json_builder_set_member_name(json_builder, "ExtraData");
+		json_builder_add_string_value(json_builder, str);
+	}
+
+	/* success */
+	json_builder_end_object(json_builder);
+	return TRUE;
+}
+
 /**
  * _g_usb_endpoint_new:
  *

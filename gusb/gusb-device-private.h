@@ -13,6 +13,10 @@ G_BEGIN_DECLS
 
 GUsbDevice *
 _g_usb_device_new(GUsbContext *context, libusb_device *device, GError **error);
+gboolean
+_g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error);
+gboolean
+_g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error);
 
 libusb_device *
 _g_usb_device_get_device(GUsbDevice *self);
