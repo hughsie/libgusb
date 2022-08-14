@@ -26,7 +26,6 @@ lib_incdir = include_directories('.')
 
 install_headers([
     gusb_version_h,
-    'gusb-autocleanups.h',
     'gusb-context.h',
     'gusb-context-private.h',
     'gusb-device.h',
@@ -106,7 +105,6 @@ if get_option('introspection')
 libgusb_girtarget = gnome.generate_gir(gusb,
   sources : [
     gusb_version_h,
-    'gusb-autocleanups.h',
     'gusb-context.c',
     'gusb-context.h',
     'gusb-context-private.h',

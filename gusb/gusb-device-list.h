@@ -13,18 +13,8 @@
 G_BEGIN_DECLS
 
 #define G_USB_TYPE_DEVICE_LIST (g_usb_device_list_get_type())
-#define G_USB_DEVICE_LIST(o)                                                                       \
-	(G_TYPE_CHECK_INSTANCE_CAST((o), G_USB_TYPE_DEVICE_LIST, GUsbDeviceList))
-#define G_USB_IS_DEVICE_LIST(o) (G_TYPE_CHECK_INSTANCE_TYPE((o), G_USB_TYPE_DEVICE_LIST))
 
-typedef struct _GUsbDeviceListPrivate GUsbDeviceListPrivate;
-typedef struct _GUsbDeviceList GUsbDeviceList;
-typedef struct _GUsbDeviceListClass GUsbDeviceListClass;
-
-struct _GUsbDeviceList {
-	GObject parent;
-	GUsbDeviceListPrivate *priv;
-};
+G_DECLARE_DERIVABLE_TYPE(GUsbDeviceList, g_usb_device_list, G_USB, DEVICE_LIST, GObject)
 
 struct _GUsbDeviceListClass {
 	GObjectClass parent_class;
@@ -38,9 +28,6 @@ struct _GUsbDeviceListClass {
 	 */
 	gchar _gusb_reserved[64];
 };
-
-GType
-g_usb_device_list_get_type(void);
 
 G_DEPRECATED_FOR(g_usb_context_new)
 GUsbDeviceList *

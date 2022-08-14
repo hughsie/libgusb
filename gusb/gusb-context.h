@@ -14,18 +14,9 @@
 G_BEGIN_DECLS
 
 #define G_USB_TYPE_CONTEXT  (g_usb_context_get_type())
-#define G_USB_CONTEXT(o)    (G_TYPE_CHECK_INSTANCE_CAST((o), G_USB_TYPE_CONTEXT, GUsbContext))
-#define G_USB_IS_CONTEXT(o) (G_TYPE_CHECK_INSTANCE_TYPE((o), G_USB_TYPE_CONTEXT))
 #define G_USB_CONTEXT_ERROR (g_usb_context_error_quark())
 
-typedef struct _GUsbContextPrivate GUsbContextPrivate;
-typedef struct _GUsbContext GUsbContext;
-typedef struct _GUsbContextClass GUsbContextClass;
-
-struct _GUsbContext {
-	GObject parent;
-	GUsbContextPrivate *priv;
-};
+G_DECLARE_DERIVABLE_TYPE(GUsbContext, g_usb_context, G_USB, CONTEXT, GObject)
 
 struct _GUsbContextClass {
 	GObjectClass parent_class;
@@ -53,8 +44,6 @@ typedef enum {
 	G_USB_CONTEXT_FLAGS_LAST
 } GUsbContextFlags;
 
-GType
-g_usb_context_get_type(void);
 GQuark
 g_usb_context_error_quark(void);
 

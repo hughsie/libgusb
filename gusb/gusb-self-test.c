@@ -7,7 +7,6 @@
 
 #include "config.h"
 
-#include "gusb-autocleanups.h"
 #include "gusb-context-private.h"
 
 static void
