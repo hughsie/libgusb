@@ -16,24 +16,24 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(GUsbInterface, g_usb_interface, G_USB, INTERFACE, GObject)
 
 guint8
-g_usb_interface_get_length(GUsbInterface *interface);
+g_usb_interface_get_length(GUsbInterface *self);
 guint8
-g_usb_interface_get_kind(GUsbInterface *interface);
+g_usb_interface_get_kind(GUsbInterface *self);
 guint8
-g_usb_interface_get_number(GUsbInterface *interface);
+g_usb_interface_get_number(GUsbInterface *self);
 guint8
-g_usb_interface_get_alternate(GUsbInterface *interface);
+g_usb_interface_get_alternate(GUsbInterface *self);
 guint8
-g_usb_interface_get_class(GUsbInterface *interface);
+g_usb_interface_get_class(GUsbInterface *self);
 guint8
-g_usb_interface_get_subclass(GUsbInterface *interface);
+g_usb_interface_get_subclass(GUsbInterface *self);
 guint8
-g_usb_interface_get_protocol(GUsbInterface *interface);
+g_usb_interface_get_protocol(GUsbInterface *self);
 guint8
-g_usb_interface_get_index(GUsbInterface *interface);
+g_usb_interface_get_index(GUsbInterface *self);
 GBytes *
-g_usb_interface_get_extra(GUsbInterface *interface);
+g_usb_interface_get_extra(GUsbInterface *self);
 GPtrArray *
-g_usb_interface_get_endpoints(GUsbInterface *interface);
+g_usb_interface_get_endpoints(GUsbInterface *self);
 
 G_END_DECLS
