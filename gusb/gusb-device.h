@@ -16,13 +16,9 @@
 G_BEGIN_DECLS
 
 #define G_USB_TYPE_DEVICE  (g_usb_device_get_type())
-#define G_USB_DEVICE(o)	   (G_TYPE_CHECK_INSTANCE_CAST((o), G_USB_TYPE_DEVICE, GUsbDevice))
-#define G_USB_IS_DEVICE(o) (G_TYPE_CHECK_INSTANCE_TYPE((o), G_USB_TYPE_DEVICE))
 #define G_USB_DEVICE_ERROR (g_usb_device_error_quark())
 
-typedef struct _GUsbDevicePrivate GUsbDevicePrivate;
-typedef struct _GUsbDevice GUsbDevice;
-typedef struct _GUsbDeviceClass GUsbDeviceClass;
+G_DECLARE_DERIVABLE_TYPE(GUsbDevice, g_usb_device, G_USB, DEVICE, GObject)
 
 /**
  * GUsbDeviceDirection:
@@ -127,11 +123,6 @@ typedef enum {
 	G_USB_DEVICE_LANGID_ENGLISH_UNITED_STATES = 0x0409,
 } GUsbDeviceLangid;
 
-struct _GUsbDevice {
-	GObject parent;
-	GUsbDevicePrivate *priv;
-};
-
 struct _GUsbDeviceClass {
 	GObjectClass parent_class;
 	/*< private >*/
@@ -142,8 +133,6 @@ struct _GUsbDeviceClass {
 	gchar _gusb_reserved[64];
 };
 
-GType
-g_usb_device_get_type(void);
 GQuark
 g_usb_device_error_quark(void);
 

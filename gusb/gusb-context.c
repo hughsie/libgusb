@@ -17,7 +17,6 @@
 
 #include <libusb.h>
 
-#include "gusb-autocleanups.h"
 #include "gusb-context-private.h"
 #include "gusb-device-private.h"
 #include "gusb-util.h"
@@ -28,12 +27,14 @@ enum { DEVICE_ADDED_SIGNAL, DEVICE_REMOVED_SIGNAL, LAST_SIGNAL };
 
 #define G_USB_CONTEXT_HOTPLUG_POLL_INTERVAL_DEFAULT 1000 /* ms */
 
+#define GET_PRIVATE(o) (g_usb_context_get_instance_private(o))
+
 /**
  * GUsbContextPrivate:
  *
  * Private #GUsbContext data
  **/
-struct _GUsbContextPrivate {
+typedef struct {
 	GMainContext *main_ctx;
 	GPtrArray *devices;
 	GHashTable *dict_usb_ids;
@@ -50,7 +51,7 @@ struct _GUsbContextPrivate {
 	GPtrArray *idle_events;
 	GMutex idle_events_mutex;
 	guint idle_events_id;
-};
+} GUsbContextPrivate;
 
 /* not defined in FreeBSD */
 #ifndef HAVE_LIBUSB_CAP_HAS_HOTPLUG
@@ -114,7 +115,7 @@ static void
 g_usb_context_dispose(GObject *object)
 {
 	GUsbContext *context = G_USB_CONTEXT(object);
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	/* this is safe to call even when priv->hotplug_id is unset */
 	if (g_atomic_int_dec_and_test(&priv->thread_event_run)) {
@@ -146,7 +147,7 @@ static void
 g_usb_context_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
 	GUsbContext *context = G_USB_CONTEXT(object);
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	switch (prop_id) {
 	case PROP_LIBUSB_CONTEXT:
@@ -165,7 +166,7 @@ static void
 g_usb_context_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	GUsbContext *context = G_USB_CONTEXT(object);
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	switch (prop_id) {
 	case PROP_DEBUG_LEVEL:
@@ -246,8 +247,10 @@ g_usb_context_class_init(GUsbContextClass *klass)
 static void
 g_usb_context_emit_device_add(GUsbContext *context, GUsbDevice *device)
 {
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
+
 	/* emitted directly by g_usb_context_enumerate */
-	if (!context->priv->done_enumerate)
+	if (!priv->done_enumerate)
 		return;
 
 	g_signal_emit(context, signals[DEVICE_ADDED_SIGNAL], 0, device);
@@ -256,8 +259,10 @@ g_usb_context_emit_device_add(GUsbContext *context, GUsbDevice *device)
 static void
 g_usb_context_emit_device_remove(GUsbContext *context, GUsbDevice *device)
 {
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
+
 	/* should not happen, if it does we would not fire any signal */
-	if (!context->priv->done_enumerate)
+	if (!priv->done_enumerate)
 		return;
 
 	g_signal_emit(context, signals[DEVICE_REMOVED_SIGNAL], 0, device);
@@ -266,7 +271,7 @@ g_usb_context_emit_device_remove(GUsbContext *context, GUsbDevice *device)
 static void
 g_usb_context_add_device(GUsbContext *context, struct libusb_device *dev)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	GUsbContextReplugHelper *replug_helper;
 	const gchar *platform_id;
 	guint8 bus;
@@ -319,7 +324,7 @@ g_usb_context_add_device(GUsbContext *context, struct libusb_device *dev)
 static void
 g_usb_context_remove_device(GUsbContext *context, struct libusb_device *dev)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	GUsbContextReplugHelper *replug_helper;
 	const gchar *platform_id;
 	guint8 bus;
@@ -368,7 +373,7 @@ static gboolean
 g_usb_context_idle_hotplug_cb(gpointer user_data)
 {
 	GUsbContext *context = G_USB_CONTEXT(user_data);
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
 
 	for (guint i = 0; i < priv->idle_events->len; i++) {
@@ -400,7 +405,7 @@ g_usb_context_hotplug_cb(struct libusb_context *ctx,
 {
 	GUsbContext *context = G_USB_CONTEXT(user_data);
 	GUsbContextIdleHelper *helper;
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
 
 	helper = g_new0(GUsbContextIdleHelper, 1);
@@ -418,7 +423,7 @@ g_usb_context_hotplug_cb(struct libusb_context *ctx,
 static void
 g_usb_context_rescan(GUsbContext *context)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	libusb_device **dev_list = NULL;
 	g_autoptr(GList) existing_devices = NULL;
 
@@ -476,7 +481,7 @@ g_usb_context_rescan_cb(gpointer user_data)
 GMainContext *
 g_usb_context_get_main_context(GUsbContext *context)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	g_return_val_if_fail(G_USB_IS_CONTEXT(context), NULL);
 	return priv->main_ctx;
 }
@@ -492,7 +497,7 @@ g_usb_context_get_main_context(GUsbContext *context)
 void
 g_usb_context_set_main_context(GUsbContext *context, GMainContext *main_ctx)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	g_return_if_fail(G_USB_IS_CONTEXT(context));
 
@@ -505,7 +510,7 @@ g_usb_context_set_main_context(GUsbContext *context, GMainContext *main_ctx)
 static void
 g_usb_context_ensure_rescan_timeout(GUsbContext *context)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	if (priv->hotplug_poll_id > 0) {
 		g_source_remove(priv->hotplug_poll_id);
@@ -530,7 +535,7 @@ g_usb_context_ensure_rescan_timeout(GUsbContext *context)
 guint
 g_usb_context_get_hotplug_poll_interval(GUsbContext *context)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	g_return_val_if_fail(G_USB_IS_CONTEXT(context), G_MAXUINT);
 	return priv->hotplug_poll_id;
 }
@@ -549,7 +554,7 @@ g_usb_context_get_hotplug_poll_interval(GUsbContext *context)
 void
 g_usb_context_set_hotplug_poll_interval(GUsbContext *context, guint hotplug_poll_interval)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	g_return_if_fail(G_USB_IS_CONTEXT(context));
 
@@ -578,7 +583,7 @@ g_usb_context_set_hotplug_poll_interval(GUsbContext *context, guint hotplug_poll
 void
 g_usb_context_enumerate(GUsbContext *context)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	/* only ever initially scan once, then rely on hotplug / poll */
 	if (priv->done_enumerate)
@@ -615,7 +620,8 @@ g_usb_context_enumerate(GUsbContext *context)
 void
 g_usb_context_set_flags(GUsbContext *context, GUsbContextFlags flags)
 {
-	context->priv->flags = flags;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
+	priv->flags = flags;
 }
 
 /**
@@ -631,14 +637,15 @@ g_usb_context_set_flags(GUsbContext *context, GUsbContextFlags flags)
 GUsbContextFlags
 g_usb_context_get_flags(GUsbContext *context)
 {
-	return context->priv->flags;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
+	return priv->flags;
 }
 
 static gpointer
 g_usb_context_event_thread_cb(gpointer data)
 {
 	GUsbContext *context = G_USB_CONTEXT(data);
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	struct timeval tv = {
 	    .tv_usec = 0,
 	    .tv_sec = 2,
@@ -653,9 +660,8 @@ g_usb_context_event_thread_cb(gpointer data)
 static void
 g_usb_context_init(GUsbContext *context)
 {
-	GUsbContextPrivate *priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
-	priv = context->priv = g_usb_context_get_instance_private(context);
 	priv->flags = G_USB_CONTEXT_FLAGS_NONE;
 	priv->hotplug_poll_interval = G_USB_CONTEXT_HOTPLUG_POLL_INTERVAL_DEFAULT;
 	priv->devices = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
@@ -672,11 +678,9 @@ static gboolean
 g_usb_context_initable_init(GInitable *initable, GCancellable *cancellable, GError **error)
 {
 	GUsbContext *context = G_USB_CONTEXT(initable);
-	GUsbContextPrivate *priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	gint rc;
 	libusb_context *ctx;
-
-	priv = context->priv;
 
 	rc = libusb_init(&ctx);
 	if (rc < 0) {
@@ -706,7 +710,7 @@ g_usb_context_initable_init(GInitable *initable, GCancellable *cancellable, GErr
 						      LIBUSB_HOTPLUG_MATCH_ANY,
 						      g_usb_context_hotplug_cb,
 						      context,
-						      &context->priv->hotplug_id);
+						      &priv->hotplug_id);
 		if (rc != LIBUSB_SUCCESS) {
 			g_warning("Error creating a hotplug callback: %s", g_usb_strerror(rc));
 		}
@@ -734,7 +738,8 @@ g_usb_context_initable_iface_init(GInitableIface *iface)
 libusb_context *
 _g_usb_context_get_context(GUsbContext *context)
 {
-	return context->priv->ctx;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
+	return priv->ctx;
 }
 
 /**
@@ -769,12 +774,10 @@ g_usb_context_get_source(GUsbContext *context, GMainContext *main_ctx)
 void
 g_usb_context_set_debug(GUsbContext *context, GLogLevelFlags flags)
 {
-	GUsbContextPrivate *priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	int debug_level;
 
 	g_return_if_fail(G_USB_IS_CONTEXT(context));
-
-	priv = context->priv;
 
 	if (flags & (G_LOG_LEVEL_DEBUG | G_LOG_LEVEL_INFO))
 		debug_level = 3;
@@ -813,12 +816,10 @@ g_usb_context_set_debug(GUsbContext *context, GLogLevelFlags flags)
 GUsbDevice *
 g_usb_context_find_by_bus_address(GUsbContext *context, guint8 bus, guint8 address, GError **error)
 {
-	GUsbContextPrivate *priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(context), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
-
-	priv = context->priv;
 
 	g_usb_context_enumerate(context);
 	for (guint i = 0; i < priv->devices->len; i++) {
@@ -852,12 +853,10 @@ g_usb_context_find_by_bus_address(GUsbContext *context, guint8 bus, guint8 addre
 GUsbDevice *
 g_usb_context_find_by_platform_id(GUsbContext *context, const gchar *platform_id, GError **error)
 {
-	GUsbContextPrivate *priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(context), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
-
-	priv = context->priv;
 
 	g_usb_context_enumerate(context);
 	for (guint i = 0; i < priv->devices->len; i++) {
@@ -889,12 +888,10 @@ g_usb_context_find_by_platform_id(GUsbContext *context, const gchar *platform_id
 GUsbDevice *
 g_usb_context_find_by_vid_pid(GUsbContext *context, guint16 vid, guint16 pid, GError **error)
 {
-	GUsbContextPrivate *priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(context), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
-
-	priv = context->priv;
 
 	g_usb_context_enumerate(context);
 	for (guint i = 0; i < priv->devices->len; i++) {
@@ -915,13 +912,14 @@ g_usb_context_find_by_vid_pid(GUsbContext *context, guint16 vid, guint16 pid, GE
 static gboolean
 g_usb_context_load_usb_ids(GUsbContext *context, GError **error)
 {
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	guint16 pid;
 	guint16 vid = 0x0000;
 	g_autofree gchar *data = NULL;
 	g_auto(GStrv) lines = NULL;
 
 	/* already loaded */
-	if (g_hash_table_size(context->priv->dict_usb_ids) > 0)
+	if (g_hash_table_size(priv->dict_usb_ids) > 0)
 		return TRUE;
 
 	/* parse */
@@ -943,7 +941,7 @@ g_usb_context_load_usb_ids(GUsbContext *context, GError **error)
 			if (vid == 0)
 				break;
 
-			g_hash_table_insert(context->priv->dict_usb_ids,
+			g_hash_table_insert(priv->dict_usb_ids,
 					    g_strdup(lines[i]),
 					    g_strdup(lines[i] + 6));
 		} else {
@@ -952,7 +950,7 @@ g_usb_context_load_usb_ids(GUsbContext *context, GError **error)
 
 			lines[i][5] = '\0';
 			pid = g_ascii_strtoull(lines[i] + 1, NULL, 16);
-			g_hash_table_insert(context->priv->dict_usb_ids,
+			g_hash_table_insert(priv->dict_usb_ids,
 					    g_strdup_printf("%04x:%04x", vid, pid),
 					    g_strdup(lines[i] + 7));
 		}
@@ -976,6 +974,7 @@ g_usb_context_load_usb_ids(GUsbContext *context, GError **error)
 const gchar *
 _g_usb_context_lookup_vendor(GUsbContext *context, guint16 vid, GError **error)
 {
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	const gchar *tmp;
 	g_autofree gchar *key = NULL;
 
@@ -988,7 +987,7 @@ _g_usb_context_lookup_vendor(GUsbContext *context, guint16 vid, GError **error)
 
 	/* find */
 	key = g_strdup_printf("%04x", vid);
-	tmp = g_hash_table_lookup(context->priv->dict_usb_ids, key);
+	tmp = g_hash_table_lookup(priv->dict_usb_ids, key);
 	if (tmp == NULL) {
 		g_set_error(error,
 			    G_USB_CONTEXT_ERROR,
@@ -1017,6 +1016,7 @@ _g_usb_context_lookup_vendor(GUsbContext *context, guint16 vid, GError **error)
 const gchar *
 _g_usb_context_lookup_product(GUsbContext *context, guint16 vid, guint16 pid, GError **error)
 {
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	const gchar *tmp;
 	g_autofree gchar *key = NULL;
 
@@ -1029,7 +1029,7 @@ _g_usb_context_lookup_product(GUsbContext *context, guint16 vid, guint16 pid, GE
 
 	/* find */
 	key = g_strdup_printf("%04x:%04x", vid, pid);
-	tmp = g_hash_table_lookup(context->priv->dict_usb_ids, key);
+	tmp = g_hash_table_lookup(priv->dict_usb_ids, key);
 	if (tmp == NULL) {
 		g_set_error(error,
 			    G_USB_CONTEXT_ERROR,
@@ -1053,11 +1053,13 @@ _g_usb_context_lookup_product(GUsbContext *context, guint16 vid, guint16 pid, GE
 GPtrArray *
 g_usb_context_get_devices(GUsbContext *context)
 {
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
+
 	g_return_val_if_fail(G_USB_IS_CONTEXT(context), NULL);
 
 	g_usb_context_enumerate(context);
 
-	return g_ptr_array_ref(context->priv->devices);
+	return g_ptr_array_ref(priv->devices);
 }
 
 static gboolean
@@ -1094,7 +1096,7 @@ g_usb_context_wait_for_replug(GUsbContext *context,
 			      guint timeout_ms,
 			      GError **error)
 {
-	GUsbContextPrivate *priv = context->priv;
+	GUsbContextPrivate *priv = GET_PRIVATE(context);
 	const gchar *platform_id;
 	g_autoptr(GUsbContextReplugHelper) replug_helper = NULL;
 
