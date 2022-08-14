@@ -35,6 +35,6 @@ jobs:
         usesh: true
         mem: 8192
         prepare: |
-          pkg install -y git python3 glib meson pkgconf gobject-introspection usbids
+          pkg install -y git python3 glib json-glib meson pkgconf gobject-introspection usbids
         sync: rsync
         run: ./contrib/ci/build_and_test.sh -Dvapi=false -Ddocs=false -Dusb_ids=/usr/local/share/usbids/usb.ids

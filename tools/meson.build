@@ -12,6 +12,7 @@ executable(
   dependencies : [
     libgio,
     libusb,
+    libjsonglib,
   ],
   link_with : gusb,
   c_args : [

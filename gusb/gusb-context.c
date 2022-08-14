@@ -355,6 +355,92 @@ g_usb_context_remove_device(GUsbContext *self, struct libusb_device *dev)
 	g_usb_context_emit_device_remove(self, device);
 }
 
+/**
+ * g_usb_context_load:
+ * @context: a #GUsbContext
+ * @json_object: a #JsonObject
+ * @error: a #GError, or %NULL
+ *
+ * Loads the context from a loaded JSON object.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.0
+ **/
+gboolean
+g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error)
+{
+	GUsbContextPrivate *priv = GET_PRIVATE(self);
+	JsonArray *json_array;
+
+	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
+	g_return_val_if_fail(json_object != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, -1);
+
+	if (!json_object_has_member(json_object, "UsbDevices")) {
+		g_set_error_literal(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no UsbDevices array");
+		return FALSE;
+	}
+	json_array = json_object_get_array_member(json_object, "UsbDevices");
+	for (guint i = 0; i < json_array_get_length(json_array); i++) {
+		JsonNode *node_tmp = json_array_get_element(json_array, i);
+		JsonObject *obj_tmp = json_node_get_object(node_tmp);
+		g_autoptr(GUsbDevice) device =
+		    g_object_new(G_USB_TYPE_DEVICE, "context", self, NULL);
+		if (!_g_usb_device_load(device, obj_tmp, error))
+			return FALSE;
+		g_ptr_array_add(priv->devices, g_object_ref(device));
+		g_signal_emit(self, signals[DEVICE_ADDED_SIGNAL], 0, device);
+	}
+
+	/* success */
+	priv->done_enumerate = TRUE;
+	return TRUE;
+}
+
+/**
+ * g_usb_context_save:
+ * @context: a #GUsbContext
+ * @json_builder: a #JsonBuilder
+ * @error: a #GError, or %NULL
+ *
+ * Saves the context to an existing JSON builder.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.0
+ **/
+gboolean
+g_usb_context_save(GUsbContext *self, JsonBuilder *json_builder, GError **error)
+{
+	GUsbContextPrivate *priv = GET_PRIVATE(self);
+
+	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
+	g_return_val_if_fail(json_builder != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* start */
+	g_usb_context_enumerate(self);
+	json_builder_begin_object(json_builder);
+
+	/* array of devices */
+	json_builder_set_member_name(json_builder, "UsbDevices");
+	json_builder_begin_array(json_builder);
+	for (guint i = 0; i < priv->devices->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
+		if (!_g_usb_device_save(device, json_builder, error))
+			return FALSE;
+	}
+	json_builder_end_array(json_builder);
+
+	/* success */
+	json_builder_end_object(json_builder);
+	return TRUE;
+}
+
 typedef struct {
 	GUsbContext *self;
 	libusb_device *dev;

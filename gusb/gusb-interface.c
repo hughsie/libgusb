@@ -58,6 +58,123 @@ g_usb_interface_init(GUsbInterface *self)
 {
 }
 
+gboolean
+_g_usb_interface_load(GUsbInterface *self, JsonObject *json_object, GError **error)
+{
+	const gchar *str;
+
+	g_return_val_if_fail(G_USB_IS_INTERFACE(self), FALSE);
+	g_return_val_if_fail(json_object != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, -1);
+
+#if JSON_CHECK_VERSION(1, 6, 0)
+	/* optional properties */
+	self->iface.bLength = json_object_get_int_member_with_default(json_object, "Length", 0x0);
+	self->iface.bDescriptorType =
+	    json_object_get_int_member_with_default(json_object, "DescriptorType", 0x0);
+	self->iface.bInterfaceNumber =
+	    json_object_get_int_member_with_default(json_object, "InterfaceNumber", 0x0);
+	self->iface.bAlternateSetting =
+	    json_object_get_int_member_with_default(json_object, "AlternateSetting", 0x0);
+	self->iface.bInterfaceClass =
+	    json_object_get_int_member_with_default(json_object, "InterfaceClass", 0x0);
+	self->iface.bInterfaceSubClass =
+	    json_object_get_int_member_with_default(json_object, "InterfaceSubClass", 0x0);
+	self->iface.bInterfaceProtocol =
+	    json_object_get_int_member_with_default(json_object, "InterfaceProtocol", 0x0);
+	self->iface.iInterface =
+	    json_object_get_int_member_with_default(json_object, "Interface", 0x0);
+
+	/* extra data */
+	str = json_object_get_string_member_with_default(json_object, "ExtraData", NULL);
+	if (str != NULL) {
+		gsize bufsz = 0;
+		g_autofree guchar *buf = g_base64_decode(str, &bufsz);
+		if (self->extra != NULL)
+			g_bytes_unref(self->extra);
+		self->extra = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
+	}
+#else
+	g_set_error_literal(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_SUPPORTED,
+			    "json-glib version too old");
+	return FALSE;
+#endif
+
+	/* success */
+	return TRUE;
+}
+
+gboolean
+_g_usb_interface_save(GUsbInterface *self, JsonBuilder *json_builder, GError **error)
+{
+	g_return_val_if_fail(G_USB_IS_INTERFACE(self), FALSE);
+	g_return_val_if_fail(json_builder != NULL, FALSE);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* start */
+	json_builder_begin_object(json_builder);
+
+	/* optional properties */
+	if (self->iface.bLength != 0) {
+		json_builder_set_member_name(json_builder, "Length");
+		json_builder_add_int_value(json_builder, self->iface.bLength);
+	}
+	if (self->iface.bDescriptorType != 0) {
+		json_builder_set_member_name(json_builder, "DescriptorType");
+		json_builder_add_int_value(json_builder, self->iface.bDescriptorType);
+	}
+	if (self->iface.bInterfaceNumber != 0) {
+		json_builder_set_member_name(json_builder, "InterfaceNumber");
+		json_builder_add_int_value(json_builder, self->iface.bInterfaceNumber);
+	}
+	if (self->iface.bAlternateSetting != 0) {
+		json_builder_set_member_name(json_builder, "AlternateSetting");
+		json_builder_add_int_value(json_builder, self->iface.bAlternateSetting);
+	}
+	if (self->iface.bInterfaceClass != 0) {
+		json_builder_set_member_name(json_builder, "InterfaceClass");
+		json_builder_add_int_value(json_builder, self->iface.bInterfaceClass);
+	}
+	if (self->iface.bInterfaceSubClass != 0) {
+		json_builder_set_member_name(json_builder, "InterfaceSubClass");
+		json_builder_add_int_value(json_builder, self->iface.bInterfaceSubClass);
+	}
+	if (self->iface.bInterfaceProtocol != 0) {
+		json_builder_set_member_name(json_builder, "InterfaceProtocol");
+		json_builder_add_int_value(json_builder, self->iface.bInterfaceProtocol);
+	}
+	if (self->iface.iInterface != 0) {
+		json_builder_set_member_name(json_builder, "Interface");
+		json_builder_add_int_value(json_builder, self->iface.iInterface);
+	}
+
+	/* array of endpoints */
+	if (self->endpoints->len > 0) {
+		json_builder_set_member_name(json_builder, "UsbEndpoints");
+		json_builder_begin_array(json_builder);
+		for (guint i = 0; i < self->endpoints->len; i++) {
+			GUsbEndpoint *endpoint = g_ptr_array_index(self->endpoints, i);
+			if (!_g_usb_endpoint_save(endpoint, json_builder, error))
+				return FALSE;
+		}
+		json_builder_end_array(json_builder);
+	}
+
+	/* extra data */
+	if (self->extra != NULL && g_bytes_get_size(self->extra) > 0) {
+		g_autofree gchar *str = g_base64_encode(g_bytes_get_data(self->extra, NULL),
+							g_bytes_get_size(self->extra));
+		json_builder_set_member_name(json_builder, "ExtraData");
+		json_builder_add_string_value(json_builder, str);
+	}
+
+	/* success */
+	json_builder_end_object(json_builder);
+	return TRUE;
+}
+
 /**
  * _g_usb_interface_new:
  *

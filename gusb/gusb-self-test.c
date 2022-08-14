@@ -402,6 +402,12 @@ gusb_device_munki_func(void)
 }
 
 static void
+gusb_device_json_func(void)
+{
+	// xxxxx
+}
+
+static void
 gusb_device_ch2_func(void)
 {
 	gboolean ret;
@@ -467,6 +473,7 @@ main(int argc, char **argv)
 	g_test_add_func("/gusb/device[huey]", gusb_device_huey_func);
 	g_test_add_func("/gusb/device[munki]", gusb_device_munki_func);
 	g_test_add_func("/gusb/device[colorhug2]", gusb_device_ch2_func);
+	g_test_add_func("/gusb/device[json]", gusb_device_json_func);
 
 	return g_test_run();
 }

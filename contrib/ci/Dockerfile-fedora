@@ -4,6 +4,7 @@ RUN dnf -y update
 RUN dnf -y install \
 	diffutils \
 	glib2-devel \
+	json-glib-devel \
 	gobject-introspection-devel \
 	gtk-doc \
 	libusb1-devel \

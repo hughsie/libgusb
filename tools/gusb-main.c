@@ -350,6 +350,79 @@ gusb_cmd_replug(GUsbCmdPrivate *priv, gchar **values, GError **error)
 }
 
 static gboolean
+gusb_cmd_load(GUsbCmdPrivate *priv, gchar **values, GError **error)
+{
+	JsonObject *json_obj;
+	JsonNode *json_node;
+	g_autoptr(JsonParser) parser = json_parser_new();
+
+	/* check args */
+	if (g_strv_length(values) != 1) {
+		g_set_error_literal(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_ARGUMENT,
+				    "no filename specified");
+		return FALSE;
+	}
+
+	/* parse */
+	if (!json_parser_load_from_file(parser, values[0], error))
+		return FALSE;
+
+	/* sanity check */
+	json_node = json_parser_get_root(parser);
+	if (!JSON_NODE_HOLDS_OBJECT(json_node)) {
+		g_set_error_literal(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "not a JSON object");
+		return FALSE;
+	}
+
+	/* not supplied */
+	json_obj = json_node_get_object(json_node);
+	if (!g_usb_context_load(priv->usb_ctx, json_obj, error))
+		return FALSE;
+
+	/* success */
+	return gusb_cmd_show(priv, NULL, error);
+}
+
+static gboolean
+gusb_cmd_save(GUsbCmdPrivate *priv, gchar **values, GError **error)
+{
+	g_autoptr(JsonBuilder) json_builder = json_builder_new();
+	g_autofree gchar *data = NULL;
+	g_autoptr(JsonGenerator) json_generator = NULL;
+	g_autoptr(JsonNode) json_root = NULL;
+
+	if (!g_usb_context_save(priv->usb_ctx, json_builder, error))
+		return FALSE;
+
+	/* export as a string */
+	json_root = json_builder_get_root(json_builder);
+	json_generator = json_generator_new();
+	json_generator_set_pretty(json_generator, TRUE);
+	json_generator_set_root(json_generator, json_root);
+	data = json_generator_to_data(json_generator, NULL);
+	if (data == NULL) {
+		g_set_error_literal(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "Failed to convert to JSON string");
+		return FALSE;
+	}
+
+	/* save to file */
+	if (g_strv_length(values) == 1)
+		return g_file_set_contents(values[0], data, -1, error);
+
+	/* just print */
+	g_print("%s\n", data);
+	return TRUE;
+}
+
+static gboolean
 gusb_cmd_run(GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError **error)
 {
 	g_autoptr(GString) string = g_string_new(NULL);
@@ -437,6 +510,8 @@ main(int argc, char *argv[])
 	gusb_cmd_add(priv->cmd_array, "show", "Show currently connected devices", gusb_cmd_show);
 	gusb_cmd_add(priv->cmd_array, "watch", "Watch devices as they come and go", gusb_cmd_watch);
 	gusb_cmd_add(priv->cmd_array, "replug", "Watch a device as it reconnects", gusb_cmd_replug);
+	gusb_cmd_add(priv->cmd_array, "load", "Load a set of devices from JSON", gusb_cmd_load);
+	gusb_cmd_add(priv->cmd_array, "save", "Save a set of devices to JSON", gusb_cmd_save);
 
 	/* sort by command name */
 	g_ptr_array_sort(priv->cmd_array, (GCompareFunc)gusb_sort_command_name_cb);
