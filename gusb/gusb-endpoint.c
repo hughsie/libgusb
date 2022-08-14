@@ -33,9 +33,9 @@ G_DEFINE_TYPE(GUsbEndpoint, g_usb_endpoint, G_TYPE_OBJECT)
 static void
 g_usb_endpoint_finalize(GObject *object)
 {
-	GUsbEndpoint *endpoint = G_USB_ENDPOINT(object);
+	GUsbEndpoint *self = G_USB_ENDPOINT(object);
 
-	g_bytes_unref(endpoint->extra);
+	g_bytes_unref(self->extra);
 
 	G_OBJECT_CLASS(g_usb_endpoint_parent_class)->finalize(object);
 }
@@ -49,7 +49,7 @@ g_usb_endpoint_class_init(GUsbEndpointClass *klass)
 }
 
 static void
-g_usb_endpoint_init(GUsbEndpoint *endpoint)
+g_usb_endpoint_init(GUsbEndpoint *self)
 {
 }
 
@@ -63,22 +63,21 @@ g_usb_endpoint_init(GUsbEndpoint *endpoint)
 GUsbEndpoint *
 _g_usb_endpoint_new(const struct libusb_endpoint_descriptor *endpoint_descriptor)
 {
-	GUsbEndpoint *endpoint;
-	endpoint = g_object_new(G_USB_TYPE_ENDPOINT, NULL);
+	GUsbEndpoint *self;
+	self = g_object_new(G_USB_TYPE_ENDPOINT, NULL);
 
 	/* copy the data */
-	memcpy(&endpoint->endpoint_descriptor,
+	memcpy(&self->endpoint_descriptor,
 	       endpoint_descriptor,
 	       sizeof(struct libusb_endpoint_descriptor));
-	endpoint->extra =
-	    g_bytes_new(endpoint_descriptor->extra, endpoint_descriptor->extra_length);
+	self->extra = g_bytes_new(endpoint_descriptor->extra, endpoint_descriptor->extra_length);
 
-	return G_USB_ENDPOINT(endpoint);
+	return G_USB_ENDPOINT(self);
 }
 
 /**
  * g_usb_endpoint_get_kind:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the type of endpoint.
  *
@@ -87,15 +86,15 @@ _g_usb_endpoint_new(const struct libusb_endpoint_descriptor *endpoint_descriptor
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_kind(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_kind(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return endpoint->endpoint_descriptor.bDescriptorType;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return self->endpoint_descriptor.bDescriptorType;
 }
 
 /**
  * g_usb_endpoint_get_maximum_packet_size:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the maximum packet size this endpoint is capable of sending/receiving.
  *
@@ -104,15 +103,15 @@ g_usb_endpoint_get_kind(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint16
-g_usb_endpoint_get_maximum_packet_size(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_maximum_packet_size(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return endpoint->endpoint_descriptor.wMaxPacketSize;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return self->endpoint_descriptor.wMaxPacketSize;
 }
 
 /**
  * g_usb_endpoint_get_polling_interval:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the endpoint polling interval.
  *
@@ -121,15 +120,15 @@ g_usb_endpoint_get_maximum_packet_size(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_polling_interval(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_polling_interval(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return endpoint->endpoint_descriptor.bInterval;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return self->endpoint_descriptor.bInterval;
 }
 
 /**
  * g_usb_endpoint_get_refresh:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the rate at which synchronization feedback is provided, for audio device only.
  *
@@ -138,15 +137,15 @@ g_usb_endpoint_get_polling_interval(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_refresh(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_refresh(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return endpoint->endpoint_descriptor.bRefresh;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return self->endpoint_descriptor.bRefresh;
 }
 
 /**
  * g_usb_endpoint_get_synch_address:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the address if the synch endpoint, for audio device only.
  *
@@ -155,15 +154,15 @@ g_usb_endpoint_get_refresh(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_synch_address(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_synch_address(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return endpoint->endpoint_descriptor.bSynchAddress;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return self->endpoint_descriptor.bSynchAddress;
 }
 
 /**
  * g_usb_endpoint_get_address:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the address of the endpoint.
  *
@@ -172,15 +171,15 @@ g_usb_endpoint_get_synch_address(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_address(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_address(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return endpoint->endpoint_descriptor.bEndpointAddress;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return self->endpoint_descriptor.bEndpointAddress;
 }
 
 /**
  * g_usb_endpoint_get_number:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the number part of endpoint address.
  *
@@ -189,15 +188,15 @@ g_usb_endpoint_get_address(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_number(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_number(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return (endpoint->endpoint_descriptor.bEndpointAddress) & 0xf;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return (self->endpoint_descriptor.bEndpointAddress) & 0xf;
 }
 
 /**
  * g_usb_endpoint_get_direction:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets the direction of the endpoint.
  *
@@ -206,17 +205,17 @@ g_usb_endpoint_get_number(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 GUsbDeviceDirection
-g_usb_endpoint_get_direction(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_direction(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
-	return (endpoint->endpoint_descriptor.bEndpointAddress & 0x80)
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), 0);
+	return (self->endpoint_descriptor.bEndpointAddress & 0x80)
 		   ? G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST
 		   : G_USB_DEVICE_DIRECTION_HOST_TO_DEVICE;
 }
 
 /**
  * g_usb_endpoint_get_extra:
- * @endpoint: a #GUsbEndpoint
+ * @self: a #GUsbEndpoint
  *
  * Gets any extra data from the endpoint.
  *
@@ -225,8 +224,8 @@ g_usb_endpoint_get_direction(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 GBytes *
-g_usb_endpoint_get_extra(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_extra(GUsbEndpoint *self)
 {
-	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), NULL);
-	return endpoint->extra;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(self), NULL);
+	return self->extra;
 }

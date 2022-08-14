@@ -15,22 +15,22 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(GUsbEndpoint, g_usb_endpoint, G_USB, ENDPOINT, GObject)
 
 guint8
-g_usb_endpoint_get_kind(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_kind(GUsbEndpoint *self);
 guint16
-g_usb_endpoint_get_maximum_packet_size(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_maximum_packet_size(GUsbEndpoint *self);
 guint8
-g_usb_endpoint_get_polling_interval(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_polling_interval(GUsbEndpoint *self);
 guint8
-g_usb_endpoint_get_refresh(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_refresh(GUsbEndpoint *self);
 guint8
-g_usb_endpoint_get_synch_address(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_synch_address(GUsbEndpoint *self);
 guint8
-g_usb_endpoint_get_address(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_address(GUsbEndpoint *self);
 guint8
-g_usb_endpoint_get_number(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_number(GUsbEndpoint *self);
 GUsbDeviceDirection
-g_usb_endpoint_get_direction(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_direction(GUsbEndpoint *self);
 GBytes *
-g_usb_endpoint_get_extra(GUsbEndpoint *endpoint);
+g_usb_endpoint_get_extra(GUsbEndpoint *self);
 
 G_END_DECLS
