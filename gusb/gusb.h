@@ -12,6 +12,7 @@
 #include <gusb/gusb-autocleanups.h>
 #include <gusb/gusb-context.h>
 #include <gusb/gusb-interface.h>
+#include <gusb/gusb-bos-descriptor.h>
 #include <gusb/gusb-endpoint.h>
 #include <gusb/gusb-source.h>
 #include <gusb/gusb-device.h>

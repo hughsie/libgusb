@@ -166,3 +166,13 @@ LIBGUSB_0.3.10 {
     g_usb_context_set_hotplug_poll_interval;
   local: *;
 } LIBGUSB_0.3.8;
+
+LIBGUSB_0.4.0 {
+  global:
+    g_usb_bos_descriptor_get_capability;
+    g_usb_bos_descriptor_get_extra;
+    g_usb_bos_descriptor_get_type;
+    g_usb_device_get_bos_descriptor;
+    g_usb_device_get_bos_descriptors;
+  local: *;
+} LIBGUSB_0.3.10;

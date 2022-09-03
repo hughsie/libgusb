@@ -12,6 +12,7 @@
 
 #include <gusb/gusb-util.h>
 #include <gusb/gusb-interface.h>
+#include <gusb/gusb-bos-descriptor.h>
 
 G_BEGIN_DECLS
 
@@ -182,6 +183,12 @@ GUsbInterface		*g_usb_device_get_interface	(GUsbDevice	*device,
 							 guint8		 protocol_id,
 							 GError		**error);
 GPtrArray		*g_usb_device_get_interfaces	(GUsbDevice	*device,
+							 GError		**error);
+
+GPtrArray		*g_usb_device_get_bos_descriptors(GUsbDevice	*device,
+							 GError		**error);
+GUsbBosDescriptor	*g_usb_device_get_bos_descriptor(GUsbDevice	*device,
+							 guint8		 capability,
 							 GError		**error);
 
 gboolean		 g_usb_device_open		(GUsbDevice	*device,

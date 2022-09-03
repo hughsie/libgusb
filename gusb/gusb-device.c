@@ -24,6 +24,7 @@
 #include "gusb-util.h"
 #include "gusb-device-private.h"
 #include "gusb-interface-private.h"
+#include "gusb-bos-descriptor-private.h"
 
 /**
  * GUsbDevicePrivate:
@@ -603,6 +604,108 @@ g_usb_device_get_interfaces (GUsbDevice *device, GError **error)
 	}
 
 	libusb_free_config_descriptor (config);
+	return array;
+}
+
+/**
+ * g_usb_device_get_bos_descriptor:
+ * @device: a #GUsbDevice
+ * @capability: a BOS capability type
+ * @error: a #GError, or %NULL
+ *
+ * Gets the first bos_descriptor that matches the descriptor capability.
+ * If you want to find all the BOS descriptors that match (there may be other matching BOS
+ * descriptors you have to use `g_usb_device_get_bos_descriptors()` and check each one manually.
+ *
+ * Return value: (transfer full): a #GUsbBosDescriptor or %NULL for not found
+ *
+ * Since: 0.4.0
+ **/
+GUsbBosDescriptor *
+g_usb_device_get_bos_descriptor (GUsbDevice *device,
+				 guint8      capability,
+				 GError    **error)
+{
+	gint rc;
+	guint8 num_device_caps;
+	GUsbBosDescriptor *bos_descriptor = NULL;
+	struct libusb_bos_descriptor *bos = NULL;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	rc = libusb_get_bos_descriptor (device->priv->handle, &bos);
+	if (!g_usb_device_libusb_error_to_gerror (device, rc, error))
+		return NULL;
+
+	/* find the right data */
+#ifdef __FreeBSD__
+	num_device_caps = bos->bNumDeviceCapabilities;
+#else
+	num_device_caps = bos->bNumDeviceCaps;
+#endif
+	for (guint i = 0; i < num_device_caps; i++) {
+		struct libusb_bos_dev_capability_descriptor *bos_cap = bos->dev_capability[i];
+		if (bos_cap->bDevCapabilityType == capability) {
+			bos_descriptor = _g_usb_bos_descriptor_new (bos_cap);
+			break;
+		}
+	}
+
+	/* nothing matched */
+	if (bos_descriptor == NULL) {
+		g_set_error (error,
+			     G_USB_DEVICE_ERROR,
+			     G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+			     "no BOS descriptor for capability 0x%02x",
+			     capability);
+	}
+
+	libusb_free_bos_descriptor (bos);
+	return bos_descriptor;
+}
+
+/**
+ * g_usb_device_get_bos_descriptors:
+ * @device: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Gets all the BOS descriptors exported by the device.
+ *
+ * Return value: (transfer container) (element-type GUsbBosDescriptor): an array of BOS descriptors
+ *
+ * Since: 0.4.0
+ **/
+GPtrArray *
+g_usb_device_get_bos_descriptors (GUsbDevice *device, GError **error)
+{
+	gint rc;
+	guint8 num_device_caps;
+	struct libusb_bos_descriptor *bos = NULL;
+	GPtrArray *array = NULL;
+
+	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+	rc = libusb_get_bos_descriptor (device->priv->handle, &bos);
+	if (!g_usb_device_libusb_error_to_gerror (device, rc, error))
+		return NULL;
+
+	/* get all BOS descriptors */
+	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+#ifdef __FreeBSD__
+	num_device_caps = bos->bNumDeviceCapabilities;
+#else
+	num_device_caps = bos->bNumDeviceCaps;
+#endif
+	for (guint i = 0; i < num_device_caps; i++) {
+		GUsbBosDescriptor *bos_descriptor = NULL;
+		struct libusb_bos_dev_capability_descriptor *bos_cap = bos->dev_capability[i];
+		bos_descriptor = _g_usb_bos_descriptor_new (bos_cap);
+		g_ptr_array_add (array, bos_descriptor);
+	}
+
+	libusb_free_bos_descriptor (bos);
 	return array;
 }
 
