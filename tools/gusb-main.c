@@ -77,14 +77,9 @@ gusb_sort_command_name_cb (GUsbCmdItem **item1, GUsbCmdItem **item2)
 static void
 gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUsbCmdPrivateCb callback)
 {
-	gchar **names;
-	guint i;
-	GUsbCmdItem *item;
-
-	/* add each one */
-	names = g_strsplit (name, ",", -1);
-	for (i=0; names[i] != NULL; i++) {
-		item = g_slice_new0 (GUsbCmdItem);
+	g_auto(GStrv) names = g_strsplit (name, ",", -1);
+	for (guint i = 0; names[i] != NULL; i++) {
+		GUsbCmdItem *item = g_slice_new0 (GUsbCmdItem);
 		item->name = g_strdup (names[i]);
 		if (i == 0) {
 			item->description = g_strdup (description);
@@ -96,28 +91,24 @@ gusb_cmd_add (GPtrArray *array, const gchar *name, const gchar *description, GUs
 		item->callback = callback;
 		g_ptr_array_add (array, item);
 	}
-	g_strfreev (names);
 }
 
 static gchar *
 gusb_cmd_get_descriptions (GPtrArray *array)
 {
-	guint i;
-	guint j;
 	guint len;
 	guint max_len = 19;
-	GUsbCmdItem *item;
-	GString *string;
+	g_autoptr(GString) string = NULL;
 
 	/* print each command */
 	string = g_string_new ("");
-	for (i = 0; i < array->len; i++) {
-		item = g_ptr_array_index (array, i);
+	for (guint i = 0; i < array->len; i++) {
+		GUsbCmdItem *item = g_ptr_array_index (array, i);
 		g_string_append (string, "  ");
 		g_string_append (string, item->name);
 		g_string_append (string, " ");
 		len = strlen (item->name);
-		for (j = len; j < max_len+2; j++)
+		for (guint j = len; j < max_len+2; j++)
 			g_string_append_c (string, ' ');
 		g_string_append (string, item->description);
 		g_string_append_c (string, '\n');
@@ -127,33 +118,30 @@ gusb_cmd_get_descriptions (GPtrArray *array)
 	if (string->len > 0)
 		g_string_set_size (string, string->len - 1);
 
-	return g_string_free (string, FALSE);
+	return g_string_free (g_steal_pointer(&string), FALSE);
 }
 
 static void
 gusb_main_device_open (GUsbDevice *device)
 {
-	GError *error = NULL;
 	guint8 idx;
+	g_autoptr(GError) error = NULL;
 
 	/* open */
 	if (!g_usb_device_open (device, &error)) {
 		g_print ("failed to open: %s\n", error->message);
-		g_error_free (error);
 		return;
 	}
 
 	/* print info we can only get whilst open */
 	idx = g_usb_device_get_product_index (device);
 	if (idx != 0x00) {
-		gchar *product = g_usb_device_get_string_descriptor (device, idx, &error);
+		g_autofree gchar *product = g_usb_device_get_string_descriptor (device, idx, &error);
 		if (product == NULL) {
 			g_print ("failed to get string desc: %s\n", error->message);
-			g_error_free (error);
 			return;
 		}
 		g_print ("product: %s\n", product);
-		g_free (product);
 	}
 }
 
@@ -193,12 +181,10 @@ static gboolean
 moo_cb (GNode *node, gpointer data)
 {
 	GUsbDevice *device = G_USB_DEVICE (node->data);
-	GNode *n;
-	guint i;
 	const gchar *tmp;
-	gchar *product = NULL;
-	gchar *vendor = NULL;
-	GString *str = NULL;
+	g_autofree gchar *product = NULL;
+	g_autofree gchar *vendor = NULL;
+	g_autoptr(GString) str = NULL;
 
 	if (device == NULL) {
 		g_print ("Root Device\n");
@@ -207,7 +193,7 @@ moo_cb (GNode *node, gpointer data)
 
 	/* indent */
 	str = g_string_new ("");
-	for (n = node; n->data != NULL; n = n->parent)
+	for (GNode *n = node; n->data != NULL; n = n->parent)
 		g_string_append (str, " ");
 
 	/* add bus:address */
@@ -218,7 +204,7 @@ moo_cb (GNode *node, gpointer data)
 			        g_usb_device_get_pid (device));
 
 	/* pad */
-	for (i = str->len; i < 30; i++)
+	for (guint i = str->len; i < 30; i++)
 		g_string_append (str, " ");
 
 	/* We don't error check these as not all devices have these
@@ -258,24 +244,16 @@ moo_cb (GNode *node, gpointer data)
 
 	/* add bus:address */
 	g_string_append_printf (str, "%s - %s", vendor, product);
-	g_free (product);
-	g_free (vendor);
 
 	g_print ("%s\n", str->str);
-	g_string_free (str, TRUE);
-
 	return FALSE;
 }
 
 static gboolean
 gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
-	GNode *n;
-	GNode *node;
-	guint i;
-	GUsbDevice *device;
-	GUsbDevice *parent;
-	GPtrArray *devices = NULL;
+	g_autoptr(GNode) node = NULL;
+	g_autoptr(GPtrArray) devices = NULL;
 
 	/* sort */
 	devices = g_usb_context_get_devices (priv->usb_ctx);
@@ -283,10 +261,10 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 
 	/* make a tree of the devices */
 	node = g_node_new (NULL);
-	for (i = 0; i < devices->len; i++) {
-		device = g_ptr_array_index (devices, i);
-
-		parent = g_usb_device_get_parent (device);
+	for (guint i = 0; i < devices->len; i++) {
+		GNode *n;
+		GUsbDevice *device = g_ptr_array_index (devices, i);
+		GUsbDevice *parent = g_usb_device_get_parent (device);
 		if (parent == NULL) {
 			g_node_append_data (node, device);
 			continue;
@@ -302,24 +280,19 @@ gusb_cmd_show (GUsbCmdPrivate *priv, gchar **values, GError **error)
 
 	}
 
-	g_ptr_array_unref (devices);
 	g_node_traverse (node, G_PRE_ORDER, G_TRAVERSE_ALL, -1, moo_cb, priv);
-
 	return TRUE;
 }
 
 static gboolean
 gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
-	gboolean ret = TRUE;
-	GPtrArray *devices;
-	guint i;
-	GUsbDevice *device;
-	GMainLoop *loop;
+	g_autoptr(GMainLoop) loop = NULL;
+	g_autoptr(GPtrArray) devices = NULL;
 
 	devices = g_usb_context_get_devices (priv->usb_ctx);
-	for (i = 0; i < devices->len; i++) {
-		device = g_ptr_array_index (devices, i);
+	for (guint i = 0; i < devices->len; i++) {
+		GUsbDevice *device = g_ptr_array_index (devices, i);
 		g_print ("device %s already present %x:%x\n",
 			 g_usb_device_get_platform_id (device),
 			 g_usb_device_get_bus (device),
@@ -335,18 +308,15 @@ gusb_cmd_watch (GUsbCmdPrivate *priv, gchar **values, GError **error)
 			  G_CALLBACK (gusb_device_list_removed_cb),
 			  priv);
 	g_main_loop_run (loop);
-
-	g_main_loop_unref (loop);
-	g_ptr_array_unref (devices);
-	return ret;
+	return TRUE;
 }
 
 static gboolean
 gusb_cmd_replug (GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
-	GUsbDevice *device;
-	GUsbDevice *device_new;
 	guint16 vid, pid;
+	g_autoptr(GUsbDevice) device = NULL;
+	g_autoptr(GUsbDevice) device_new = NULL;
 
 	/* check args */
 	if (g_strv_length (values) != 2) {
@@ -376,54 +346,53 @@ gusb_cmd_replug (GUsbCmdPrivate *priv, gchar **values, GError **error)
 						    device,
 						    5000,
 						    error);
-	if (device_new == NULL)
-		return FALSE;
-
-	g_object_unref (device);
-	return TRUE;
+	return device_new != NULL;
 }
 
 static gboolean
 gusb_cmd_run (GUsbCmdPrivate *priv, const gchar *command, gchar **values, GError **error)
 {
-	gboolean ret = FALSE;
-	guint i;
-	GUsbCmdItem *item;
-	GString *string;
+	g_autoptr(GString) string = g_string_new (NULL);
 
 	/* find command */
-	for (i = 0; i < priv->cmd_array->len; i++) {
-		item = g_ptr_array_index (priv->cmd_array, i);
+	for (guint i = 0; i < priv->cmd_array->len; i++) {
+		GUsbCmdItem *item = g_ptr_array_index (priv->cmd_array, i);
 		if (g_strcmp0 (item->name, command) == 0) {
-			ret = item->callback (priv, values, error);
-			goto out;
+			return item->callback (priv, values, error);
 		}
 	}
 
-	/* not found */
-	string = g_string_new ("");
 	/* TRANSLATORS: error message */
 	g_string_append_printf (string, "%s\n", "Command not found, valid commands are:");
-	for (i = 0; i < priv->cmd_array->len; i++) {
-		item = g_ptr_array_index (priv->cmd_array, i);
+	for (guint i = 0; i < priv->cmd_array->len; i++) {
+		GUsbCmdItem *item = g_ptr_array_index (priv->cmd_array, i);
 		g_string_append_printf (string, " * %s\n", item->name);
 	}
 	g_set_error_literal (error, 1, 0, string->str);
-	g_string_free (string, TRUE);
-out:
-	return ret;
+	return FALSE;
 }
+
+static void
+gusb_cmd_private_free(GUsbCmdPrivate *priv)
+{
+	if (priv->cmd_array != NULL)
+		g_ptr_array_unref (priv->cmd_array);
+	if (priv->usb_ctx != NULL)
+		g_object_unref (priv->usb_ctx);
+	g_option_context_free (priv->context);
+	g_slice_free (GUsbCmdPrivate, priv);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbCmdPrivate, gusb_cmd_private_free)
 
 int
 main (int argc, char *argv[])
 {
-	gboolean ret;
 	gboolean verbose = FALSE;
-	gchar *cmd_descriptions = NULL;
-	gchar *options_help = NULL;
-	GError *error = NULL;
-	gint retval = 0;
-	GUsbCmdPrivate *priv;
+	g_autofree gchar *cmd_descriptions = NULL;
+	g_autofree gchar *options_help = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GUsbCmdPrivate) priv = NULL;
 
 	const GOptionEntry options[] = {
 		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -435,14 +404,11 @@ main (int argc, char *argv[])
 
 	/* create helper object */
 	priv = g_slice_new0 (GUsbCmdPrivate);
-
 	priv->context = g_option_context_new ("GUSB Console Program");
 	g_option_context_add_main_entries (priv->context, options, NULL);
 	if (!g_option_context_parse (priv->context, &argc, &argv, &error)) {
 		g_printerr ("Failed to parse arguments: %s\n", error->message);
-		g_error_free (error);
-		retval = 2;
-		goto out;
+		return 2;
 	}
 
 	/* verbose? */
@@ -491,29 +457,15 @@ main (int argc, char *argv[])
 	if (argc < 2) {
 		options_help = g_option_context_get_help (priv->context, TRUE, NULL);
 		g_print ("%s", options_help);
-		goto out;
+		return 1;
 	}
 
 	/* run the specified command */
-	ret = gusb_cmd_run (priv, argv[1], (gchar**) &argv[2], &error);
-	if (!ret) {
+	if (!gusb_cmd_run (priv, argv[1], (gchar**) &argv[2], &error)) {
 		g_print ("%s\n", error->message);
-		g_error_free (error);
-		retval = 1;
-		goto out;
-	}
-out:
-	if (priv != NULL) {
-		if (priv->cmd_array != NULL)
-			g_ptr_array_unref (priv->cmd_array);
-		if (priv->usb_ctx != NULL)
-			g_object_unref (priv->usb_ctx);
-		g_option_context_free (priv->context);
-		g_slice_free (GUsbCmdPrivate, priv);
+		return 1;
 	}
 
-	/* free state */
-	g_free (options_help);
-	g_free (cmd_descriptions);
-	return retval;
+	/* success */
+	return 0;
 }

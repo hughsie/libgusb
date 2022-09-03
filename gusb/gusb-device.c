@@ -261,7 +261,7 @@ g_usb_device_initable_init (GInitable     *initable,
 
 	priv = device->priv;
 
-	if (!priv->device) {
+	if (priv->device == NULL) {
 		g_set_error_literal (error, G_USB_DEVICE_ERROR, G_USB_DEVICE_ERROR_INTERNAL,
 				     "Constructed without a libusb_device");
 		return FALSE;
@@ -469,7 +469,6 @@ g_usb_device_get_custom_index (GUsbDevice *device,
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
 	guint8 idx = 0x00;
-	guint i;
 	struct libusb_config_descriptor *config;
 
 	rc = libusb_get_active_config_descriptor (device->priv->device, &config);
@@ -477,7 +476,7 @@ g_usb_device_get_custom_index (GUsbDevice *device,
 		return 0x00;
 
 	/* find the right data */
-	for (i = 0; i < config->bNumInterfaces; i++) {
+	for (guint i = 0; i < config->bNumInterfaces; i++) {
 		ifp = &config->interface[i].altsetting[0];
 		if (ifp->bInterfaceClass != class_id)
 			continue;
@@ -530,7 +529,6 @@ g_usb_device_get_interface (GUsbDevice *device,
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
 	GUsbInterface *interface = NULL;
-	guint i;
 	struct libusb_config_descriptor *config;
 
 	g_return_val_if_fail (G_USB_IS_DEVICE (device), NULL);
@@ -541,7 +539,7 @@ g_usb_device_get_interface (GUsbDevice *device,
 		return NULL;
 
 	/* find the right data */
-	for (i = 0; i < config->bNumInterfaces; i++) {
+	for (guint i = 0; i < config->bNumInterfaces; i++) {
 		ifp = &config->interface[i].altsetting[0];
 		if (ifp->bInterfaceClass != class_id)
 			continue;
@@ -583,8 +581,6 @@ g_usb_device_get_interfaces (GUsbDevice *device, GError **error)
 {
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
-	guint i;
-	guint j;
 	struct libusb_config_descriptor *config;
 	GPtrArray *array = NULL;
 
@@ -597,9 +593,9 @@ g_usb_device_get_interfaces (GUsbDevice *device, GError **error)
 
 	/* get all interfaces */
 	array = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	for (i = 0; i < config->bNumInterfaces; i++) {
+	for (guint i = 0; i < config->bNumInterfaces; i++) {
 		GUsbInterface *interface = NULL;
-		for (j = 0; j < (guint) config->interface[i].num_altsetting; j++) {
+		for (guint j = 0; j < (guint) config->interface[i].num_altsetting; j++) {
 			ifp = &config->interface[i].altsetting[j];
 			interface = _g_usb_interface_new (ifp);
 			g_ptr_array_add (array, interface);
@@ -1705,19 +1701,16 @@ g_usb_device_get_children (GUsbDevice *device)
 	GPtrArray *children;
 	GUsbDevice *device_tmp;
 	GUsbDevicePrivate *priv = device->priv;
-	guint i;
-	GPtrArray *devices = NULL;
+	g_autoptr(GPtrArray) devices = NULL;
 
 	/* find any devices that have @device as a parent */
 	children = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	devices = g_usb_context_get_devices (priv->context);
-	for (i = 0; i < devices->len; i++) {
+	for (guint i = 0; i < devices->len; i++) {
 		device_tmp = g_ptr_array_index (devices, i);
 		if (priv->device == libusb_get_parent (device_tmp->priv->device))
 			g_ptr_array_add (children, g_object_ref (device_tmp));
 	}
-
-	g_ptr_array_unref (devices);
 
 	return children;
 }
