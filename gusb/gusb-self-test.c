@@ -7,15 +7,16 @@
 
 #include "config.h"
 
+#include "gusb-autocleanups.h"
 #include "gusb-context-private.h"
 
 static void
 gusb_device_func (void)
 {
-	GError *error = NULL;
-	GPtrArray *array;
-	GUsbContext *ctx;
 	GUsbDevice *device;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) array = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
 
 #ifdef __FreeBSD__
 	g_test_skip ("Root hubs on FreeBSD have vid and pid set to zero");
@@ -35,16 +36,14 @@ gusb_device_func (void)
 
 	g_assert_cmpint (g_usb_device_get_vid (device), >, 0x0000);
 	g_assert_cmpint (g_usb_device_get_pid (device), >, 0x0000);
-
-	g_ptr_array_unref (array);
 }
 
 static void
 gusb_context_lookup_func (void)
 {
-	GUsbContext *ctx = NULL;
 	GError *error = NULL;
 	const gchar *tmp;
+	g_autoptr(GUsbContext) ctx = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -56,21 +55,17 @@ gusb_context_lookup_func (void)
 	tmp = _g_usb_context_lookup_product (ctx, 0x04d8, 0xf8da, &error);
 	g_assert_no_error (error);
 	g_assert_cmpstr (tmp, ==, "Hughski Ltd. ColorHug");
-	g_object_unref (ctx);
 }
 
 static void
 gusb_context_func (void)
 {
-	GUsbContext *ctx;
-	GError *error = NULL;
 	GPtrArray *array;
 	guint old_number_of_devices;
 	guint8 bus, address;
 	GUsbDevice *device;
-	gchar *manufacturer;
-	gchar *product;
-	guint i;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
 
 #ifdef __FreeBSD__
 	g_test_skip ("Root hubs on FreeBSD have vid and pid set to zero");
@@ -91,7 +86,10 @@ gusb_context_func (void)
 
 	/* Print a list (also exercising various bits of g_usb_device) */
 	g_print ("\n");
-	for (i = 0; i < array->len; i++) {
+	for (guint i = 0; i < array->len; i++) {
+		g_autofree gchar *manufacturer = NULL;
+		g_autofree gchar *product = NULL;
+
 		device = G_USB_DEVICE (g_ptr_array_index (array, i));
 
 		g_assert_cmpint (g_usb_device_get_vid (device), >, 0x0000);
@@ -120,9 +118,6 @@ gusb_context_func (void)
 			 g_usb_device_get_pid (device),
 			 manufacturer ? manufacturer : "",
 			 product ? product : "");
-
-		g_free (manufacturer);
-		g_free (product);
 	}
 	g_ptr_array_unref (array);
 
@@ -155,20 +150,17 @@ gusb_context_func (void)
 			G_USB_DEVICE_ERROR,
 			G_USB_DEVICE_ERROR_NO_DEVICE);
 	g_assert (device == NULL);
-	g_clear_error (&error);
-
-	g_object_unref (ctx);
 }
 
 static void
 gusb_device_huey_func (void)
 {
-	GUsbContext *ctx;
-	GError *error = NULL;
-	GUsbDevice *device;
 	gboolean ret;
 	GCancellable *cancellable = NULL;
 	const gchar request[8] = { 0x0e, 'G', 'r', 'M', 'b', 'k', 'e', 'd' };
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
+	g_autoptr(GUsbDevice) device = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -185,8 +177,7 @@ gusb_device_huey_func (void)
 	    error->domain == G_USB_DEVICE_ERROR &&
 	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
 		g_print ("No device detected!\n");
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
@@ -267,10 +258,6 @@ gusb_device_huey_func (void)
 	ret = g_usb_device_close (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-
-	g_object_unref (device);
-out:
-	g_object_unref (ctx);
 }
 
 typedef struct {
@@ -285,19 +272,17 @@ g_usb_device_print_data (const gchar  *title,
 			 const guchar *data,
 			 gsize	 length)
 {
-	guint i;
-
 	if (g_strcmp0 (title, "request") == 0)
 		g_print ("%c[%dm", 0x1B, 31);
 	if (g_strcmp0 (title, "reply") == 0)
 		g_print ("%c[%dm", 0x1B, 34);
 	g_print ("%s\t", title);
 
-	for (i=0; i< length; i++)
+	for (guint i = 0; i< length; i++) {
 		g_print ("%02x [%c]\t",
 			 data[i],
 			 g_ascii_isprint (data[i]) ? data[i] : '?');
-
+	}
 	g_print ("%c[%dm\n", 0x1B, 0);
 }
 
@@ -307,15 +292,14 @@ g_usb_test_button_pressed_cb (GObject      *source_object,
 			      gpointer      user_data)
 {
 	gboolean ret;
-	GError *error = NULL;
 	GUsbDeviceAsyncHelper *helper = (GUsbDeviceAsyncHelper *) user_data;
+	g_autoptr(GError) error = NULL;
 
 	ret = g_usb_device_interrupt_transfer_finish (G_USB_DEVICE (source_object),
 						      res, &error);
 
 	if (!ret) {
 		g_error ("%s", error->message);
-		g_error_free (error);
 		return;
 	}
 
@@ -329,13 +313,13 @@ g_usb_test_button_pressed_cb (GObject      *source_object,
 static void
 gusb_device_munki_func (void)
 {
-	GError *error = NULL;
-	GUsbContext *ctx;
-	GUsbDevice *device;
 	gboolean ret;
 	GCancellable *cancellable = NULL;
 	guint8 request[24];
 	GUsbDeviceAsyncHelper *helper;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
+	g_autoptr(GUsbDevice) device = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -352,8 +336,7 @@ gusb_device_munki_func (void)
 	    error->domain == G_USB_DEVICE_ERROR &&
 	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
 		g_print ("No device detected!\n");
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
@@ -450,21 +433,17 @@ gusb_device_munki_func (void)
 	ret = g_usb_device_close (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-
-	g_object_unref (device);
-out:
-	g_object_unref (ctx);
 }
 
 static void
 gusb_device_ch2_func (void)
 {
-	GError *error = NULL;
-	GUsbContext *ctx;
-	GUsbDevice *device;
 	gboolean ret;
-	gchar *tmp = NULL;
 	guint8 idx;
+	g_autofree gchar *tmp = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
+	g_autoptr(GUsbDevice) device = NULL;
 
 	ctx = g_usb_context_new (&error);
 	g_assert_no_error (error);
@@ -481,8 +460,7 @@ gusb_device_ch2_func (void)
 	    error->domain == G_USB_DEVICE_ERROR &&
 	    error->code == G_USB_DEVICE_ERROR_NO_DEVICE) {
 		g_print ("No device detected!\n");
-		g_error_free (error);
-		goto out;
+		return;
 	}
 	g_assert_no_error (error);
 	g_assert (device != NULL);
@@ -503,16 +481,11 @@ gusb_device_ch2_func (void)
 	tmp = g_usb_device_get_string_descriptor (device, idx, &error);
 	g_assert_no_error (error);
 	g_assert_cmpstr (tmp, ==, "2.0.3");
-	g_free (tmp);
 
 	/* close */
 	ret = g_usb_device_close (device, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-
-	g_object_unref (device);
-out:
-	g_object_unref (ctx);
 }
 
 int
