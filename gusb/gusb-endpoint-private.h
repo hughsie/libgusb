@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <libusb.h>
-
 #include <gusb/gusb-endpoint.h>
+#include <libusb.h>
 
 G_BEGIN_DECLS
 
-GUsbEndpoint	*_g_usb_endpoint_new		(const struct libusb_endpoint_descriptor	*endpoint);
+GUsbEndpoint *
+_g_usb_endpoint_new(const struct libusb_endpoint_descriptor *endpoint);
 
 G_END_DECLS

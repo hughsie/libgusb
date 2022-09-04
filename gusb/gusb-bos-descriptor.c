@@ -21,36 +21,35 @@
 
 #include "gusb-bos-descriptor-private.h"
 
-struct _GUsbBosDescriptor
-{
+struct _GUsbBosDescriptor {
 	GObject parent_instance;
 
 	struct libusb_bos_dev_capability_descriptor bos_cap;
 	GBytes *extra;
 };
 
-G_DEFINE_TYPE (GUsbBosDescriptor, g_usb_bos_descriptor, G_TYPE_OBJECT)
+G_DEFINE_TYPE(GUsbBosDescriptor, g_usb_bos_descriptor, G_TYPE_OBJECT)
 
 static void
-g_usb_bos_descriptor_finalize (GObject *object)
+g_usb_bos_descriptor_finalize(GObject *object)
 {
-	GUsbBosDescriptor *self = G_USB_BOS_DESCRIPTOR (object);
+	GUsbBosDescriptor *self = G_USB_BOS_DESCRIPTOR(object);
 
-	g_bytes_unref (self->extra);
+	g_bytes_unref(self->extra);
 
-	G_OBJECT_CLASS (g_usb_bos_descriptor_parent_class)->finalize (object);
+	G_OBJECT_CLASS(g_usb_bos_descriptor_parent_class)->finalize(object);
 }
 
 static void
-g_usb_bos_descriptor_class_init (GUsbBosDescriptorClass *klass)
+g_usb_bos_descriptor_class_init(GUsbBosDescriptorClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
 	object_class->finalize = g_usb_bos_descriptor_finalize;
 }
 
 static void
-g_usb_bos_descriptor_init (GUsbBosDescriptor *self)
+g_usb_bos_descriptor_init(GUsbBosDescriptor *self)
 {
 }
 
@@ -62,16 +61,16 @@ g_usb_bos_descriptor_init (GUsbBosDescriptor *self)
  * Since: 0.4.0
  **/
 GUsbBosDescriptor *
-_g_usb_bos_descriptor_new (const struct libusb_bos_dev_capability_descriptor *bos_cap)
+_g_usb_bos_descriptor_new(const struct libusb_bos_dev_capability_descriptor *bos_cap)
 {
 	GUsbBosDescriptor *self;
-	self = g_object_new (G_USB_TYPE_BOS_DESCRIPTOR, NULL);
+	self = g_object_new(G_USB_TYPE_BOS_DESCRIPTOR, NULL);
 
 	/* copy the data */
-	memcpy (&self->bos_cap, bos_cap, sizeof (*bos_cap));
-	self->extra = g_bytes_new (bos_cap->dev_capability_data, bos_cap->bLength - 0x03);
+	memcpy(&self->bos_cap, bos_cap, sizeof(*bos_cap));
+	self->extra = g_bytes_new(bos_cap->dev_capability_data, bos_cap->bLength - 0x03);
 
-	return G_USB_BOS_DESCRIPTOR (self);
+	return G_USB_BOS_DESCRIPTOR(self);
 }
 
 /**
@@ -85,9 +84,9 @@ _g_usb_bos_descriptor_new (const struct libusb_bos_dev_capability_descriptor *bo
  * Since: 0.4.0
  **/
 guint8
-g_usb_bos_descriptor_get_capability (GUsbBosDescriptor *self)
+g_usb_bos_descriptor_get_capability(GUsbBosDescriptor *self)
 {
-	g_return_val_if_fail (G_USB_IS_BOS_DESCRIPTOR (self), 0);
+	g_return_val_if_fail(G_USB_IS_BOS_DESCRIPTOR(self), 0);
 	return self->bos_cap.bDevCapabilityType;
 }
 
@@ -102,8 +101,8 @@ g_usb_bos_descriptor_get_capability (GUsbBosDescriptor *self)
  * Since: 0.4.0
  **/
 GBytes *
-g_usb_bos_descriptor_get_extra (GUsbBosDescriptor *self)
+g_usb_bos_descriptor_get_extra(GUsbBosDescriptor *self)
 {
-	g_return_val_if_fail (G_USB_IS_BOS_DESCRIPTOR (self), NULL);
+	g_return_val_if_fail(G_USB_IS_BOS_DESCRIPTOR(self), NULL);
 	return self->extra;
 }

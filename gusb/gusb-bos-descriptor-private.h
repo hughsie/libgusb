@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <libusb.h>
-
 #include <gusb/gusb-bos-descriptor.h>
+#include <libusb.h>
 
 G_BEGIN_DECLS
 
-GUsbBosDescriptor	*_g_usb_bos_descriptor_new	(const struct libusb_bos_dev_capability_descriptor	*bos_cap);
+GUsbBosDescriptor *
+_g_usb_bos_descriptor_new(const struct libusb_bos_dev_capability_descriptor *bos_cap);
 
 G_END_DECLS

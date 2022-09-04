@@ -9,8 +9,8 @@
 
 #define __GUSB_INSIDE__
 
-#include <gusb/gusb.h>
 #include <gusb/gusb-context-private.h>
 #include <gusb/gusb-device-private.h>
+#include <gusb/gusb.h>
 
 #undef __GUSB_INSIDE__

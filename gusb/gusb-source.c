@@ -26,11 +26,11 @@
  * Since: 0.1.0
  **/
 GQuark
-g_usb_source_error_quark (void)
+g_usb_source_error_quark(void)
 {
 	static GQuark quark = 0;
 	if (!quark)
-		quark = g_quark_from_static_string ("g_usb_source_error");
+		quark = g_quark_from_static_string("g_usb_source_error");
 	return quark;
 }
 
@@ -46,10 +46,10 @@ g_usb_source_error_quark (void)
  * Since: 0.1.0
  **/
 void
-g_usb_source_set_callback (GUsbSource     *source,
-			   GSourceFunc     func,
-			   gpointer	data,
-			   GDestroyNotify  notify)
+g_usb_source_set_callback(GUsbSource *source,
+			  GSourceFunc func,
+			  gpointer data,
+			  GDestroyNotify notify)
 {
-	g_source_set_callback ((GSource *)source, func, data, notify);
+	g_source_set_callback((GSource *)source, func, data, notify);
 }
