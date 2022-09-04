@@ -8,8 +8,8 @@
 #pragma once
 
 #include <gusb/gusb-context.h>
-#include <gusb/gusb-device.h>
 #include <gusb/gusb-device-list.h>
+#include <gusb/gusb-device.h>
 
 #ifdef G_DEFINE_AUTOPTR_CLEANUP_FUNC
 

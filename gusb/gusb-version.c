@@ -19,9 +19,8 @@
  * Since: 0.3.1
  **/
 const gchar *
-g_usb_version_string (void)
+g_usb_version_string(void)
 {
-	return G_STRINGIFY(G_USB_MAJOR_VERSION) "."
-		G_STRINGIFY(G_USB_MINOR_VERSION) "."
-		G_STRINGIFY(G_USB_MICRO_VERSION);
+	return G_STRINGIFY(G_USB_MAJOR_VERSION) "." G_STRINGIFY(
+	    G_USB_MINOR_VERSION) "." G_STRINGIFY(G_USB_MICRO_VERSION);
 }

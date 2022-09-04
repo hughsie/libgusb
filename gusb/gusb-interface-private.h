@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <libusb.h>
-
 #include <gusb/gusb-interface.h>
+#include <libusb.h>
 
 G_BEGIN_DECLS
 
-GUsbInterface	*_g_usb_interface_new		(const struct libusb_interface_descriptor	*iface);
+GUsbInterface *
+_g_usb_interface_new(const struct libusb_interface_descriptor *iface);
 
 G_END_DECLS

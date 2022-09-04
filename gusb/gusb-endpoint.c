@@ -21,36 +21,35 @@
 
 #include "gusb-endpoint-private.h"
 
-struct _GUsbEndpoint
-{
+struct _GUsbEndpoint {
 	GObject parent_instance;
 
 	struct libusb_endpoint_descriptor endpoint_descriptor;
 	GBytes *extra;
 };
 
-G_DEFINE_TYPE (GUsbEndpoint, g_usb_endpoint, G_TYPE_OBJECT)
+G_DEFINE_TYPE(GUsbEndpoint, g_usb_endpoint, G_TYPE_OBJECT)
 
 static void
-g_usb_endpoint_finalize (GObject *object)
+g_usb_endpoint_finalize(GObject *object)
 {
-	GUsbEndpoint *endpoint = G_USB_ENDPOINT (object);
+	GUsbEndpoint *endpoint = G_USB_ENDPOINT(object);
 
-	g_bytes_unref (endpoint->extra);
+	g_bytes_unref(endpoint->extra);
 
-	G_OBJECT_CLASS (g_usb_endpoint_parent_class)->finalize (object);
+	G_OBJECT_CLASS(g_usb_endpoint_parent_class)->finalize(object);
 }
 
 static void
-g_usb_endpoint_class_init (GUsbEndpointClass *klass)
+g_usb_endpoint_class_init(GUsbEndpointClass *klass)
 {
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
 	object_class->finalize = g_usb_endpoint_finalize;
 }
 
 static void
-g_usb_endpoint_init (GUsbEndpoint *endpoint)
+g_usb_endpoint_init(GUsbEndpoint *endpoint)
 {
 }
 
@@ -62,18 +61,19 @@ g_usb_endpoint_init (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 GUsbEndpoint *
-_g_usb_endpoint_new (const struct libusb_endpoint_descriptor *endpoint_descriptor)
+_g_usb_endpoint_new(const struct libusb_endpoint_descriptor *endpoint_descriptor)
 {
 	GUsbEndpoint *endpoint;
-	endpoint = g_object_new (G_USB_TYPE_ENDPOINT, NULL);
+	endpoint = g_object_new(G_USB_TYPE_ENDPOINT, NULL);
 
 	/* copy the data */
-	memcpy (&endpoint->endpoint_descriptor,
-		endpoint_descriptor,
-		sizeof (struct libusb_endpoint_descriptor));
-	endpoint->extra = g_bytes_new (endpoint_descriptor->extra, endpoint_descriptor->extra_length);
+	memcpy(&endpoint->endpoint_descriptor,
+	       endpoint_descriptor,
+	       sizeof(struct libusb_endpoint_descriptor));
+	endpoint->extra =
+	    g_bytes_new(endpoint_descriptor->extra, endpoint_descriptor->extra_length);
 
-	return G_USB_ENDPOINT (endpoint);
+	return G_USB_ENDPOINT(endpoint);
 }
 
 /**
@@ -87,9 +87,9 @@ _g_usb_endpoint_new (const struct libusb_endpoint_descriptor *endpoint_descripto
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_kind	(GUsbEndpoint *endpoint)
+g_usb_endpoint_get_kind(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return endpoint->endpoint_descriptor.bDescriptorType;
 }
 
@@ -104,9 +104,9 @@ g_usb_endpoint_get_kind	(GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint16
-g_usb_endpoint_get_maximum_packet_size (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_maximum_packet_size(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return endpoint->endpoint_descriptor.wMaxPacketSize;
 }
 
@@ -121,9 +121,9 @@ g_usb_endpoint_get_maximum_packet_size (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_polling_interval (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_polling_interval(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return endpoint->endpoint_descriptor.bInterval;
 }
 
@@ -138,9 +138,9 @@ g_usb_endpoint_get_polling_interval (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_refresh (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_refresh(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return endpoint->endpoint_descriptor.bRefresh;
 }
 
@@ -155,9 +155,9 @@ g_usb_endpoint_get_refresh (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_synch_address (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_synch_address(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return endpoint->endpoint_descriptor.bSynchAddress;
 }
 
@@ -172,9 +172,9 @@ g_usb_endpoint_get_synch_address (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_address (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_address(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return endpoint->endpoint_descriptor.bEndpointAddress;
 }
 
@@ -189,9 +189,9 @@ g_usb_endpoint_get_address (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 guint8
-g_usb_endpoint_get_number (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_number(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
 	return (endpoint->endpoint_descriptor.bEndpointAddress) & 0xf;
 }
 
@@ -206,12 +206,12 @@ g_usb_endpoint_get_number (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 GUsbDeviceDirection
-g_usb_endpoint_get_direction (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_direction(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), 0);
-	return (endpoint->endpoint_descriptor.bEndpointAddress & 0x80) ?
-		G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST :
-		G_USB_DEVICE_DIRECTION_HOST_TO_DEVICE;
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), 0);
+	return (endpoint->endpoint_descriptor.bEndpointAddress & 0x80)
+		   ? G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST
+		   : G_USB_DEVICE_DIRECTION_HOST_TO_DEVICE;
 }
 
 /**
@@ -225,8 +225,8 @@ g_usb_endpoint_get_direction (GUsbEndpoint *endpoint)
  * Since: 0.3.3
  **/
 GBytes *
-g_usb_endpoint_get_extra (GUsbEndpoint *endpoint)
+g_usb_endpoint_get_extra(GUsbEndpoint *endpoint)
 {
-	g_return_val_if_fail (G_USB_IS_ENDPOINT (endpoint), NULL);
+	g_return_val_if_fail(G_USB_IS_ENDPOINT(endpoint), NULL);
 	return endpoint->extra;
 }

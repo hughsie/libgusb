@@ -11,6 +11,7 @@
 
 G_BEGIN_DECLS
 
-const gchar	*g_usb_strerror		(gint	 error_code);
+const gchar *
+g_usb_strerror(gint error_code);
 
 G_END_DECLS

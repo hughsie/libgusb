@@ -12,7 +12,7 @@
 
 G_BEGIN_DECLS
 
-#define G_USB_SOURCE_ERROR			(g_usb_source_error_quark ())
+#define G_USB_SOURCE_ERROR (g_usb_source_error_quark())
 
 typedef struct _GUsbSource GUsbSource;
 
@@ -21,17 +21,17 @@ typedef struct _GUsbSource GUsbSource;
  *
  * The error code.
  **/
-typedef enum {
-	G_USB_SOURCE_ERROR_INTERNAL
-} GUsbSourceError;
+typedef enum { G_USB_SOURCE_ERROR_INTERNAL } GUsbSourceError;
 
 G_DEPRECATED_FOR(g_usb_context_error_quark)
-GQuark		 g_usb_source_error_quark	(void);
+GQuark
+g_usb_source_error_quark(void);
 
 G_DEPRECATED
-void		 g_usb_source_set_callback	(GUsbSource	*source,
-						 GSourceFunc	 func,
-						 gpointer	 data,
-						 GDestroyNotify	 notify);
+void
+g_usb_source_set_callback(GUsbSource *source,
+			  GSourceFunc func,
+			  gpointer data,
+			  GDestroyNotify notify);
 
 G_END_DECLS

@@ -22,7 +22,7 @@
  * Since: 0.1.0
  **/
 const gchar *
-g_usb_strerror (gint error_code)
+g_usb_strerror(gint error_code)
 {
-	return libusb_strerror (error_code);
+	return libusb_strerror(error_code);
 }
