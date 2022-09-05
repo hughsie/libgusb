@@ -391,8 +391,8 @@ gusb_cmd_load(GUsbCmdPrivate *priv, gchar **values, GError **error)
 static gboolean
 gusb_cmd_save(GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
-	g_autoptr(JsonBuilder) json_builder = json_builder_new();
 	g_autofree gchar *data = NULL;
+	g_autoptr(JsonBuilder) json_builder = json_builder_new();
 	g_autoptr(JsonGenerator) json_generator = NULL;
 	g_autoptr(JsonNode) json_root = NULL;
 
