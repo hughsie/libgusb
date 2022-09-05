@@ -36,7 +36,7 @@ g_usb_source_error_quark(void)
 
 /**
  * g_usb_source_set_callback:
- * @source: a #GUsbSource
+ * @self: a #GUsbSource
  * @func: a function to call
  * @data: data to pass to @func
  * @notify: a #GDestroyNotify
@@ -46,10 +46,7 @@ g_usb_source_error_quark(void)
  * Since: 0.1.0
  **/
 void
-g_usb_source_set_callback(GUsbSource *source,
-			  GSourceFunc func,
-			  gpointer data,
-			  GDestroyNotify notify)
+g_usb_source_set_callback(GUsbSource *self, GSourceFunc func, gpointer data, GDestroyNotify notify)
 {
-	g_source_set_callback((GSource *)source, func, data, notify);
+	g_source_set_callback((GSource *)self, func, data, notify);
 }

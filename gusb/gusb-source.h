@@ -29,9 +29,6 @@ g_usb_source_error_quark(void);
 
 G_DEPRECATED
 void
-g_usb_source_set_callback(GUsbSource *source,
-			  GSourceFunc func,
-			  gpointer data,
-			  GDestroyNotify notify);
+g_usb_source_set_callback(GUsbSource *self, GSourceFunc func, gpointer data, GDestroyNotify notify);
 
 G_END_DECLS

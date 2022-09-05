@@ -71,8 +71,8 @@ G_DEFINE_QUARK (g-usb-device-error-quark, g_usb_device_error)
 static void
 g_usb_device_finalize(GObject *object)
 {
-	GUsbDevice *device = G_USB_DEVICE(object);
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevice *self = G_USB_DEVICE(object);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	g_free(priv->platform_id);
 
@@ -82,8 +82,8 @@ g_usb_device_finalize(GObject *object)
 static void
 g_usb_device_dispose(GObject *object)
 {
-	GUsbDevice *device = G_USB_DEVICE(object);
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevice *self = G_USB_DEVICE(object);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	g_clear_pointer(&priv->device, libusb_unref_device);
 	g_clear_object(&priv->context);
@@ -94,8 +94,8 @@ g_usb_device_dispose(GObject *object)
 static void
 g_usb_device_get_property(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
-	GUsbDevice *device = G_USB_DEVICE(object);
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevice *self = G_USB_DEVICE(object);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	switch (prop_id) {
 	case PROP_LIBUSB_DEVICE:
@@ -108,9 +108,9 @@ g_usb_device_get_property(GObject *object, guint prop_id, GValue *value, GParamS
 }
 
 static void
-set_libusb_device(GUsbDevice *device, struct libusb_device *dev)
+set_libusb_device(GUsbDevice *self, struct libusb_device *dev)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	g_clear_pointer(&priv->device, libusb_unref_device);
 
@@ -121,12 +121,12 @@ set_libusb_device(GUsbDevice *device, struct libusb_device *dev)
 static void
 g_usb_device_set_property(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
-	GUsbDevice *device = G_USB_DEVICE(object);
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevice *self = G_USB_DEVICE(object);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	switch (prop_id) {
 	case PROP_LIBUSB_DEVICE:
-		set_libusb_device(device, g_value_get_pointer(value));
+		set_libusb_device(self, g_value_get_pointer(value));
 		break;
 	case PROP_CONTEXT:
 		priv->context = g_value_dup_object(value);
@@ -143,11 +143,11 @@ g_usb_device_set_property(GObject *object, guint prop_id, const GValue *value, G
 static void
 g_usb_device_constructed(GObject *object)
 {
-	GUsbDevice *device = G_USB_DEVICE(object);
+	GUsbDevice *self = G_USB_DEVICE(object);
 	GUsbDevicePrivate *priv;
 	gint rc;
 
-	priv = GET_PRIVATE(device);
+	priv = GET_PRIVATE(self);
 
 	if (!priv->device)
 		g_error("constructed without a libusb_device");
@@ -201,7 +201,7 @@ g_usb_device_class_init(GUsbDeviceClass *klass)
 }
 
 static void
-g_usb_device_init(GUsbDevice *device)
+g_usb_device_init(GUsbDevice *self)
 {
 }
 
@@ -248,11 +248,11 @@ g_usb_device_build_platform_id(struct libusb_device *dev)
 static gboolean
 g_usb_device_initable_init(GInitable *initable, GCancellable *cancellable, GError **error)
 {
-	GUsbDevice *device = G_USB_DEVICE(initable);
+	GUsbDevice *self = G_USB_DEVICE(initable);
 	GUsbDevicePrivate *priv;
 	gint rc;
 
-	priv = GET_PRIVATE(device);
+	priv = GET_PRIVATE(self);
 
 	if (priv->device == NULL) {
 		g_set_error_literal(error,
@@ -306,21 +306,21 @@ _g_usb_device_new(GUsbContext *context, libusb_device *device, GError **error)
 
 /**
  * _g_usb_device_get_device:
- * @device: a #GUsbDevice instance
+ * @self: a #GUsbDevice instance
  *
  * Gets the low-level libusb_device
  *
  * Return value: The #libusb_device or %NULL. Do not unref this value.
  **/
 libusb_device *
-_g_usb_device_get_device(GUsbDevice *device)
+_g_usb_device_get_device(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	return priv->device;
 }
 
 static gboolean
-g_usb_device_libusb_error_to_gerror(GUsbDevice *device, gint rc, GError **error)
+g_usb_device_libusb_error_to_gerror(GUsbDevice *self, gint rc, GError **error)
 {
 	gint error_code = G_USB_DEVICE_ERROR_INTERNAL;
 	/* Put the rc in libusb's error enum so that gcc warns us if we're
@@ -363,8 +363,8 @@ g_usb_device_libusb_error_to_gerror(GUsbDevice *device, gint rc, GError **error)
 		    G_USB_DEVICE_ERROR,
 		    error_code,
 		    "USB error on device %04x:%04x : %s [%i]",
-		    g_usb_device_get_vid(device),
-		    g_usb_device_get_pid(device),
+		    g_usb_device_get_vid(self),
+		    g_usb_device_get_pid(self),
 		    g_usb_strerror(rc),
 		    rc);
 
@@ -372,38 +372,38 @@ g_usb_device_libusb_error_to_gerror(GUsbDevice *device, gint rc, GError **error)
 }
 
 static gboolean
-g_usb_device_not_open_error(GUsbDevice *device, GError **error)
+g_usb_device_not_open_error(GUsbDevice *self, GError **error)
 {
 	g_set_error(error,
 		    G_USB_DEVICE_ERROR,
 		    G_USB_DEVICE_ERROR_NOT_OPEN,
 		    "Device %04x:%04x has not been opened",
-		    g_usb_device_get_vid(device),
-		    g_usb_device_get_pid(device));
+		    g_usb_device_get_vid(self),
+		    g_usb_device_get_pid(self));
 	return FALSE;
 }
 
 static void
-g_usb_device_async_not_open_error(GUsbDevice *device,
+g_usb_device_async_not_open_error(GUsbDevice *self,
 				  GAsyncReadyCallback callback,
 				  gpointer user_data,
 				  gpointer source_tag)
 {
-	g_task_report_new_error(device,
+	g_task_report_new_error(self,
 				callback,
 				user_data,
 				source_tag,
 				G_USB_DEVICE_ERROR,
 				G_USB_DEVICE_ERROR_NOT_OPEN,
 				"Device %04x:%04x has not been opened",
-				g_usb_device_get_vid(device),
-				g_usb_device_get_pid(device));
+				g_usb_device_get_vid(self),
+				g_usb_device_get_pid(self));
 }
 
 gboolean
-_g_usb_device_open_internal(GUsbDevice *device, GError **error)
+_g_usb_device_open_internal(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 
 	if (priv->handle != NULL) {
@@ -411,19 +411,19 @@ _g_usb_device_open_internal(GUsbDevice *device, GError **error)
 			    G_USB_DEVICE_ERROR,
 			    G_USB_DEVICE_ERROR_ALREADY_OPEN,
 			    "Device %04x:%04x is already open",
-			    g_usb_device_get_vid(device),
-			    g_usb_device_get_pid(device));
+			    g_usb_device_get_vid(self),
+			    g_usb_device_get_pid(self));
 		return FALSE;
 	}
 
 	/* open device */
 	rc = libusb_open(priv->device, &priv->handle);
-	return g_usb_device_libusb_error_to_gerror(device, rc, error);
+	return g_usb_device_libusb_error_to_gerror(self, rc, error);
 }
 
 /**
  * g_usb_device_open:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @error: a #GError, or %NULL
  *
  * Opens the device for use.
@@ -435,11 +435,11 @@ _g_usb_device_open_internal(GUsbDevice *device, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_open(GUsbDevice *device, GError **error)
+g_usb_device_open(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	/* ignore */
@@ -447,12 +447,12 @@ g_usb_device_open(GUsbDevice *device, GError **error)
 		return TRUE;
 
 	/* open */
-	return _g_usb_device_open_internal(device, error);
+	return _g_usb_device_open_internal(self, error);
 }
 
 /**
  * g_usb_device_get_custom_index:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @class_id: a device class, e.g. 0xff for VENDOR
  * @subclass_id: a device subclass
  * @protocol_id: a protocol number
@@ -465,20 +465,20 @@ g_usb_device_open(GUsbDevice *device, GError **error)
  * Since: 0.2.5
  **/
 guint8
-g_usb_device_get_custom_index(GUsbDevice *device,
+g_usb_device_get_custom_index(GUsbDevice *self,
 			      guint8 class_id,
 			      guint8 subclass_id,
 			      guint8 protocol_id,
 			      GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
 	guint8 idx = 0x00;
 	struct libusb_config_descriptor *config;
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
-	if (!g_usb_device_libusb_error_to_gerror(device, rc, error))
+	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
 		return 0x00;
 
 	/* find the right data */
@@ -512,7 +512,7 @@ g_usb_device_get_custom_index(GUsbDevice *device,
 
 /**
  * g_usb_device_get_interface:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @class_id: a device class, e.g. 0xff for VENDOR
  * @subclass_id: a device subclass
  * @protocol_id: a protocol number
@@ -528,23 +528,23 @@ g_usb_device_get_custom_index(GUsbDevice *device,
  * Since: 0.2.8
  **/
 GUsbInterface *
-g_usb_device_get_interface(GUsbDevice *device,
+g_usb_device_get_interface(GUsbDevice *self,
 			   guint8 class_id,
 			   guint8 subclass_id,
 			   guint8 protocol_id,
 			   GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
 	GUsbInterface *interface = NULL;
 	struct libusb_config_descriptor *config;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
-	if (!g_usb_device_libusb_error_to_gerror(device, rc, error))
+	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
 		return NULL;
 
 	/* find the right data */
@@ -578,7 +578,7 @@ g_usb_device_get_interface(GUsbDevice *device,
 
 /**
  * g_usb_device_get_interfaces:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @error: a #GError, or %NULL
  *
  * Gets all the interfaces exported by the device.
@@ -589,19 +589,19 @@ g_usb_device_get_interface(GUsbDevice *device,
  * Since: 0.2.8
  **/
 GPtrArray *
-g_usb_device_get_interfaces(GUsbDevice *device, GError **error)
+g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
 	struct libusb_config_descriptor *config;
 	GPtrArray *array = NULL;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
-	if (!g_usb_device_libusb_error_to_gerror(device, rc, error))
+	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
 		return NULL;
 
 	/* get all interfaces */
@@ -621,7 +621,7 @@ g_usb_device_get_interfaces(GUsbDevice *device, GError **error)
 
 /**
  * g_usb_device_get_bos_descriptor:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @capability: a BOS capability type
  * @error: a #GError, or %NULL
  *
@@ -634,19 +634,19 @@ g_usb_device_get_interfaces(GUsbDevice *device, GError **error)
  * Since: 0.4.0
  **/
 GUsbBosDescriptor *
-g_usb_device_get_bos_descriptor(GUsbDevice *device, guint8 capability, GError **error)
+g_usb_device_get_bos_descriptor(GUsbDevice *self, guint8 capability, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 	guint8 num_device_caps;
 	GUsbBosDescriptor *bos_descriptor = NULL;
 	struct libusb_bos_descriptor *bos = NULL;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	rc = libusb_get_bos_descriptor(priv->handle, &bos);
-	if (!g_usb_device_libusb_error_to_gerror(device, rc, error))
+	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
 		return NULL;
 
 		/* find the right data */
@@ -678,7 +678,7 @@ g_usb_device_get_bos_descriptor(GUsbDevice *device, guint8 capability, GError **
 
 /**
  * g_usb_device_get_bos_descriptors:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @error: a #GError, or %NULL
  *
  * Gets all the BOS descriptors exported by the device.
@@ -688,19 +688,19 @@ g_usb_device_get_bos_descriptor(GUsbDevice *device, guint8 capability, GError **
  * Since: 0.4.0
  **/
 GPtrArray *
-g_usb_device_get_bos_descriptors(GUsbDevice *device, GError **error)
+g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 	guint8 num_device_caps;
 	struct libusb_bos_descriptor *bos = NULL;
 	GPtrArray *array = NULL;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	rc = libusb_get_bos_descriptor(priv->handle, &bos);
-	if (!g_usb_device_libusb_error_to_gerror(device, rc, error))
+	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
 		return NULL;
 
 	/* get all BOS descriptors */
@@ -723,7 +723,7 @@ g_usb_device_get_bos_descriptors(GUsbDevice *device, GError **error)
 
 /**
  * g_usb_device_close:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @error: a #GError, or %NULL
  *
  * Closes the device when it is no longer required.
@@ -733,11 +733,11 @@ g_usb_device_get_bos_descriptors(GUsbDevice *device, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_close(GUsbDevice *device, GError **error)
+g_usb_device_close(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	/* ignore */
@@ -745,7 +745,7 @@ g_usb_device_close(GUsbDevice *device, GError **error)
 		return TRUE;
 
 	if (priv->handle == NULL)
-		return g_usb_device_not_open_error(device, error);
+		return g_usb_device_not_open_error(self, error);
 
 	libusb_close(priv->handle);
 	priv->handle = NULL;
@@ -754,13 +754,13 @@ g_usb_device_close(GUsbDevice *device, GError **error)
 
 /**
  * g_usb_device_reset:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @error: a #GError, or %NULL
  *
  * Perform a USB port reset to reinitialize a device.
  *
  * If the reset succeeds, the device will appear to disconnected and reconnected.
- * This means the @device will no longer be valid and should be closed and
+ * This means the @self will no longer be valid and should be closed and
  * rediscovered.
  *
  * This is a blocking function which usually incurs a noticeable delay.
@@ -770,25 +770,25 @@ g_usb_device_close(GUsbDevice *device, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_reset(GUsbDevice *device, GError **error)
+g_usb_device_reset(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (priv->handle == NULL)
-		return g_usb_device_not_open_error(device, error);
+		return g_usb_device_not_open_error(self, error);
 
 	rc = libusb_reset_device(priv->handle);
 	if (rc == LIBUSB_ERROR_NOT_FOUND)
 		return TRUE;
-	return g_usb_device_libusb_error_to_gerror(device, rc, error);
+	return g_usb_device_libusb_error_to_gerror(self, rc, error);
 }
 
 /**
  * g_usb_device_get_configuration:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @error: a #GError, or %NULL
  *
  * Get the bConfigurationValue for the active configuration of the device.
@@ -800,23 +800,23 @@ g_usb_device_reset(GUsbDevice *device, GError **error)
  * Since: 0.1.0
  **/
 gint
-g_usb_device_get_configuration(GUsbDevice *device, GError **error)
+g_usb_device_get_configuration(GUsbDevice *self, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 	int config;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), -1);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), -1);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
 	if (priv->handle == NULL) {
-		g_usb_device_not_open_error(device, error);
+		g_usb_device_not_open_error(self, error);
 		return -1;
 	}
 
 	rc = libusb_get_configuration(priv->handle, &config);
 	if (rc != LIBUSB_SUCCESS) {
-		g_usb_device_libusb_error_to_gerror(device, rc, error);
+		g_usb_device_libusb_error_to_gerror(self, rc, error);
 		return -1;
 	}
 
@@ -825,7 +825,7 @@ g_usb_device_get_configuration(GUsbDevice *device, GError **error)
 
 /**
  * g_usb_device_set_configuration:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @configuration: the configuration value to set
  * @error: a #GError, or %NULL
  *
@@ -838,34 +838,34 @@ g_usb_device_get_configuration(GUsbDevice *device, GError **error)
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_set_configuration(GUsbDevice *device, gint configuration, GError **error)
+g_usb_device_set_configuration(GUsbDevice *self, gint configuration, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 	gint config_tmp = 0;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (priv->handle == NULL)
-		return g_usb_device_not_open_error(device, error);
+		return g_usb_device_not_open_error(self, error);
 
 	/* verify we've not already set the same configuration */
 	rc = libusb_get_configuration(priv->handle, &config_tmp);
 	if (rc != LIBUSB_SUCCESS) {
-		return g_usb_device_libusb_error_to_gerror(device, rc, error);
+		return g_usb_device_libusb_error_to_gerror(self, rc, error);
 	}
 	if (config_tmp == configuration)
 		return TRUE;
 
 	/* different, so change */
 	rc = libusb_set_configuration(priv->handle, configuration);
-	return g_usb_device_libusb_error_to_gerror(device, rc, error);
+	return g_usb_device_libusb_error_to_gerror(self, rc, error);
 }
 
 /**
  * g_usb_device_claim_interface:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @interface: bInterfaceNumber of the interface you wish to claim
  * @flags: #GUsbDeviceClaimInterfaceFlags
  * @error: a #GError, or %NULL
@@ -877,35 +877,35 @@ g_usb_device_set_configuration(GUsbDevice *device, gint configuration, GError **
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_claim_interface(GUsbDevice *device,
+g_usb_device_claim_interface(GUsbDevice *self,
 			     gint interface,
 			     GUsbDeviceClaimInterfaceFlags flags,
 			     GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (priv->handle == NULL)
-		return g_usb_device_not_open_error(device, error);
+		return g_usb_device_not_open_error(self, error);
 
 	if (flags & G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER) {
 		rc = libusb_detach_kernel_driver(priv->handle, interface);
 		if (rc != LIBUSB_SUCCESS && rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
 		    rc != LIBUSB_ERROR_NOT_SUPPORTED &&			    /* win32 */
 		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
-			return g_usb_device_libusb_error_to_gerror(device, rc, error);
+			return g_usb_device_libusb_error_to_gerror(self, rc, error);
 	}
 
 	rc = libusb_claim_interface(priv->handle, interface);
-	return g_usb_device_libusb_error_to_gerror(device, rc, error);
+	return g_usb_device_libusb_error_to_gerror(self, rc, error);
 }
 
 /**
  * g_usb_device_release_interface:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @interface: bInterfaceNumber of the interface you wish to release
  * @flags: #GUsbDeviceClaimInterfaceFlags
  * @error: a #GError, or %NULL
@@ -917,30 +917,30 @@ g_usb_device_claim_interface(GUsbDevice *device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_release_interface(GUsbDevice *device,
+g_usb_device_release_interface(GUsbDevice *self,
 			       gint interface,
 			       GUsbDeviceClaimInterfaceFlags flags,
 			       GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (priv->handle == NULL)
-		return g_usb_device_not_open_error(device, error);
+		return g_usb_device_not_open_error(self, error);
 
 	rc = libusb_release_interface(priv->handle, interface);
 	if (rc != LIBUSB_SUCCESS)
-		return g_usb_device_libusb_error_to_gerror(device, rc, error);
+		return g_usb_device_libusb_error_to_gerror(self, rc, error);
 
 	if (flags & G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER) {
 		rc = libusb_attach_kernel_driver(priv->handle, interface);
 		if (rc != LIBUSB_SUCCESS && rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
 		    rc != LIBUSB_ERROR_NOT_SUPPORTED &&			    /* win32 */
 		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
-			return g_usb_device_libusb_error_to_gerror(device, rc, error);
+			return g_usb_device_libusb_error_to_gerror(self, rc, error);
 	}
 
 	return TRUE;
@@ -948,7 +948,7 @@ g_usb_device_release_interface(GUsbDevice *device,
 
 /**
  * g_usb_device_set_interface_alt:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @interface: bInterfaceNumber of the interface you wish to release
  * @alt: alternative setting number
  * @error: a #GError, or %NULL
@@ -960,20 +960,20 @@ g_usb_device_release_interface(GUsbDevice *device,
  * Since: 0.2.8
  **/
 gboolean
-g_usb_device_set_interface_alt(GUsbDevice *device, gint interface, guint8 alt, GError **error)
+g_usb_device_set_interface_alt(GUsbDevice *self, gint interface, guint8 alt, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), FALSE);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	if (priv->handle == NULL)
-		return g_usb_device_not_open_error(device, error);
+		return g_usb_device_not_open_error(self, error);
 
 	rc = libusb_set_interface_alt_setting(priv->handle, interface, (gint)alt);
 	if (rc != LIBUSB_SUCCESS)
-		return g_usb_device_libusb_error_to_gerror(device, rc, error);
+		return g_usb_device_libusb_error_to_gerror(self, rc, error);
 
 	return TRUE;
 }
@@ -991,24 +991,24 @@ g_usb_device_set_interface_alt(GUsbDevice *device, gint interface, guint8 alt, G
  * Since: 0.1.0
  **/
 gchar *
-g_usb_device_get_string_descriptor(GUsbDevice *device, guint8 desc_index, GError **error)
+g_usb_device_get_string_descriptor(GUsbDevice *self, guint8 desc_index, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 	/* libusb_get_string_descriptor_ascii returns max 128 bytes */
 	unsigned char buf[128];
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	if (priv->handle == NULL) {
-		g_usb_device_not_open_error(device, error);
+		g_usb_device_not_open_error(self, error);
 		return NULL;
 	}
 
 	rc = libusb_get_string_descriptor_ascii(priv->handle, desc_index, buf, sizeof(buf));
 	if (rc < 0) {
-		g_usb_device_libusb_error_to_gerror(device, rc, error);
+		g_usb_device_libusb_error_to_gerror(self, rc, error);
 		return NULL;
 	}
 
@@ -1030,27 +1030,27 @@ g_usb_device_get_string_descriptor(GUsbDevice *device, guint8 desc_index, GError
  * Since: 0.3.8
  **/
 GBytes *
-g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *device,
+g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *self,
 					      guint8 desc_index,
 					      guint16 langid,
 					      gsize length,
 					      GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
 	g_autofree guint8 *buf = g_malloc0(length);
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	if (priv->handle == NULL) {
-		g_usb_device_not_open_error(device, error);
+		g_usb_device_not_open_error(self, error);
 		return NULL;
 	}
 
 	rc = libusb_get_string_descriptor(priv->handle, desc_index, langid, buf, length);
 	if (rc < 0) {
-		g_usb_device_libusb_error_to_gerror(device, rc, error);
+		g_usb_device_libusb_error_to_gerror(self, rc, error);
 		return NULL;
 	}
 
@@ -1074,19 +1074,15 @@ g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *device,
  * Since: 0.3.6
  **/
 GBytes *
-g_usb_device_get_string_descriptor_bytes(GUsbDevice *device,
+g_usb_device_get_string_descriptor_bytes(GUsbDevice *self,
 					 guint8 desc_index,
 					 guint16 langid,
 					 GError **error)
 {
-	return g_usb_device_get_string_descriptor_bytes_full(device,
-							     desc_index,
-							     langid,
-							     128,
-							     error);
+	return g_usb_device_get_string_descriptor_bytes_full(self, desc_index, langid, 128, error);
 }
 
-typedef gssize(GUsbDeviceTransferFinishFunc)(GUsbDevice *device, GAsyncResult *res, GError **error);
+typedef gssize(GUsbDeviceTransferFinishFunc)(GUsbDevice *self, GAsyncResult *res, GError **error);
 
 typedef struct {
 	GError **error;
@@ -1097,15 +1093,15 @@ typedef struct {
 } GUsbSyncHelper;
 
 static void
-g_usb_device_sync_transfer_cb(GUsbDevice *device, GAsyncResult *res, GUsbSyncHelper *helper)
+g_usb_device_sync_transfer_cb(GUsbDevice *self, GAsyncResult *res, GUsbSyncHelper *helper)
 {
-	helper->ret = (*helper->finish_func)(device, res, helper->error);
+	helper->ret = (*helper->finish_func)(self, res, helper->error);
 	g_main_loop_quit(helper->loop);
 }
 
 /**
  * g_usb_device_control_transfer:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @request_type: the request type field for the setup packet
  * @request: the request field for the setup packet
  * @value: the value field for the setup packet
@@ -1129,7 +1125,7 @@ g_usb_device_sync_transfer_cb(GUsbDevice *device, GAsyncResult *res, GUsbSyncHel
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_control_transfer(GUsbDevice *device,
+g_usb_device_control_transfer(GUsbDevice *self,
 			      GUsbDeviceDirection direction,
 			      GUsbDeviceRequestType request_type,
 			      GUsbDeviceRecipient recipient,
@@ -1143,7 +1139,7 @@ g_usb_device_control_transfer(GUsbDevice *device,
 			      GCancellable *cancellable,
 			      GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
@@ -1152,7 +1148,7 @@ g_usb_device_control_transfer(GUsbDevice *device,
 	helper.error = error;
 	helper.finish_func = g_usb_device_control_transfer_finish;
 
-	g_usb_device_control_transfer_async(device,
+	g_usb_device_control_transfer_async(self,
 					    direction,
 					    request_type,
 					    recipient,
@@ -1176,7 +1172,7 @@ g_usb_device_control_transfer(GUsbDevice *device,
 
 /**
  * g_usb_device_bulk_transfer:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @endpoint: the address of a valid endpoint to communicate with
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
@@ -1197,7 +1193,7 @@ g_usb_device_control_transfer(GUsbDevice *device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_bulk_transfer(GUsbDevice *device,
+g_usb_device_bulk_transfer(GUsbDevice *self,
 			   guint8 endpoint,
 			   guint8 *data,
 			   gsize length,
@@ -1206,7 +1202,7 @@ g_usb_device_bulk_transfer(GUsbDevice *device,
 			   GCancellable *cancellable,
 			   GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
@@ -1215,7 +1211,7 @@ g_usb_device_bulk_transfer(GUsbDevice *device,
 	helper.error = error;
 	helper.finish_func = g_usb_device_bulk_transfer_finish;
 
-	g_usb_device_bulk_transfer_async(device,
+	g_usb_device_bulk_transfer_async(self,
 					 endpoint,
 					 data,
 					 length,
@@ -1234,7 +1230,7 @@ g_usb_device_bulk_transfer(GUsbDevice *device,
 
 /**
  * g_usb_device_interrupt_transfer:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @endpoint: the address of a valid endpoint to communicate with
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
@@ -1255,7 +1251,7 @@ g_usb_device_bulk_transfer(GUsbDevice *device,
  * Since: 0.1.0
  **/
 gboolean
-g_usb_device_interrupt_transfer(GUsbDevice *device,
+g_usb_device_interrupt_transfer(GUsbDevice *self,
 				guint8 endpoint,
 				guint8 *data,
 				gsize length,
@@ -1264,7 +1260,7 @@ g_usb_device_interrupt_transfer(GUsbDevice *device,
 				GCancellable *cancellable,
 				GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GUsbSyncHelper helper;
 
 	helper.ret = -1;
@@ -1273,7 +1269,7 @@ g_usb_device_interrupt_transfer(GUsbDevice *device,
 	helper.error = error;
 	helper.finish_func = g_usb_device_interrupt_transfer_finish;
 
-	g_usb_device_interrupt_transfer_async(device,
+	g_usb_device_interrupt_transfer_async(self,
 					      endpoint,
 					      data,
 					      length,
@@ -1414,7 +1410,7 @@ g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
 
 /**
  * g_usb_device_control_transfer_async:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
  * @length: the length field for the setup packet.
@@ -1430,7 +1426,7 @@ g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
  * Since: 0.1.0
  **/
 void
-g_usb_device_control_transfer_async(GUsbDevice *device,
+g_usb_device_control_transfer_async(GUsbDevice *self,
 				    GUsbDeviceDirection direction,
 				    GUsbDeviceRequestType request_type,
 				    GUsbDeviceRecipient recipient,
@@ -1444,17 +1440,17 @@ g_usb_device_control_transfer_async(GUsbDevice *device,
 				    GAsyncReadyCallback callback,
 				    gpointer user_data)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GTask *task;
 	GcmDeviceReq *req;
 	gint rc;
 	guint8 request_type_raw = 0;
 	GError *error = NULL;
 
-	g_return_if_fail(G_USB_IS_DEVICE(device));
+	g_return_if_fail(G_USB_IS_DEVICE(self));
 
 	if (priv->handle == NULL) {
-		g_usb_device_async_not_open_error(device,
+		g_usb_device_async_not_open_error(self,
 						  callback,
 						  user_data,
 						  g_usb_device_control_transfer_async);
@@ -1465,7 +1461,7 @@ g_usb_device_control_transfer_async(GUsbDevice *device,
 	req->transfer = libusb_alloc_transfer(0);
 	req->data = data;
 
-	task = g_task_new(device, cancellable, callback, user_data);
+	task = g_task_new(self, cancellable, callback, user_data);
 	g_task_set_task_data(task, req, (GDestroyNotify)g_usb_device_req_free);
 
 	if (g_task_return_error_if_cancelled(task)) {
@@ -1496,7 +1492,7 @@ g_usb_device_control_transfer_async(GUsbDevice *device,
 	/* submit transfer */
 	rc = libusb_submit_transfer(req->transfer);
 	if (rc < 0) {
-		g_usb_device_libusb_error_to_gerror(device, rc, &error);
+		g_usb_device_libusb_error_to_gerror(self, rc, &error);
 		g_task_return_error(task, error);
 		g_object_unref(task);
 	}
@@ -1513,7 +1509,7 @@ g_usb_device_control_transfer_async(GUsbDevice *device,
 
 /**
  * g_usb_device_control_transfer_finish:
- * @device: a #GUsbDevice instance.
+ * @self: a #GUsbDevice instance.
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
@@ -1524,10 +1520,10 @@ g_usb_device_control_transfer_async(GUsbDevice *device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_control_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError **error)
+g_usb_device_control_transfer_finish(GUsbDevice *self, GAsyncResult *res, GError **error)
 {
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), -1);
-	g_return_val_if_fail(g_task_is_valid(res, device), -1);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), -1);
+	g_return_val_if_fail(g_task_is_valid(res, self), -1);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
 	return g_task_propagate_int(G_TASK(res), error);
@@ -1535,7 +1531,7 @@ g_usb_device_control_transfer_finish(GUsbDevice *device, GAsyncResult *res, GErr
 
 /**
  * g_usb_device_bulk_transfer_async:
- * @device: a #GUsbDevice instance.
+ * @self: a #GUsbDevice instance.
  * @endpoint: the address of a valid endpoint to communicate with
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
@@ -1552,7 +1548,7 @@ g_usb_device_control_transfer_finish(GUsbDevice *device, GAsyncResult *res, GErr
  * Since: 0.1.0
  **/
 void
-g_usb_device_bulk_transfer_async(GUsbDevice *device,
+g_usb_device_bulk_transfer_async(GUsbDevice *self,
 				 guint8 endpoint,
 				 guint8 *data,
 				 gsize length,
@@ -1561,16 +1557,16 @@ g_usb_device_bulk_transfer_async(GUsbDevice *device,
 				 GAsyncReadyCallback callback,
 				 gpointer user_data)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GTask *task;
 	GcmDeviceReq *req;
 	gint rc;
 	GError *error = NULL;
 
-	g_return_if_fail(G_USB_IS_DEVICE(device));
+	g_return_if_fail(G_USB_IS_DEVICE(self));
 
 	if (priv->handle == NULL) {
-		g_usb_device_async_not_open_error(device,
+		g_usb_device_async_not_open_error(self,
 						  callback,
 						  user_data,
 						  g_usb_device_bulk_transfer_async);
@@ -1580,7 +1576,7 @@ g_usb_device_bulk_transfer_async(GUsbDevice *device,
 	req = g_slice_new0(GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer(0);
 
-	task = g_task_new(device, cancellable, callback, user_data);
+	task = g_task_new(self, cancellable, callback, user_data);
 	g_task_set_task_data(task, req, (GDestroyNotify)g_usb_device_req_free);
 
 	if (g_task_return_error_if_cancelled(task)) {
@@ -1601,7 +1597,7 @@ g_usb_device_bulk_transfer_async(GUsbDevice *device,
 	/* submit transfer */
 	rc = libusb_submit_transfer(req->transfer);
 	if (rc < 0) {
-		g_usb_device_libusb_error_to_gerror(device, rc, &error);
+		g_usb_device_libusb_error_to_gerror(self, rc, &error);
 		g_task_return_error(task, error);
 		g_object_unref(task);
 	}
@@ -1618,7 +1614,7 @@ g_usb_device_bulk_transfer_async(GUsbDevice *device,
 
 /**
  * g_usb_device_bulk_transfer_finish:
- * @device: a #GUsbDevice instance.
+ * @self: a #GUsbDevice instance.
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
@@ -1629,10 +1625,10 @@ g_usb_device_bulk_transfer_async(GUsbDevice *device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_bulk_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError **error)
+g_usb_device_bulk_transfer_finish(GUsbDevice *self, GAsyncResult *res, GError **error)
 {
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), -1);
-	g_return_val_if_fail(g_task_is_valid(res, device), -1);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), -1);
+	g_return_val_if_fail(g_task_is_valid(res, self), -1);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
 	return g_task_propagate_int(G_TASK(res), error);
@@ -1640,7 +1636,7 @@ g_usb_device_bulk_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError 
 
 /**
  * g_usb_device_interrupt_transfer_async:
- * @device: a #GUsbDevice instance.
+ * @self: a #GUsbDevice instance.
  * @endpoint: the address of a valid endpoint to communicate with
  * @data: (array length=length): a suitably-sized data buffer for
  * either input or output
@@ -1657,7 +1653,7 @@ g_usb_device_bulk_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError 
  * Since: 0.1.0
  **/
 void
-g_usb_device_interrupt_transfer_async(GUsbDevice *device,
+g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 				      guint8 endpoint,
 				      guint8 *data,
 				      gsize length,
@@ -1666,16 +1662,16 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *device,
 				      GAsyncReadyCallback callback,
 				      gpointer user_data)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GTask *task;
 	GcmDeviceReq *req;
 	GError *error = NULL;
 	gint rc;
 
-	g_return_if_fail(G_USB_IS_DEVICE(device));
+	g_return_if_fail(G_USB_IS_DEVICE(self));
 
 	if (priv->handle == NULL) {
-		g_usb_device_async_not_open_error(device,
+		g_usb_device_async_not_open_error(self,
 						  callback,
 						  user_data,
 						  g_usb_device_interrupt_transfer_async);
@@ -1685,7 +1681,7 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *device,
 	req = g_slice_new0(GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer(0);
 
-	task = g_task_new(device, cancellable, callback, user_data);
+	task = g_task_new(self, cancellable, callback, user_data);
 	g_task_set_task_data(task, req, (GDestroyNotify)g_usb_device_req_free);
 
 	if (g_task_return_error_if_cancelled(task)) {
@@ -1706,7 +1702,7 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *device,
 	/* submit transfer */
 	rc = libusb_submit_transfer(req->transfer);
 	if (rc < 0) {
-		g_usb_device_libusb_error_to_gerror(device, rc, &error);
+		g_usb_device_libusb_error_to_gerror(self, rc, &error);
 		g_task_return_error(task, error);
 		g_object_unref(task);
 	}
@@ -1723,7 +1719,7 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *device,
 
 /**
  * g_usb_device_interrupt_transfer_finish:
- * @device: a #GUsbDevice instance.
+ * @self: a #GUsbDevice instance.
  * @res: the #GAsyncResult
  * @error: A #GError or %NULL
  *
@@ -1734,10 +1730,10 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *device,
  * Since: 0.1.0
  **/
 gssize
-g_usb_device_interrupt_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError **error)
+g_usb_device_interrupt_transfer_finish(GUsbDevice *self, GAsyncResult *res, GError **error)
 {
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), -1);
-	g_return_val_if_fail(g_task_is_valid(res, device), -1);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), -1);
+	g_return_val_if_fail(g_task_is_valid(res, self), -1);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
 	return g_task_propagate_int(G_TASK(res), error);
@@ -1745,7 +1741,7 @@ g_usb_device_interrupt_transfer_finish(GUsbDevice *device, GAsyncResult *res, GE
 
 /**
  * g_usb_device_get_platform_id:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the platform identifier for the device.
  *
@@ -1757,16 +1753,16 @@ g_usb_device_interrupt_transfer_finish(GUsbDevice *device, GAsyncResult *res, GE
  * Since: 0.1.1
  **/
 const gchar *
-g_usb_device_get_platform_id(GUsbDevice *device)
+g_usb_device_get_platform_id(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	return priv->platform_id;
 }
 
 /**
  * g_usb_device_get_parent:
- * @device: a #GUsbDevice instance
+ * @self: a #GUsbDevice instance
  *
  * Gets the device parent if one exists.
  *
@@ -1775,9 +1771,9 @@ g_usb_device_get_platform_id(GUsbDevice *device)
  * Since: 0.2.4
  **/
 GUsbDevice *
-g_usb_device_get_parent(GUsbDevice *device)
+g_usb_device_get_parent(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	libusb_device *parent;
 
 	parent = libusb_get_parent(priv->device);
@@ -1792,7 +1788,7 @@ g_usb_device_get_parent(GUsbDevice *device)
 
 /**
  * g_usb_device_get_children:
- * @device: a #GUsbDevice instance
+ * @self: a #GUsbDevice instance
  *
  * Gets the device children if any exist.
  *
@@ -1801,13 +1797,13 @@ g_usb_device_get_parent(GUsbDevice *device)
  * Since: 0.2.4
  **/
 GPtrArray *
-g_usb_device_get_children(GUsbDevice *device)
+g_usb_device_get_children(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	GPtrArray *children;
 	g_autoptr(GPtrArray) devices = NULL;
 
-	/* find any devices that have @device as a parent */
+	/* find any devices that have @self as a parent */
 	children = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	devices = g_usb_context_get_devices(priv->context);
 	for (guint i = 0; i < devices->len; i++) {
@@ -1822,7 +1818,7 @@ g_usb_device_get_children(GUsbDevice *device)
 
 /**
  * g_usb_device_get_bus:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the USB bus number for the device.
  *
@@ -1831,16 +1827,16 @@ g_usb_device_get_children(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint8
-g_usb_device_get_bus(GUsbDevice *device)
+g_usb_device_get_bus(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return libusb_get_bus_number(priv->device);
 }
 
 /**
  * g_usb_device_get_address:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the USB address for the device.
  *
@@ -1849,16 +1845,16 @@ g_usb_device_get_bus(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint8
-g_usb_device_get_address(GUsbDevice *device)
+g_usb_device_get_address(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return libusb_get_device_address(priv->device);
 }
 
 /**
  * g_usb_device_get_port_number:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the USB port number for the device.
  *
@@ -1867,16 +1863,16 @@ g_usb_device_get_address(GUsbDevice *device)
  * Since: 0.2.4
  **/
 guint8
-g_usb_device_get_port_number(GUsbDevice *device)
+g_usb_device_get_port_number(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return libusb_get_port_number(priv->device);
 }
 
 /**
  * g_usb_device_get_vid:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the vendor ID for the device.
  *
@@ -1885,16 +1881,16 @@ g_usb_device_get_port_number(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint16
-g_usb_device_get_vid(GUsbDevice *device)
+g_usb_device_get_vid(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.idVendor;
 }
 
 /**
  * g_usb_device_get_pid:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the product ID for the device.
  *
@@ -1903,16 +1899,16 @@ g_usb_device_get_vid(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint16
-g_usb_device_get_pid(GUsbDevice *device)
+g_usb_device_get_pid(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.idProduct;
 }
 
 /**
  * g_usb_device_get_release:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the BCD firmware version number for the device.
  *
@@ -1921,16 +1917,16 @@ g_usb_device_get_pid(GUsbDevice *device)
  * Since: 0.2.8
  **/
 guint16
-g_usb_device_get_release(GUsbDevice *device)
+g_usb_device_get_release(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.bcdDevice;
 }
 
 /**
  * g_usb_device_get_spec:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the BCD specification revision for the device. For example,
  * `0x0110` indicates USB 1.1 and 0x0320 indicates USB 3.2
@@ -1940,16 +1936,16 @@ g_usb_device_get_release(GUsbDevice *device)
  * Since: 0.3.1
  **/
 guint16
-g_usb_device_get_spec(GUsbDevice *device)
+g_usb_device_get_spec(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.bcdUSB;
 }
 
 /**
  * g_usb_device_get_vid_as_str:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the vendor ID for the device as a string.
  *
@@ -1958,16 +1954,16 @@ g_usb_device_get_spec(GUsbDevice *device)
  * Since: 0.2.4
  **/
 const gchar *
-g_usb_device_get_vid_as_str(GUsbDevice *device)
+g_usb_device_get_vid_as_str(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	return _g_usb_context_lookup_vendor(priv->context, priv->desc.idVendor, NULL);
 }
 
 /**
  * g_usb_device_get_pid_as_str:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the product ID for the device as a string.
  *
@@ -1976,10 +1972,10 @@ g_usb_device_get_vid_as_str(GUsbDevice *device)
  * Since: 0.2.4
  **/
 const gchar *
-g_usb_device_get_pid_as_str(GUsbDevice *device)
+g_usb_device_get_pid_as_str(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), NULL);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	return _g_usb_context_lookup_product(priv->context,
 					     priv->desc.idVendor,
 					     priv->desc.idProduct,
@@ -1988,7 +1984,7 @@ g_usb_device_get_pid_as_str(GUsbDevice *device)
 
 /**
  * g_usb_device_get_configuration_index
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Get the index for the active Configuration string descriptor
  * ie, iConfiguration.
@@ -1998,14 +1994,14 @@ g_usb_device_get_pid_as_str(GUsbDevice *device)
  * Since: 0.3.5
  **/
 guint8
-g_usb_device_get_configuration_index(GUsbDevice *device)
+g_usb_device_get_configuration_index(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	struct libusb_config_descriptor *config;
 	gint rc;
 	guint8 index;
 
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
 	g_return_val_if_fail(rc == 0, 0);
@@ -2018,7 +2014,7 @@ g_usb_device_get_configuration_index(GUsbDevice *device)
 
 /**
  * g_usb_device_get_manufacturer_index:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the index for the Manufacturer string descriptor.
  *
@@ -2027,16 +2023,16 @@ g_usb_device_get_configuration_index(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint8
-g_usb_device_get_manufacturer_index(GUsbDevice *device)
+g_usb_device_get_manufacturer_index(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.iManufacturer;
 }
 
 /**
  * g_usb_device_get_device_class:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the device class, typically a #GUsbDeviceClassCode.
  *
@@ -2045,16 +2041,16 @@ g_usb_device_get_manufacturer_index(GUsbDevice *device)
  * Since: 0.1.7
  **/
 guint8
-g_usb_device_get_device_class(GUsbDevice *device)
+g_usb_device_get_device_class(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.bDeviceClass;
 }
 
 /**
  * g_usb_device_get_device_subclass:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the device subclass qualified by the class number.
  * See g_usb_device_get_device_class().
@@ -2064,16 +2060,16 @@ g_usb_device_get_device_class(GUsbDevice *device)
  * Since: 0.2.4
  **/
 guint8
-g_usb_device_get_device_subclass(GUsbDevice *device)
+g_usb_device_get_device_subclass(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.bDeviceSubClass;
 }
 
 /**
  * g_usb_device_get_device_protocol:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the device protocol qualified by the class and subclass numbers.
  * See g_usb_device_get_device_class() and g_usb_device_get_device_subclass().
@@ -2083,16 +2079,16 @@ g_usb_device_get_device_subclass(GUsbDevice *device)
  * Since: 0.2.4
  **/
 guint8
-g_usb_device_get_device_protocol(GUsbDevice *device)
+g_usb_device_get_device_protocol(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.bDeviceProtocol;
 }
 
 /**
  * g_usb_device_get_product_index:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the index for the Product string descriptor.
  *
@@ -2101,16 +2097,16 @@ g_usb_device_get_device_protocol(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint8
-g_usb_device_get_product_index(GUsbDevice *device)
+g_usb_device_get_product_index(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.iProduct;
 }
 
 /**
  * g_usb_device_get_serial_number_index:
- * @device: a #GUsbDevice
+ * @self: a #GUsbDevice
  *
  * Gets the index for the Serial Number string descriptor.
  *
@@ -2119,9 +2115,9 @@ g_usb_device_get_product_index(GUsbDevice *device)
  * Since: 0.1.0
  **/
 guint8
-g_usb_device_get_serial_number_index(GUsbDevice *device)
+g_usb_device_get_serial_number_index(GUsbDevice *self)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(device);
-	g_return_val_if_fail(G_USB_IS_DEVICE(device), 0);
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 	return priv->desc.iSerialNumber;
 }

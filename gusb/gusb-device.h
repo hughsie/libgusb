@@ -137,102 +137,102 @@ GQuark
 g_usb_device_error_quark(void);
 
 const gchar *
-g_usb_device_get_platform_id(GUsbDevice *device);
+g_usb_device_get_platform_id(GUsbDevice *self);
 GUsbDevice *
-g_usb_device_get_parent(GUsbDevice *device);
+g_usb_device_get_parent(GUsbDevice *self);
 GPtrArray *
-g_usb_device_get_children(GUsbDevice *device);
+g_usb_device_get_children(GUsbDevice *self);
 
 guint8
-g_usb_device_get_bus(GUsbDevice *device);
+g_usb_device_get_bus(GUsbDevice *self);
 guint8
-g_usb_device_get_address(GUsbDevice *device);
+g_usb_device_get_address(GUsbDevice *self);
 guint8
-g_usb_device_get_port_number(GUsbDevice *device);
+g_usb_device_get_port_number(GUsbDevice *self);
 
 guint16
-g_usb_device_get_vid(GUsbDevice *device);
+g_usb_device_get_vid(GUsbDevice *self);
 guint16
-g_usb_device_get_pid(GUsbDevice *device);
+g_usb_device_get_pid(GUsbDevice *self);
 guint16
-g_usb_device_get_release(GUsbDevice *device);
+g_usb_device_get_release(GUsbDevice *self);
 guint16
-g_usb_device_get_spec(GUsbDevice *device);
+g_usb_device_get_spec(GUsbDevice *self);
 const gchar *
-g_usb_device_get_vid_as_str(GUsbDevice *device);
+g_usb_device_get_vid_as_str(GUsbDevice *self);
 const gchar *
-g_usb_device_get_pid_as_str(GUsbDevice *device);
+g_usb_device_get_pid_as_str(GUsbDevice *self);
 guint8
-g_usb_device_get_device_class(GUsbDevice *device);
+g_usb_device_get_device_class(GUsbDevice *self);
 guint8
-g_usb_device_get_device_subclass(GUsbDevice *device);
+g_usb_device_get_device_subclass(GUsbDevice *self);
 guint8
-g_usb_device_get_device_protocol(GUsbDevice *device);
+g_usb_device_get_device_protocol(GUsbDevice *self);
 
 guint8
-g_usb_device_get_configuration_index(GUsbDevice *device);
+g_usb_device_get_configuration_index(GUsbDevice *self);
 guint8
-g_usb_device_get_manufacturer_index(GUsbDevice *device);
+g_usb_device_get_manufacturer_index(GUsbDevice *self);
 guint8
-g_usb_device_get_product_index(GUsbDevice *device);
+g_usb_device_get_product_index(GUsbDevice *self);
 guint8
-g_usb_device_get_serial_number_index(GUsbDevice *device);
+g_usb_device_get_serial_number_index(GUsbDevice *self);
 guint8
-g_usb_device_get_custom_index(GUsbDevice *device,
+g_usb_device_get_custom_index(GUsbDevice *self,
 			      guint8 class_id,
 			      guint8 subclass_id,
 			      guint8 protocol_id,
 			      GError **error);
 
 GUsbInterface *
-g_usb_device_get_interface(GUsbDevice *device,
+g_usb_device_get_interface(GUsbDevice *self,
 			   guint8 class_id,
 			   guint8 subclass_id,
 			   guint8 protocol_id,
 			   GError **error);
 GPtrArray *
-g_usb_device_get_interfaces(GUsbDevice *device, GError **error);
+g_usb_device_get_interfaces(GUsbDevice *self, GError **error);
 
 GPtrArray *
-g_usb_device_get_bos_descriptors(GUsbDevice *device, GError **error);
+g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error);
 GUsbBosDescriptor *
-g_usb_device_get_bos_descriptor(GUsbDevice *device, guint8 capability, GError **error);
+g_usb_device_get_bos_descriptor(GUsbDevice *self, guint8 capability, GError **error);
 
 gboolean
-g_usb_device_open(GUsbDevice *device, GError **error);
+g_usb_device_open(GUsbDevice *self, GError **error);
 gboolean
-g_usb_device_close(GUsbDevice *device, GError **error);
+g_usb_device_close(GUsbDevice *self, GError **error);
 
 gboolean
-g_usb_device_reset(GUsbDevice *device, GError **error);
+g_usb_device_reset(GUsbDevice *self, GError **error);
 
 gint
-g_usb_device_get_configuration(GUsbDevice *device, GError **error);
+g_usb_device_get_configuration(GUsbDevice *self, GError **error);
 gboolean
-g_usb_device_set_configuration(GUsbDevice *device, gint configuration, GError **error);
+g_usb_device_set_configuration(GUsbDevice *self, gint configuration, GError **error);
 
 gboolean
-g_usb_device_claim_interface(GUsbDevice *device,
+g_usb_device_claim_interface(GUsbDevice *self,
 			     gint interface,
 			     GUsbDeviceClaimInterfaceFlags flags,
 			     GError **error);
 gboolean
-g_usb_device_release_interface(GUsbDevice *device,
+g_usb_device_release_interface(GUsbDevice *self,
 			       gint interface,
 			       GUsbDeviceClaimInterfaceFlags flags,
 			       GError **error);
 gboolean
-g_usb_device_set_interface_alt(GUsbDevice *device, gint interface, guint8 alt, GError **error);
+g_usb_device_set_interface_alt(GUsbDevice *self, gint interface, guint8 alt, GError **error);
 
 gchar *
-g_usb_device_get_string_descriptor(GUsbDevice *device, guint8 desc_index, GError **error);
+g_usb_device_get_string_descriptor(GUsbDevice *self, guint8 desc_index, GError **error);
 GBytes *
-g_usb_device_get_string_descriptor_bytes(GUsbDevice *device,
+g_usb_device_get_string_descriptor_bytes(GUsbDevice *self,
 					 guint8 desc_index,
 					 guint16 langid,
 					 GError **error);
 GBytes *
-g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *device,
+g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *self,
 					      guint8 desc_index,
 					      guint16 langid,
 					      gsize length,
@@ -240,7 +240,7 @@ g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *device,
 
 /* sync -- TODO: use GCancellable and GUsbSource */
 gboolean
-g_usb_device_control_transfer(GUsbDevice *device,
+g_usb_device_control_transfer(GUsbDevice *self,
 			      GUsbDeviceDirection direction,
 			      GUsbDeviceRequestType request_type,
 			      GUsbDeviceRecipient recipient,
@@ -255,7 +255,7 @@ g_usb_device_control_transfer(GUsbDevice *device,
 			      GError **error);
 
 gboolean
-g_usb_device_bulk_transfer(GUsbDevice *device,
+g_usb_device_bulk_transfer(GUsbDevice *self,
 			   guint8 endpoint,
 			   guint8 *data,
 			   gsize length,
@@ -265,7 +265,7 @@ g_usb_device_bulk_transfer(GUsbDevice *device,
 			   GError **error);
 
 gboolean
-g_usb_device_interrupt_transfer(GUsbDevice *device,
+g_usb_device_interrupt_transfer(GUsbDevice *self,
 				guint8 endpoint,
 				guint8 *data,
 				gsize length,
@@ -277,7 +277,7 @@ g_usb_device_interrupt_transfer(GUsbDevice *device,
 /* async */
 
 void
-g_usb_device_control_transfer_async(GUsbDevice *device,
+g_usb_device_control_transfer_async(GUsbDevice *self,
 				    GUsbDeviceDirection direction,
 				    GUsbDeviceRequestType request_type,
 				    GUsbDeviceRecipient recipient,
@@ -291,10 +291,10 @@ g_usb_device_control_transfer_async(GUsbDevice *device,
 				    GAsyncReadyCallback callback,
 				    gpointer user_data);
 gssize
-g_usb_device_control_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError **error);
+g_usb_device_control_transfer_finish(GUsbDevice *self, GAsyncResult *res, GError **error);
 
 void
-g_usb_device_bulk_transfer_async(GUsbDevice *device,
+g_usb_device_bulk_transfer_async(GUsbDevice *self,
 				 guint8 endpoint,
 				 guint8 *data,
 				 gsize length,
@@ -303,10 +303,10 @@ g_usb_device_bulk_transfer_async(GUsbDevice *device,
 				 GAsyncReadyCallback callback,
 				 gpointer user_data);
 gssize
-g_usb_device_bulk_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError **error);
+g_usb_device_bulk_transfer_finish(GUsbDevice *self, GAsyncResult *res, GError **error);
 
 void
-g_usb_device_interrupt_transfer_async(GUsbDevice *device,
+g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 				      guint8 endpoint,
 				      guint8 *data,
 				      gsize length,
@@ -315,6 +315,6 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *device,
 				      GAsyncReadyCallback callback,
 				      gpointer user_data);
 gssize
-g_usb_device_interrupt_transfer_finish(GUsbDevice *device, GAsyncResult *res, GError **error);
+g_usb_device_interrupt_transfer_finish(GUsbDevice *self, GAsyncResult *res, GError **error);
 
 G_END_DECLS

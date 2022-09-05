@@ -15,8 +15,8 @@ GUsbDevice *
 _g_usb_device_new(GUsbContext *context, libusb_device *device, GError **error);
 
 libusb_device *
-_g_usb_device_get_device(GUsbDevice *device);
+_g_usb_device_get_device(GUsbDevice *self);
 gboolean
-_g_usb_device_open_internal(GUsbDevice *device, GError **error);
+_g_usb_device_open_internal(GUsbDevice *self, GError **error);
 
 G_END_DECLS
