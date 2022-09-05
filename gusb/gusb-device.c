@@ -36,6 +36,8 @@ typedef struct {
 	libusb_device *device;
 	libusb_device_handle *handle;
 	struct libusb_device_descriptor desc;
+	GPtrArray *interfaces;	    /* of GUsbInterface */
+	GPtrArray *bos_descriptors; /* of GUsbBosDescriptor */
 } GUsbDevicePrivate;
 
 enum { PROP_0, PROP_LIBUSB_DEVICE, PROP_CONTEXT, PROP_PLATFORM_ID, N_PROPERTIES };
@@ -75,6 +77,8 @@ g_usb_device_finalize(GObject *object)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	g_free(priv->platform_id);
+	g_ptr_array_unref(priv->interfaces);
+	g_ptr_array_unref(priv->bos_descriptors);
 
 	G_OBJECT_CLASS(g_usb_device_parent_class)->finalize(object);
 }
@@ -203,6 +207,9 @@ g_usb_device_class_init(GUsbDeviceClass *klass)
 static void
 g_usb_device_init(GUsbDevice *self)
 {
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	priv->interfaces = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 }
 
 /* not defined in FreeBSD */
@@ -534,46 +541,36 @@ g_usb_device_get_interface(GUsbDevice *self,
 			   guint8 protocol_id,
 			   GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(self);
-	const struct libusb_interface_descriptor *ifp;
-	gint rc;
-	GUsbInterface *interface = NULL;
-	struct libusb_config_descriptor *config;
+	g_autoptr(GPtrArray) interfaces = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
-	rc = libusb_get_active_config_descriptor(priv->device, &config);
-	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
-		return NULL;
-
 	/* find the right data */
-	for (guint i = 0; i < config->bNumInterfaces; i++) {
-		ifp = &config->interface[i].altsetting[0];
-		if (ifp->bInterfaceClass != class_id)
+	interfaces = g_usb_device_get_interfaces(self, error);
+	if (interfaces == NULL)
+		return NULL;
+	for (guint i = 0; i < interfaces->len; i++) {
+		GUsbInterface *interface = g_ptr_array_index(interfaces, i);
+		if (g_usb_interface_get_class(interface) != class_id)
 			continue;
-		if (ifp->bInterfaceSubClass != subclass_id)
+		if (g_usb_interface_get_subclass(interface) != subclass_id)
 			continue;
-		if (ifp->bInterfaceProtocol != protocol_id)
+		if (g_usb_interface_get_protocol(interface) != protocol_id)
 			continue;
-		interface = _g_usb_interface_new(ifp);
-		break;
+		return g_object_ref(interface);
 	}
 
 	/* nothing matched */
-	if (interface == NULL) {
-		g_set_error(error,
-			    G_USB_DEVICE_ERROR,
-			    G_USB_DEVICE_ERROR_NOT_SUPPORTED,
-			    "no interface for class 0x%02x, "
-			    "subclass 0x%02x and protocol 0x%02x",
-			    class_id,
-			    subclass_id,
-			    protocol_id);
-	}
-
-	libusb_free_config_descriptor(config);
-	return interface;
+	g_set_error(error,
+		    G_USB_DEVICE_ERROR,
+		    G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+		    "no interface for class 0x%02x, "
+		    "subclass 0x%02x and protocol 0x%02x",
+		    class_id,
+		    subclass_id,
+		    protocol_id);
+	return NULL;
 }
 
 /**
@@ -582,6 +579,9 @@ g_usb_device_get_interface(GUsbDevice *self,
  * @error: a #GError, or %NULL
  *
  * Gets all the interfaces exported by the device.
+ *
+ * The first time this method is used the hardware is queried and then after that cached results
+ * are returned. To invalidate the caches use g_usb_device_invalidate().
  *
  * Return value: (transfer container) (element-type GUsbInterface): an array of interfaces or %NULL
  *for error
@@ -592,31 +592,49 @@ GPtrArray *
 g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
-	const struct libusb_interface_descriptor *ifp;
-	gint rc;
-	struct libusb_config_descriptor *config;
-	GPtrArray *array = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
-	rc = libusb_get_active_config_descriptor(priv->device, &config);
-	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
-		return NULL;
-
 	/* get all interfaces */
-	array = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
-	for (guint i = 0; i < config->bNumInterfaces; i++) {
-		GUsbInterface *interface = NULL;
-		for (guint j = 0; j < (guint)config->interface[i].num_altsetting; j++) {
-			ifp = &config->interface[i].altsetting[j];
-			interface = _g_usb_interface_new(ifp);
-			g_ptr_array_add(array, interface);
+	if (priv->interfaces->len == 0) {
+		gint rc;
+		struct libusb_config_descriptor *config;
+
+		rc = libusb_get_active_config_descriptor(priv->device, &config);
+		if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
+			return NULL;
+
+		for (guint i = 0; i < config->bNumInterfaces; i++) {
+			for (guint j = 0; j < (guint)config->interface[i].num_altsetting; j++) {
+				const struct libusb_interface_descriptor *ifp =
+				    &config->interface[i].altsetting[j];
+				GUsbInterface *interface = _g_usb_interface_new(ifp);
+				g_ptr_array_add(priv->interfaces, interface);
+			}
 		}
+		libusb_free_config_descriptor(config);
 	}
 
-	libusb_free_config_descriptor(config);
-	return array;
+	/* success */
+	return g_ptr_array_ref(priv->interfaces);
+}
+
+/**
+ * g_usb_device_invalidate:
+ * @self: a #GUsbDevice
+ *
+ * Invalidates the caches used in g_usb_device_get_interfaces().
+ *
+ * Since: 0.4.0
+ **/
+void
+g_usb_device_invalidate(GUsbDevice *self)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_if_fail(G_USB_IS_DEVICE(self));
+	g_ptr_array_set_size(priv->interfaces, 0);
+	g_ptr_array_set_size(priv->bos_descriptors, 0);
 }
 
 /**
@@ -636,44 +654,28 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 GUsbBosDescriptor *
 g_usb_device_get_bos_descriptor(GUsbDevice *self, guint8 capability, GError **error)
 {
-	GUsbDevicePrivate *priv = GET_PRIVATE(self);
-	gint rc;
-	guint8 num_device_caps;
-	GUsbBosDescriptor *bos_descriptor = NULL;
-	struct libusb_bos_descriptor *bos = NULL;
+	g_autoptr(GPtrArray) bos_descriptors = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
-	rc = libusb_get_bos_descriptor(priv->handle, &bos);
-	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
+	/* find the right data */
+	bos_descriptors = g_usb_device_get_bos_descriptors(self, error);
+	if (bos_descriptors == NULL)
 		return NULL;
-
-		/* find the right data */
-#ifdef __FreeBSD__
-	num_device_caps = bos->bNumDeviceCapabilities;
-#else
-	num_device_caps = bos->bNumDeviceCaps;
-#endif
-	for (guint i = 0; i < num_device_caps; i++) {
-		struct libusb_bos_dev_capability_descriptor *bos_cap = bos->dev_capability[i];
-		if (bos_cap->bDevCapabilityType == capability) {
-			bos_descriptor = _g_usb_bos_descriptor_new(bos_cap);
-			break;
-		}
+	for (guint i = 0; i < bos_descriptors->len; i++) {
+		GUsbBosDescriptor *bos_descriptor = g_ptr_array_index(bos_descriptors, i);
+		if (g_usb_bos_descriptor_get_capability(bos_descriptor) == capability)
+			return g_object_ref(bos_descriptor);
 	}
 
 	/* nothing matched */
-	if (bos_descriptor == NULL) {
-		g_set_error(error,
-			    G_USB_DEVICE_ERROR,
-			    G_USB_DEVICE_ERROR_NOT_SUPPORTED,
-			    "no BOS descriptor for capability 0x%02x",
-			    capability);
-	}
-
-	libusb_free_bos_descriptor(bos);
-	return bos_descriptor;
+	g_set_error(error,
+		    G_USB_DEVICE_ERROR,
+		    G_USB_DEVICE_ERROR_NOT_SUPPORTED,
+		    "no BOS descriptor for capability 0x%02x",
+		    capability);
+	return NULL;
 }
 
 /**
@@ -683,6 +685,9 @@ g_usb_device_get_bos_descriptor(GUsbDevice *self, guint8 capability, GError **er
  *
  * Gets all the BOS descriptors exported by the device.
  *
+ * The first time this method is used the hardware is queried and then after that cached results
+ * are returned. To invalidate the caches use g_usb_device_invalidate().
+ *
  * Return value: (transfer container) (element-type GUsbBosDescriptor): an array of BOS descriptors
  *
  * Since: 0.4.0
@@ -691,34 +696,36 @@ GPtrArray *
 g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
-	gint rc;
-	guint8 num_device_caps;
-	struct libusb_bos_descriptor *bos = NULL;
-	GPtrArray *array = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
-	rc = libusb_get_bos_descriptor(priv->handle, &bos);
-	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
-		return NULL;
-
 	/* get all BOS descriptors */
-	array = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	if (priv->bos_descriptors->len == 0) {
+		gint rc;
+		guint8 num_device_caps;
+		struct libusb_bos_descriptor *bos = NULL;
+
+		rc = libusb_get_bos_descriptor(priv->handle, &bos);
+		if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
+			return NULL;
 #ifdef __FreeBSD__
-	num_device_caps = bos->bNumDeviceCapabilities;
+		num_device_caps = bos->bNumDeviceCapabilities;
 #else
-	num_device_caps = bos->bNumDeviceCaps;
+		num_device_caps = bos->bNumDeviceCaps;
 #endif
-	for (guint i = 0; i < num_device_caps; i++) {
-		GUsbBosDescriptor *bos_descriptor = NULL;
-		struct libusb_bos_dev_capability_descriptor *bos_cap = bos->dev_capability[i];
-		bos_descriptor = _g_usb_bos_descriptor_new(bos_cap);
-		g_ptr_array_add(array, bos_descriptor);
+		for (guint i = 0; i < num_device_caps; i++) {
+			GUsbBosDescriptor *bos_descriptor = NULL;
+			struct libusb_bos_dev_capability_descriptor *bos_cap =
+			    bos->dev_capability[i];
+			bos_descriptor = _g_usb_bos_descriptor_new(bos_cap);
+			g_ptr_array_add(priv->bos_descriptors, bos_descriptor);
+		}
+		libusb_free_bos_descriptor(bos);
 	}
 
-	libusb_free_bos_descriptor(bos);
-	return array;
+	/* success */
+	return g_ptr_array_ref(priv->bos_descriptors);
 }
 
 /**

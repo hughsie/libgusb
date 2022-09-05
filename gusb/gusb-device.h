@@ -205,6 +205,8 @@ g_usb_device_close(GUsbDevice *self, GError **error);
 
 gboolean
 g_usb_device_reset(GUsbDevice *self, GError **error);
+void
+g_usb_device_invalidate(GUsbDevice *self);
 
 gint
 g_usb_device_get_configuration(GUsbDevice *self, GError **error);
