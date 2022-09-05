@@ -13,11 +13,11 @@
 G_BEGIN_DECLS
 
 libusb_context *
-_g_usb_context_get_context(GUsbContext *context);
+_g_usb_context_get_context(GUsbContext *self);
 
 const gchar *
-_g_usb_context_lookup_vendor(GUsbContext *context, guint16 vid, GError **error);
+_g_usb_context_lookup_vendor(GUsbContext *self, guint16 vid, GError **error);
 const gchar *
-_g_usb_context_lookup_product(GUsbContext *context, guint16 vid, guint16 pid, GError **error);
+_g_usb_context_lookup_product(GUsbContext *self, guint16 vid, guint16 pid, GError **error);
 
 G_END_DECLS

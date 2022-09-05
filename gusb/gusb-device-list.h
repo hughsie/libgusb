@@ -19,8 +19,8 @@ G_DECLARE_DERIVABLE_TYPE(GUsbDeviceList, g_usb_device_list, G_USB, DEVICE_LIST, 
 struct _GUsbDeviceListClass {
 	GObjectClass parent_class;
 	/* Signals */
-	void (*device_added)(GUsbDeviceList *list, GUsbDevice *device);
-	void (*device_removed)(GUsbDeviceList *list, GUsbDevice *device);
+	void (*device_added)(GUsbDeviceList *self, GUsbDevice *device);
+	void (*device_removed)(GUsbDeviceList *self, GUsbDevice *device);
 	/*< private >*/
 	/*
 	 * If adding fields to this struct, remove corresponding
@@ -35,21 +35,21 @@ g_usb_device_list_new(GUsbContext *context);
 
 G_DEPRECATED
 void
-g_usb_device_list_coldplug(GUsbDeviceList *list);
+g_usb_device_list_coldplug(GUsbDeviceList *self);
 
 G_DEPRECATED_FOR(g_usb_context_get_devices)
 GPtrArray *
-g_usb_device_list_get_devices(GUsbDeviceList *list);
+g_usb_device_list_get_devices(GUsbDeviceList *self);
 
 G_DEPRECATED_FOR(g_usb_context_find_by_bus_address)
 GUsbDevice *
-g_usb_device_list_find_by_bus_address(GUsbDeviceList *list,
+g_usb_device_list_find_by_bus_address(GUsbDeviceList *self,
 				      guint8 bus,
 				      guint8 address,
 				      GError **error);
 
 G_DEPRECATED_FOR(g_usb_context_find_by_vid_pid)
 GUsbDevice *
-g_usb_device_list_find_by_vid_pid(GUsbDeviceList *list, guint16 vid, guint16 pid, GError **error);
+g_usb_device_list_find_by_vid_pid(GUsbDeviceList *self, guint16 vid, guint16 pid, GError **error);
 
 G_END_DECLS

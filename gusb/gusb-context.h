@@ -20,8 +20,8 @@ G_DECLARE_DERIVABLE_TYPE(GUsbContext, g_usb_context, G_USB, CONTEXT, GObject)
 
 struct _GUsbContextClass {
 	GObjectClass parent_class;
-	void (*device_added)(GUsbContext *context, GUsbDevice *device);
-	void (*device_removed)(GUsbContext *context, GUsbDevice *device);
+	void (*device_added)(GUsbContext *self, GUsbDevice *device);
+	void (*device_removed)(GUsbContext *self, GUsbDevice *device);
 	/*< private >*/
 	/*
 	 * If adding fields to this struct, remove corresponding
@@ -51,40 +51,40 @@ GUsbContext *
 g_usb_context_new(GError **error);
 
 void
-g_usb_context_set_flags(GUsbContext *context, GUsbContextFlags flags);
+g_usb_context_set_flags(GUsbContext *self, GUsbContextFlags flags);
 GUsbContextFlags
-g_usb_context_get_flags(GUsbContext *context);
+g_usb_context_get_flags(GUsbContext *self);
 
 G_DEPRECATED
 GUsbSource *
-g_usb_context_get_source(GUsbContext *context, GMainContext *main_ctx);
+g_usb_context_get_source(GUsbContext *self, GMainContext *main_ctx);
 GMainContext *
-g_usb_context_get_main_context(GUsbContext *context);
+g_usb_context_get_main_context(GUsbContext *self);
 void
-g_usb_context_set_main_context(GUsbContext *context, GMainContext *main_ctx);
+g_usb_context_set_main_context(GUsbContext *self, GMainContext *main_ctx);
 guint
-g_usb_context_get_hotplug_poll_interval(GUsbContext *context);
+g_usb_context_get_hotplug_poll_interval(GUsbContext *self);
 void
-g_usb_context_set_hotplug_poll_interval(GUsbContext *context, guint hotplug_poll_interval);
+g_usb_context_set_hotplug_poll_interval(GUsbContext *self, guint hotplug_poll_interval);
 
 void
-g_usb_context_enumerate(GUsbContext *context);
+g_usb_context_enumerate(GUsbContext *self);
 
 void
-g_usb_context_set_debug(GUsbContext *context, GLogLevelFlags flags);
+g_usb_context_set_debug(GUsbContext *self, GLogLevelFlags flags);
 GPtrArray *
-g_usb_context_get_devices(GUsbContext *context);
+g_usb_context_get_devices(GUsbContext *self);
 
 GUsbDevice *
-g_usb_context_find_by_bus_address(GUsbContext *context, guint8 bus, guint8 address, GError **error);
+g_usb_context_find_by_bus_address(GUsbContext *self, guint8 bus, guint8 address, GError **error);
 
 GUsbDevice *
-g_usb_context_find_by_vid_pid(GUsbContext *context, guint16 vid, guint16 pid, GError **error);
+g_usb_context_find_by_vid_pid(GUsbContext *self, guint16 vid, guint16 pid, GError **error);
 GUsbDevice *
-g_usb_context_find_by_platform_id(GUsbContext *context, const gchar *platform_id, GError **error);
+g_usb_context_find_by_platform_id(GUsbContext *self, const gchar *platform_id, GError **error);
 
 GUsbDevice *
-g_usb_context_wait_for_replug(GUsbContext *context,
+g_usb_context_wait_for_replug(GUsbContext *self,
 			      GUsbDevice *device,
 			      guint timeout_ms,
 			      GError **error);
