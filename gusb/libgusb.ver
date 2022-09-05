@@ -174,8 +174,13 @@ LIBGUSB_0.4.0 {
     g_usb_bos_descriptor_get_type;
     g_usb_context_load;
     g_usb_context_save;
+    g_usb_device_event_get_bytes;
+    g_usb_device_event_get_id;
+    g_usb_device_event_get_type;
+    g_usb_device_event_set_bytes;
     g_usb_device_get_bos_descriptor;
     g_usb_device_get_bos_descriptors;
+    g_usb_device_get_events;
     g_usb_device_invalidate;
   local: *;
 } LIBGUSB_0.3.10;

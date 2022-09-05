@@ -21,6 +21,7 @@
 
 #include "gusb-bos-descriptor-private.h"
 #include "gusb-context-private.h"
+#include "gusb-device-event-private.h"
 #include "gusb-device-private.h"
 #include "gusb-interface-private.h"
 #include "gusb-util.h"
@@ -40,6 +41,8 @@ typedef struct {
 	gboolean bos_descriptors_valid;
 	GPtrArray *interfaces;	    /* of GUsbInterface */
 	GPtrArray *bos_descriptors; /* of GUsbBosDescriptor */
+	GPtrArray *events;	    /* of GUsbDeviceEvent */
+	guint event_idx;
 } GUsbDevicePrivate;
 
 enum { PROP_0, PROP_LIBUSB_DEVICE, PROP_CONTEXT, PROP_PLATFORM_ID, N_PROPERTIES };
@@ -81,6 +84,7 @@ g_usb_device_finalize(GObject *object)
 	g_free(priv->platform_id);
 	g_ptr_array_unref(priv->interfaces);
 	g_ptr_array_unref(priv->bos_descriptors);
+	g_ptr_array_unref(priv->events);
 
 	G_OBJECT_CLASS(g_usb_device_parent_class)->finalize(object);
 }
@@ -209,6 +213,7 @@ g_usb_device_init(GUsbDevice *self)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	priv->interfaces = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	priv->events = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 }
 
 gboolean
@@ -281,9 +286,23 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		}
 	}
 
+	/* array of events */
+	if (json_object_has_member(json_object, "UsbEvents")) {
+		JsonArray *json_array = json_object_get_array_member(json_object, "UsbEvents");
+		for (guint i = 0; i < json_array_get_length(json_array); i++) {
+			JsonNode *node_tmp = json_array_get_element(json_array, i);
+			JsonObject *obj_tmp = json_node_get_object(node_tmp);
+			g_autoptr(GUsbDeviceEvent) event = _g_usb_device_event_new(NULL);
+			if (!_g_usb_device_event_load(event, obj_tmp, error))
+				return FALSE;
+			g_ptr_array_add(priv->events, g_steal_pointer(&event));
+		}
+	}
+
 	/* success */
 	priv->interfaces_valid = TRUE;
 	priv->bos_descriptors_valid = TRUE;
+	priv->event_idx = 0;
 	return TRUE;
 }
 
@@ -374,6 +393,18 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 		for (guint i = 0; i < interfaces->len; i++) {
 			GUsbInterface *interface = g_ptr_array_index(interfaces, i);
 			if (!_g_usb_interface_save(interface, json_builder, error))
+				return FALSE;
+		}
+		json_builder_end_array(json_builder);
+	}
+
+	/* events */
+	if (priv->events->len > 0) {
+		json_builder_set_member_name(json_builder, "UsbEvents");
+		json_builder_begin_array(json_builder);
+		for (guint i = 0; i < priv->events->len; i++) {
+			GUsbDeviceEvent *event = g_ptr_array_index(priv->events, i);
+			if (!_g_usb_device_event_save(event, json_builder, error))
 				return FALSE;
 		}
 		json_builder_end_array(json_builder);
@@ -637,6 +668,55 @@ g_usb_device_open(GUsbDevice *self, GError **error)
 	return _g_usb_device_open_internal(self, error);
 }
 
+/* transfer none */
+static GUsbDeviceEvent *
+g_usb_device_load_event(GUsbDevice *self, const gchar *id)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+
+	/* reset back to the beginning */
+	if (priv->event_idx >= priv->events->len)
+		priv->event_idx = 0;
+
+	/* look for the next event in the sequence */
+	for (guint i = priv->event_idx; i < priv->events->len; i++) {
+		GUsbDeviceEvent *event = g_ptr_array_index(priv->events, i);
+		if (g_strcmp0(g_usb_device_event_get_id(event), id) == 0) {
+			g_debug("found in-order %s at position %u", id, i);
+			priv->event_idx = i + 1;
+			return event;
+		}
+	}
+
+	/* look for *any* event that matches */
+	for (guint i = 0; i < priv->events->len; i++) {
+		GUsbDeviceEvent *event = g_ptr_array_index(priv->events, i);
+		if (g_strcmp0(g_usb_device_event_get_id(event), id) == 0) {
+			g_debug("found out-of-order %s at position %u", id, i);
+			return event;
+		}
+	}
+
+	/* nothing found */
+	return NULL;
+}
+
+/* transfer none */
+static GUsbDeviceEvent *
+g_usb_device_save_event(GUsbDevice *self, const gchar *id)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	GUsbDeviceEvent *event;
+
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
+	g_return_val_if_fail(id != NULL, NULL);
+
+	/* success */
+	event = _g_usb_device_event_new(id);
+	g_ptr_array_add(priv->events, event);
+	return event;
+}
+
 /**
  * g_usb_device_get_custom_index:
  * @self: a #GUsbDevice
@@ -659,14 +739,46 @@ g_usb_device_get_custom_index(GUsbDevice *self,
 			      GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	GUsbDeviceEvent *event;
 	const struct libusb_interface_descriptor *ifp;
 	gint rc;
 	guint8 idx = 0x00;
 	struct libusb_config_descriptor *config;
+	g_autofree gchar *event_id = NULL;
 
-	/* sanity check */
-	if (priv->device == NULL)
-		return 0x0;
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		event_id = g_strdup_printf(
+		    "GetCustomIndex:ClassId=0x%02x,SubclassId=0x%02x,ProtocolId=0x%02x",
+		    class_id,
+		    subclass_id,
+		    protocol_id);
+	}
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no matching event for %s",
+				    event_id);
+			return 0x00;
+		}
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL || g_bytes_get_size(bytes) != 1) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no matching event data for %s",
+				    event_id);
+			return 0x00;
+		}
+		return ((const guint8 *)g_bytes_get_data(bytes, NULL))[0];
+	}
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
 	if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
@@ -695,6 +807,11 @@ g_usb_device_get_custom_index(GUsbDevice *self,
 			    class_id,
 			    subclass_id,
 			    protocol_id);
+
+	} else if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		/* save */
+		event = g_usb_device_save_event(self, event_id);
+		_g_usb_device_event_set_bytes_raw(event, &idx, sizeof(idx));
 	}
 
 	libusb_free_config_descriptor(config);
@@ -812,6 +929,27 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 
 	/* success */
 	return g_ptr_array_ref(priv->interfaces);
+}
+
+/**
+ * g_usb_device_get_events:
+ * @self: a #GUsbDevice
+ *
+ * Gets all the events saved by the device.
+ *
+ * Events are only collected when the `G_USB_CONTEXT_FLAGS_SAVE_EVENTS` flag is used before
+ * enumerating the context. Events can be used to replay device transactions.
+ *
+ * Return value: (transfer container) (element-type GUsbDeviceEvent): an array of events
+ *
+ * Since: 0.4.0
+ **/
+GPtrArray *
+g_usb_device_get_events(GUsbDevice *self)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
+	return g_ptr_array_ref(priv->events);
 }
 
 /**
@@ -1239,13 +1377,44 @@ gchar *
 g_usb_device_get_string_descriptor(GUsbDevice *self, guint8 desc_index, GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	GUsbDeviceEvent *event;
 	gint rc;
 	/* libusb_get_string_descriptor_ascii returns max 128 bytes */
 	unsigned char buf[128];
+	g_autofree gchar *event_id = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		event_id = g_strdup_printf("GetStringDescriptor:DescIndex=0x%02x", desc_index);
+	}
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no matching event data for %s",
+				    event_id);
+			return NULL;
+		}
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no matching event data for %s",
+				    event_id);
+			return NULL;
+		}
+		return g_strndup(g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
+	}
 	if (priv->handle == NULL) {
 		g_usb_device_not_open_error(self, error);
 		return NULL;
@@ -1255,6 +1424,12 @@ g_usb_device_get_string_descriptor(GUsbDevice *self, guint8 desc_index, GError *
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror(self, rc, error);
 		return NULL;
+	}
+
+	/* save */
+	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		event = g_usb_device_save_event(self, event_id);
+		_g_usb_device_event_set_bytes_raw(event, buf, sizeof(buf));
 	}
 
 	return g_strdup((const gchar *)buf);
@@ -1282,11 +1457,47 @@ g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *self,
 					      GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	GUsbDeviceEvent *event;
 	gint rc;
 	g_autofree guint8 *buf = g_malloc0(length);
+	g_autofree gchar *event_id = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
+
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		event_id = g_strdup_printf(
+		    "GetStringDescriptorBytes:DescIndex=0x%02x,Langid=0x%04x,Length=0x%x",
+		    desc_index,
+		    langid,
+		    (guint)length);
+	}
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no matching event for %s",
+				    event_id);
+			return NULL;
+		}
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "no matching event data for %s",
+				    event_id);
+			return NULL;
+		}
+		return g_bytes_ref(bytes);
+	}
 
 	if (priv->handle == NULL) {
 		g_usb_device_not_open_error(self, error);
@@ -1297,6 +1508,12 @@ g_usb_device_get_string_descriptor_bytes_full(GUsbDevice *self,
 	if (rc < 0) {
 		g_usb_device_libusb_error_to_gerror(self, rc, error);
 		return NULL;
+	}
+
+	/* save */
+	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		event = g_usb_device_save_event(self, event_id);
+		_g_usb_device_event_set_bytes_raw(event, buf, rc);
 	}
 
 	return g_bytes_new(buf, rc);
@@ -1535,8 +1752,9 @@ typedef struct {
 	GCancellable *cancellable;
 	gulong cancellable_id;
 	struct libusb_transfer *transfer;
-	guint8 *data;	  /* owned by the user */
-	guint8 *data_raw; /* owned by the task */
+	guint8 *data;		/* owned by the user */
+	guint8 *data_raw;	/* owned by the task */
+	GUsbDeviceEvent *event; /* no-ref */
 } GcmDeviceReq;
 
 static void
@@ -1611,6 +1829,7 @@ static void
 g_usb_device_async_transfer_cb(struct libusb_transfer *transfer)
 {
 	GTask *task = transfer->user_data;
+	GcmDeviceReq *req = g_task_get_task_data(task);
 	gboolean ret;
 	GError *error = NULL;
 
@@ -1619,6 +1838,11 @@ g_usb_device_async_transfer_cb(struct libusb_transfer *transfer)
 	if (!ret) {
 		g_task_return_error(task, error);
 	} else {
+		if (req->event != NULL) {
+			_g_usb_device_event_set_bytes_raw(req->event,
+							  transfer->buffer,
+							  (gsize)transfer->actual_length);
+		}
 		g_task_return_int(task, transfer->actual_length);
 	}
 
@@ -1647,6 +1871,12 @@ g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
 		memmove(req->data,
 			transfer->buffer + LIBUSB_CONTROL_SETUP_SIZE,
 			(gsize)transfer->actual_length);
+		if (req->event != NULL) {
+			_g_usb_device_event_set_bytes_raw(req->event,
+							  transfer->buffer +
+							      LIBUSB_CONTROL_SETUP_SIZE,
+							  (gsize)transfer->actual_length);
+		}
 		g_task_return_int(task, transfer->actual_length);
 	}
 
@@ -1691,8 +1921,67 @@ g_usb_device_control_transfer_async(GUsbDevice *self,
 	gint rc;
 	guint8 request_type_raw = 0;
 	GError *error = NULL;
+	GUsbDeviceEvent *event = NULL;
+	g_autofree gchar *event_id = NULL;
 
 	g_return_if_fail(G_USB_IS_DEVICE(self));
+
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		g_autofree gchar *data_base64 = g_base64_encode(data, length);
+		event_id = g_strdup_printf("ControlTransfer:"
+					   "Direction=0x%02x,"
+					   "RequestType=0x%02x,"
+					   "Recipient=0x%02x,"
+					   "Request=0x%02x,"
+					   "Value=0x%04x,"
+					   "Idx=0x%04x,"
+					   "Data=%s,"
+					   "Length=0x%x",
+					   direction,
+					   request_type,
+					   recipient,
+					   request,
+					   value,
+					   idx,
+					   data_base64,
+					   (guint)length);
+	}
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL) {
+			g_task_report_new_error(self,
+						callback,
+						user_data,
+						g_usb_device_control_transfer_async,
+						G_IO_ERROR,
+						G_IO_ERROR_INVALID_DATA,
+						"no matching event for %s",
+						event_id);
+			return;
+		}
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL) {
+			g_task_report_new_error(self,
+						callback,
+						user_data,
+						g_usb_device_control_transfer_async,
+						G_IO_ERROR,
+						G_IO_ERROR_INVALID_DATA,
+						"no matching event data for %s",
+						event_id);
+			return;
+		}
+		task = g_task_new(self, cancellable, callback, user_data);
+		memcpy(data, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
+		g_task_return_int(task, g_bytes_get_size(bytes));
+		g_object_unref(task);
+		return;
+	}
 
 	if (priv->handle == NULL) {
 		g_usb_device_async_not_open_error(self,
@@ -1702,9 +1991,14 @@ g_usb_device_control_transfer_async(GUsbDevice *self,
 		return;
 	}
 
+	/* save */
+	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS)
+		event = g_usb_device_save_event(self, event_id);
+
 	req = g_slice_new0(GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer(0);
 	req->data = data;
+	req->event = event;
 
 	task = g_task_new(self, cancellable, callback, user_data);
 	g_task_set_task_data(task, req, (GDestroyNotify)g_usb_device_req_free);
@@ -1807,8 +2101,57 @@ g_usb_device_bulk_transfer_async(GUsbDevice *self,
 	GcmDeviceReq *req;
 	gint rc;
 	GError *error = NULL;
+	GUsbDeviceEvent *event = NULL;
+	g_autofree gchar *event_id = NULL;
 
 	g_return_if_fail(G_USB_IS_DEVICE(self));
+
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		g_autofree gchar *data_base64 = g_base64_encode(data, length);
+		event_id = g_strdup_printf("BulkTransfer:"
+					   "Endpoint=0x%02x,"
+					   "Data=%s,"
+					   "Length=0x%x",
+					   endpoint,
+					   data_base64,
+					   (guint)length);
+	}
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL) {
+			g_task_report_new_error(self,
+						callback,
+						user_data,
+						g_usb_device_control_transfer_async,
+						G_IO_ERROR,
+						G_IO_ERROR_INVALID_DATA,
+						"no matching event for %s",
+						event_id);
+			return;
+		}
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL) {
+			g_task_report_new_error(self,
+						callback,
+						user_data,
+						g_usb_device_control_transfer_async,
+						G_IO_ERROR,
+						G_IO_ERROR_INVALID_DATA,
+						"no matching event data for %s",
+						event_id);
+			return;
+		}
+		task = g_task_new(self, cancellable, callback, user_data);
+		memcpy(data, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
+		g_task_return_int(task, g_bytes_get_size(bytes));
+		g_object_unref(task);
+		return;
+	}
 
 	if (priv->handle == NULL) {
 		g_usb_device_async_not_open_error(self,
@@ -1818,8 +2161,13 @@ g_usb_device_bulk_transfer_async(GUsbDevice *self,
 		return;
 	}
 
+	/* save */
+	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS)
+		event = g_usb_device_save_event(self, event_id);
+
 	req = g_slice_new0(GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer(0);
+	req->event = event;
 
 	task = g_task_new(self, cancellable, callback, user_data);
 	g_task_set_task_data(task, req, (GDestroyNotify)g_usb_device_req_free);
@@ -1912,8 +2260,57 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 	GcmDeviceReq *req;
 	GError *error = NULL;
 	gint rc;
+	GUsbDeviceEvent *event = NULL;
+	g_autofree gchar *event_id = NULL;
 
 	g_return_if_fail(G_USB_IS_DEVICE(self));
+
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		g_autofree gchar *data_base64 = g_base64_encode(data, length);
+		event_id = g_strdup_printf("InterruptTransfer:"
+					   "Endpoint=0x%02x,"
+					   "Data=%s,"
+					   "Length=0x%x",
+					   endpoint,
+					   data_base64,
+					   (guint)length);
+	}
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL) {
+			g_task_report_new_error(self,
+						callback,
+						user_data,
+						g_usb_device_interrupt_transfer_async,
+						G_IO_ERROR,
+						G_IO_ERROR_INVALID_DATA,
+						"no matching event for %s",
+						event_id);
+			return;
+		}
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL) {
+			g_task_report_new_error(self,
+						callback,
+						user_data,
+						g_usb_device_interrupt_transfer_async,
+						G_IO_ERROR,
+						G_IO_ERROR_INVALID_DATA,
+						"no matching event data for %s",
+						event_id);
+			return;
+		}
+		task = g_task_new(self, cancellable, callback, user_data);
+		memcpy(data, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
+		g_task_return_int(task, g_bytes_get_size(bytes));
+		g_object_unref(task);
+		return;
+	}
 
 	if (priv->handle == NULL) {
 		g_usb_device_async_not_open_error(self,
@@ -1923,8 +2320,13 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 		return;
 	}
 
+	/* save */
+	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS)
+		event = g_usb_device_save_event(self, event_id);
+
 	req = g_slice_new0(GcmDeviceReq);
 	req->transfer = libusb_alloc_transfer(0);
+	req->event = event;
 
 	task = g_task_new(self, cancellable, callback, user_data);
 	g_task_set_task_data(task, req, (GDestroyNotify)g_usb_device_req_free);

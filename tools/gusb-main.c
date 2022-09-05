@@ -461,7 +461,9 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GUsbCmdPrivate, gusb_cmd_private_free)
 int
 main(int argc, char *argv[])
 {
+	GUsbContextFlags context_flags = G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES;
 	gboolean verbose = FALSE;
+	gboolean save_events = FALSE;
 	g_autofree gchar *cmd_descriptions = NULL;
 	g_autofree gchar *options_help = NULL;
 	g_autoptr(GError) error = NULL;
@@ -473,6 +475,13 @@ main(int argc, char *argv[])
 					 G_OPTION_ARG_NONE,
 					 &verbose,
 					 "Show extra debugging information",
+					 NULL},
+					 {"events",
+					 '\0',
+					 0,
+					 G_OPTION_ARG_NONE,
+					 &save_events,
+					 "Save USB events",
 					 NULL},
 					{NULL}};
 
@@ -503,7 +512,9 @@ main(int argc, char *argv[])
 
 	/* GUsbContext */
 	priv->usb_ctx = g_usb_context_new(NULL);
-	g_usb_context_set_flags(priv->usb_ctx, G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES);
+	if (save_events)
+		context_flags |= G_USB_CONTEXT_FLAGS_SAVE_EVENTS;
+	g_usb_context_set_flags(priv->usb_ctx, context_flags);
 
 	/* add commands */
 	priv->cmd_array = g_ptr_array_new_with_free_func((GDestroyNotify)gusb_cmd_item_free);

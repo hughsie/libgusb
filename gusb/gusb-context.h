@@ -40,6 +40,7 @@ typedef enum { G_USB_CONTEXT_ERROR_INTERNAL } GUsbContextError;
 typedef enum {
 	G_USB_CONTEXT_FLAGS_NONE = 0,
 	G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES = 1 << 0,
+	G_USB_CONTEXT_FLAGS_SAVE_EVENTS = 1 << 1,
 	/*< private >*/
 	G_USB_CONTEXT_FLAGS_LAST
 } GUsbContextFlags;

@@ -404,7 +404,133 @@ gusb_device_munki_func(void)
 static void
 gusb_device_json_func(void)
 {
-	// xxxxx
+	JsonObject *json_obj;
+	gboolean ret;
+	guint8 idx;
+	g_autoptr(GUsbDevice) device = NULL;
+	g_autofree gchar *tmp = NULL;
+	g_autoptr(GUsbContext) ctx = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(JsonParser) parser = json_parser_new();
+	const gchar *json =
+	    "{"
+	    "  \"UsbDevices\" : ["
+	    "    {"
+	    "      \"PlatformId\" : \"usb:01:00:06\","
+	    "      \"IdVendor\" : 10047,"
+	    "      \"IdProduct\" : 4100,"
+	    "      \"Device\" : 2,"
+	    "      \"USB\" : 512,"
+	    "      \"Manufacturer\" : 1,"
+	    "      \"UsbInterfaces\" : ["
+	    "        {"
+	    "          \"Length\" : 9,"
+	    "          \"DescriptorType\" : 4,"
+	    "          \"InterfaceNumber\" : 1,"
+	    "          \"InterfaceClass\" : 255,"
+	    "          \"InterfaceSubClass\" : 70,"
+	    "          \"InterfaceProtocol\" : 87,"
+	    "          \"Interface\" : 3"
+	    "        },"
+	    "        {"
+	    "          \"Length\" : 9,"
+	    "          \"DescriptorType\" : 4,"
+	    "          \"InterfaceNumber\" : 2,"
+	    "          \"InterfaceClass\" : 255,"
+	    "          \"InterfaceSubClass\" : 71,"
+	    "          \"InterfaceProtocol\" : 85,"
+	    "          \"Interface\" : 4"
+	    "        },"
+	    "        {"
+	    "          \"Length\" : 9,"
+	    "          \"DescriptorType\" : 4,"
+	    "          \"InterfaceClass\" : 3,"
+	    "          \"UsbEndpoints\" : ["
+	    "            {"
+	    "              \"DescriptorType\" : 5,"
+	    "              \"EndpointAddress\" : 129,"
+	    "              \"Interval\" : 1,"
+	    "              \"MaxPacketSize\" : 64"
+	    "            },"
+	    "            {"
+	    "              \"DescriptorType\" : 5,"
+	    "              \"EndpointAddress\" : 1,"
+	    "              \"Interval\" : 1,"
+	    "              \"MaxPacketSize\" : 64"
+	    "            }"
+	    "          ],"
+	    "          \"ExtraData\" : \"CSERAQABIh0A\""
+	    "        }"
+	    "      ],"
+	    "      \"UsbEvents\" : ["
+	    "        {"
+	    "          \"Id\" : "
+	    "\"GetCustomIndex:ClassId=0xff,SubclassId=0x46,ProtocolId=0x57\","
+	    "          \"Data\" : \"Aw==\""
+	    "        },"
+	    "        {"
+	    "          \"Id\" : "
+	    "\"GetCustomIndex:ClassId=0xff,SubclassId=0x46,ProtocolId=0x57\","
+	    "          \"Data\" : \"Aw==\""
+	    "        },"
+	    "        {"
+	    "          \"Id\" : \"GetStringDescriptor:DescIndex=0x03\","
+	    "          \"Data\" : "
+	    "\"Mi4wLjcAAAAR3HzMiH8AAAAAAAAAAAAA8HBIAQAAAACQ6AsW/n8AADeVQAAAAAAAsOgLFv5/"
+	    "AABNkkAAVwAAAEboCxb/"
+	    "fwAAkAZLAQAAAAAAZkAAAAAAAwAAAAAAAAAAsPpJAQAAAAAwBksBAAAAAJAZTwEAAAAAAFZZJp63C7g=\""
+	    "        }"
+	    "      ]"
+	    "    }"
+	    "  ]"
+	    "}";
+	ctx = g_usb_context_new(&error);
+	g_assert_no_error(error);
+	g_assert(ctx != NULL);
+
+	/* parse */
+	ret = json_parser_load_from_data(parser, json, -1, &error);
+	g_assert_no_error(error);
+	g_assert(ret);
+	json_obj = json_node_get_object(json_parser_get_root(parser));
+	ret = g_usb_context_load(ctx, json_obj, &error);
+	g_assert_no_error(error);
+	g_assert(ret);
+
+	/* get vendor data */
+	device = g_usb_context_find_by_vid_pid(ctx, 0x273f, 0x1004, &error);
+	g_assert_no_error(error);
+	g_assert(device != NULL);
+	idx = g_usb_device_get_custom_index(device,
+					    G_USB_DEVICE_CLASS_VENDOR_SPECIFIC,
+					    'F',
+					    'W',
+					    &error);
+	g_assert_no_error(error);
+	g_assert_cmpint(idx, ==, 3);
+
+	/* in-order, repeat */
+	idx = g_usb_device_get_custom_index(device,
+					    G_USB_DEVICE_CLASS_VENDOR_SPECIFIC,
+					    'F',
+					    'W',
+					    &error);
+	g_assert_no_error(error);
+	g_assert_cmpint(idx, ==, 3);
+
+	/* out-of-order */
+	idx = g_usb_device_get_custom_index(device,
+					    G_USB_DEVICE_CLASS_VENDOR_SPECIFIC,
+					    'F',
+					    'W',
+					    &error);
+	g_assert_no_error(error);
+	g_assert_cmpint(idx, ==, 3);
+
+	/* get the firmware version */
+	tmp = g_usb_device_get_string_descriptor(device, idx, &error);
+	g_assert_no_error(error);
+	g_assert_cmpstr(tmp, ==, "2.0.7");
 }
 
 static void
@@ -412,12 +538,17 @@ gusb_device_ch2_func(void)
 {
 	gboolean ret;
 	guint8 idx;
+	g_autofree gchar *data = NULL;
 	g_autofree gchar *tmp = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GUsbContext) ctx = NULL;
 	g_autoptr(GUsbDevice) device = NULL;
+	g_autoptr(JsonBuilder) json_builder = json_builder_new();
+	g_autoptr(JsonGenerator) json_generator = NULL;
+	g_autoptr(JsonNode) json_root = NULL;
 
 	ctx = g_usb_context_new(&error);
+	g_usb_context_set_flags(ctx, G_USB_CONTEXT_FLAGS_SAVE_EVENTS);
 	g_assert_no_error(error);
 	g_assert(ctx != NULL);
 
@@ -456,6 +587,20 @@ gusb_device_ch2_func(void)
 	ret = g_usb_device_close(device, &error);
 	g_assert_no_error(error);
 	g_assert(ret);
+
+	/* save context */
+	ret = g_usb_context_save(ctx, json_builder, &error);
+	g_assert_no_error(error);
+	g_assert(ret);
+
+	/* export as a string */
+	json_root = json_builder_get_root(json_builder);
+	json_generator = json_generator_new();
+	json_generator_set_pretty(json_generator, TRUE);
+	json_generator_set_root(json_generator, json_root);
+	data = json_generator_to_data(json_generator, NULL);
+	g_assert_nonnull(data);
+	g_print("%s\n", data);
 }
 
 int
