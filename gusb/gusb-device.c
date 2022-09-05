@@ -644,6 +644,10 @@ g_usb_device_open(GUsbDevice *self, GError **error)
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
+
 	/* ignore */
 	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES)
 		return TRUE;
@@ -964,6 +968,10 @@ g_usb_device_close(GUsbDevice *self, GError **error)
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
+
 	/* ignore */
 	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES)
 		return TRUE;
@@ -1000,6 +1008,10 @@ g_usb_device_reset(GUsbDevice *self, GError **error)
 	gint rc;
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
 
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
