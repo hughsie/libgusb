@@ -361,7 +361,7 @@ g_usb_context_remove_device(GUsbContext *self, struct libusb_device *dev)
  * @json_object: a #JsonObject
  * @error: a #GError, or %NULL
  *
- * Loads the context from a loaded JSON object.
+ * Loads the context from a JSON object.
  *
  * Return value: %TRUE on success
  *

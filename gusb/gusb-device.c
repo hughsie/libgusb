@@ -209,18 +209,6 @@ g_usb_device_init(GUsbDevice *self)
 	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 }
 
-/**
- * _g_usb_device_load:
- * @device: a #GUsbDevice
- * @json_object: a #JsonObject
- * @error: a #GError, or %NULL
- *
- * Loads the device from a loaded JSON object.
- *
- * Return value: %TRUE on success
- *
- * Since: 0.4.0
- **/
 gboolean
 _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 {
@@ -294,18 +282,6 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 	return TRUE;
 }
 
-/**
- * _g_usb_device_save:
- * @device: a #GUsbDevice
- * @json_builder: a #JsonBuilder
- * @error: a #GError, or %NULL
- *
- * Saves the device to an existing JSON builder.
- *
- * Return value: %TRUE on success
- *
- * Since: 0.4.0
- **/
 gboolean
 _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 {
