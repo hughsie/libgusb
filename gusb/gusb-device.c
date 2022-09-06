@@ -228,8 +228,9 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		g_free(priv->platform_id);
 		priv->platform_id = g_strdup(tmp);
 	}
-	priv->desc.idVendor = json_object_get_int_member_with_default(json_object, "Vendor", 0x0);
-	priv->desc.idProduct = json_object_get_int_member_with_default(json_object, "Product", 0x0);
+	priv->desc.idVendor = json_object_get_int_member_with_default(json_object, "IdVendor", 0x0);
+	priv->desc.idProduct =
+	    json_object_get_int_member_with_default(json_object, "IdProduct", 0x0);
 	priv->desc.bcdDevice = json_object_get_int_member_with_default(json_object, "Device", 0x0);
 	priv->desc.bcdUSB = json_object_get_int_member_with_default(json_object, "USB", 0x0);
 	priv->desc.iManufacturer =
@@ -308,11 +309,11 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 		json_builder_add_string_value(json_builder, priv->platform_id);
 	}
 	if (priv->desc.idVendor != 0) {
-		json_builder_set_member_name(json_builder, "Vendor");
+		json_builder_set_member_name(json_builder, "IdVendor");
 		json_builder_add_int_value(json_builder, priv->desc.idVendor);
 	}
 	if (priv->desc.idProduct != 0) {
-		json_builder_set_member_name(json_builder, "Product");
+		json_builder_set_member_name(json_builder, "IdProduct");
 		json_builder_add_int_value(json_builder, priv->desc.idProduct);
 	}
 	if (priv->desc.bcdDevice != 0) {
