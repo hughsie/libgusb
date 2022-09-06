@@ -450,7 +450,7 @@ gusb_device_ch2_func(void)
 	/* get the firmware version */
 	tmp = g_usb_device_get_string_descriptor(device, idx, &error);
 	g_assert_no_error(error);
-	g_assert_cmpstr(tmp, ==, "2.0.3");
+	g_assert_cmpstr(tmp, ==, "2.0.7");
 
 	/* close */
 	ret = g_usb_device_close(device, &error);
