@@ -1034,6 +1034,10 @@ g_usb_device_get_configuration(GUsbDevice *self, GError **error)
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), -1);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
+	/* emulated */
+	if (priv->device == NULL)
+		return 0x0;
+
 	if (priv->handle == NULL) {
 		g_usb_device_not_open_error(self, error);
 		return -1;
@@ -1071,6 +1075,10 @@ g_usb_device_set_configuration(GUsbDevice *self, gint configuration, GError **er
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
 
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
@@ -1113,6 +1121,10 @@ g_usb_device_claim_interface(GUsbDevice *self,
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
+
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
 
@@ -1153,6 +1165,10 @@ g_usb_device_release_interface(GUsbDevice *self,
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
+
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
 
@@ -1192,6 +1208,10 @@ g_usb_device_set_interface_alt(GUsbDevice *self, gint interface, guint8 alt, GEr
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
+
+	/* emulated */
+	if (priv->device == NULL)
+		return TRUE;
 
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
