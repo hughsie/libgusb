@@ -902,6 +902,10 @@ g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 					    "not supported for emulated device");
 			return NULL;
 		}
+		if (priv->handle == NULL) {
+			g_usb_device_not_open_error(self, error);
+			return NULL;
+		}
 
 		rc = libusb_get_bos_descriptor(priv->handle, &bos);
 		if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
