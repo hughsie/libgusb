@@ -36,6 +36,8 @@ typedef struct {
 	libusb_device *device;
 	libusb_device_handle *handle;
 	struct libusb_device_descriptor desc;
+	gboolean interfaces_valid;
+	gboolean bos_descriptors_valid;
 	GPtrArray *interfaces;	    /* of GUsbInterface */
 	GPtrArray *bos_descriptors; /* of GUsbBosDescriptor */
 } GUsbDevicePrivate;
@@ -279,6 +281,8 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 	}
 
 	/* success */
+	priv->interfaces_valid = TRUE;
+	priv->bos_descriptors_valid = TRUE;
 	return TRUE;
 }
 
@@ -776,7 +780,7 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	/* get all interfaces */
-	if (priv->interfaces->len == 0) {
+	if (!priv->interfaces_valid) {
 		gint rc;
 		struct libusb_config_descriptor *config;
 
@@ -802,6 +806,7 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 			}
 		}
 		libusb_free_config_descriptor(config);
+		priv->interfaces_valid = TRUE;
 	}
 
 	/* success */
@@ -821,6 +826,8 @@ g_usb_device_invalidate(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(G_USB_IS_DEVICE(self));
+	priv->interfaces_valid = FALSE;
+	priv->bos_descriptors_valid = FALSE;
 	g_ptr_array_set_size(priv->interfaces, 0);
 	g_ptr_array_set_size(priv->bos_descriptors, 0);
 }
@@ -889,7 +896,7 @@ g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
 
 	/* get all BOS descriptors */
-	if (priv->bos_descriptors->len == 0) {
+	if (!priv->bos_descriptors_valid) {
 		gint rc;
 		guint8 num_device_caps;
 		struct libusb_bos_descriptor *bos = NULL;
@@ -923,6 +930,7 @@ g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 			g_ptr_array_add(priv->bos_descriptors, bos_descriptor);
 		}
 		libusb_free_bos_descriptor(bos);
+		priv->bos_descriptors_valid = TRUE;
 	}
 
 	/* success */
