@@ -1028,8 +1028,9 @@ g_usb_context_load_usb_ids(GUsbContext *self, GError **error)
 			break;
 
 		if (lines[i][0] != '\t') {
+			if (strlen(lines[i]) < 7)
+				continue;
 			lines[i][4] = '\0';
-
 			vid = g_ascii_strtoull(lines[i], NULL, 16);
 			if (vid == 0)
 				break;
@@ -1041,6 +1042,8 @@ g_usb_context_load_usb_ids(GUsbContext *self, GError **error)
 			if (vid == 0x0000)
 				break;
 
+			if (strlen(lines[i]) < 8)
+				continue;
 			lines[i][5] = '\0';
 			pid = g_ascii_strtoull(lines[i] + 1, NULL, 16);
 			g_hash_table_insert(priv->dict_usb_ids,
