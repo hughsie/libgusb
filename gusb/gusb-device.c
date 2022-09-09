@@ -1883,6 +1883,30 @@ g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
 	g_object_unref(task);
 }
 
+static gboolean
+gusb_memcpy_bytes_safe(guint8 *dst, gsize dstsz, GBytes *bytes, GError **error)
+{
+	/* sanity check */
+	if (dstsz < g_bytes_get_size(bytes)) {
+		g_set_error(
+		    error,
+		    G_IO_ERROR,
+		    G_IO_ERROR_INVALID_DATA,
+		    "cannot copy source buffer of size 0x%x into destination buffer of size 0x%x",
+		    (guint)g_bytes_get_size(bytes),
+		    (guint)dstsz);
+		return FALSE;
+	}
+
+	/* data is the same */
+	if (memcmp(dst, g_bytes_get_data(bytes, NULL), dstsz) == 0)
+		return TRUE;
+
+	/* if this explodes it's because the caller has cast an immutable buffer to a guint8* */
+	memcpy(dst, g_bytes_get_data(bytes, NULL), dstsz);
+	return TRUE;
+}
+
 /**
  * g_usb_device_control_transfer_async:
  * @self: a #GUsbDevice
@@ -1976,8 +2000,15 @@ g_usb_device_control_transfer_async(GUsbDevice *self,
 						event_id);
 			return;
 		}
+		if (!gusb_memcpy_bytes_safe(data, length, bytes, &error)) {
+			g_task_report_error(self,
+					    callback,
+					    user_data,
+					    g_usb_device_control_transfer_async,
+					    error);
+			return;
+		}
 		task = g_task_new(self, cancellable, callback, user_data);
-		memcpy(data, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
 		g_task_return_int(task, g_bytes_get_size(bytes));
 		g_object_unref(task);
 		return;
@@ -2146,8 +2177,15 @@ g_usb_device_bulk_transfer_async(GUsbDevice *self,
 						event_id);
 			return;
 		}
+		if (!gusb_memcpy_bytes_safe(data, length, bytes, &error)) {
+			g_task_report_error(self,
+					    callback,
+					    user_data,
+					    g_usb_device_control_transfer_async,
+					    error);
+			return;
+		}
 		task = g_task_new(self, cancellable, callback, user_data);
-		memcpy(data, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
 		g_task_return_int(task, g_bytes_get_size(bytes));
 		g_object_unref(task);
 		return;
@@ -2305,8 +2343,15 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 						event_id);
 			return;
 		}
+		if (!gusb_memcpy_bytes_safe(data, length, bytes, &error)) {
+			g_task_report_error(self,
+					    callback,
+					    user_data,
+					    g_usb_device_control_transfer_async,
+					    error);
+			return;
+		}
 		task = g_task_new(self, cancellable, callback, user_data);
-		memcpy(data, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
 		g_task_return_int(task, g_bytes_get_size(bytes));
 		g_object_unref(task);
 		return;
