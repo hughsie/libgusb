@@ -57,7 +57,7 @@ _g_usb_device_event_load(GUsbDeviceEvent *self, JsonObject *json_object, GError 
 
 #if JSON_CHECK_VERSION(1, 6, 0)
 	/* optional properties */
-	self->id = json_object_get_string_member_with_default(json_object, "Id", NULL);
+	self->id = g_strdup(json_object_get_string_member_with_default(json_object, "Id", NULL));
 
 	/* extra data */
 	str = json_object_get_string_member_with_default(json_object, "Data", NULL);
