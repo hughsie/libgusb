@@ -49,6 +49,7 @@ test_args = [
   '-Wno-strict-aliasing',
   '-Wno-suggest-attribute=format',
   '-Wno-unused-parameter',
+  '-Wno-gnu-variable-sized-type-not-at-end',
   '-Wold-style-definition',
   '-Woverride-init',
   '-Wpointer-arith',
