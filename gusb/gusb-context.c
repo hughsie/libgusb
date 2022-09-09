@@ -1023,6 +1023,10 @@ g_usb_context_load_usb_ids(GUsbContext *self, GError **error)
 		if (lines[i][0] == '\0')
 			continue;
 
+		/* the list of known device classes, subclasses and protocols appeared */
+		if (g_str_has_prefix(lines[i], "C 00"))
+			break;
+
 		if (lines[i][0] != '\t') {
 			lines[i][4] = '\0';
 
