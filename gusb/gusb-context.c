@@ -462,6 +462,8 @@ g_usb_context_idle_hotplug_cb(gpointer user_data)
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
 
+	g_assert(locker != NULL);
+
 	for (guint i = 0; i < priv->idle_events->len; i++) {
 		GUsbContextIdleHelper *helper = g_ptr_array_index(priv->idle_events, i);
 		switch (helper->event) {
@@ -493,6 +495,8 @@ g_usb_context_hotplug_cb(struct libusb_context *ctx,
 	GUsbContextIdleHelper *helper;
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
+
+	g_assert(locker != NULL);
 
 	helper = g_new0(GUsbContextIdleHelper, 1);
 	helper->self = g_object_ref(self);
