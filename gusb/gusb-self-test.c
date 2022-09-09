@@ -268,13 +268,12 @@ g_usb_device_print_data(const gchar *title, const guchar *data, gsize length)
 static void
 g_usb_test_button_pressed_cb(GObject *source_object, GAsyncResult *res, gpointer user_data)
 {
-	gboolean ret;
+	gssize rc;
 	GUsbDeviceAsyncHelper *helper = (GUsbDeviceAsyncHelper *)user_data;
 	g_autoptr(GError) error = NULL;
 
-	ret = g_usb_device_interrupt_transfer_finish(G_USB_DEVICE(source_object), res, &error);
-
-	if (!ret) {
+	rc = g_usb_device_interrupt_transfer_finish(G_USB_DEVICE(source_object), res, &error);
+	if (rc < 0) {
 		g_error("%s", error->message);
 		return;
 	}
