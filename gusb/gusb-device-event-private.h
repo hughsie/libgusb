@@ -17,6 +17,8 @@ GUsbDeviceEvent *
 _g_usb_device_event_new(const gchar *id);
 void
 _g_usb_device_event_set_bytes_raw(GUsbDeviceEvent *self, gconstpointer buf, gsize bufsz);
+void
+_g_usb_device_event_set_status(GUsbDeviceEvent *self, gint status);
 
 gboolean
 _g_usb_device_event_load(GUsbDeviceEvent *self, JsonObject *json_object, GError **error);

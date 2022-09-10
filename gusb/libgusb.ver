@@ -176,6 +176,7 @@ LIBGUSB_0.4.0 {
     g_usb_context_save;
     g_usb_device_event_get_bytes;
     g_usb_device_event_get_id;
+    g_usb_device_event_get_status;
     g_usb_device_event_get_type;
     g_usb_device_event_set_bytes;
     g_usb_device_get_bos_descriptor;
