@@ -1836,6 +1836,8 @@ g_usb_device_async_transfer_cb(struct libusb_transfer *transfer)
 	/* did request fail? */
 	ret = g_usb_device_libusb_status_to_gerror(transfer->status, &error);
 	if (!ret) {
+		if (req->event != NULL)
+			_g_usb_device_event_set_status(req->event, transfer->status);
 		g_task_return_error(task, error);
 	} else {
 		if (req->event != NULL) {
@@ -1866,6 +1868,8 @@ g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
 	/* did request fail? */
 	ret = g_usb_device_libusb_status_to_gerror(transfer->status, &error);
 	if (!ret) {
+		if (req->event != NULL)
+			_g_usb_device_event_set_status(req->event, transfer->status);
 		g_task_return_error(task, error);
 	} else {
 		memmove(req->data,
@@ -1986,6 +1990,16 @@ g_usb_device_control_transfer_async(GUsbDevice *self,
 						G_IO_ERROR_INVALID_DATA,
 						"no matching event for %s",
 						event_id);
+			return;
+		}
+		if (g_usb_device_event_get_status(event) != LIBUSB_TRANSFER_COMPLETED) {
+			g_usb_device_libusb_status_to_gerror(g_usb_device_event_get_status(event),
+							     &error);
+			g_task_report_error(self,
+					    callback,
+					    user_data,
+					    g_usb_device_control_transfer_async,
+					    error);
 			return;
 		}
 		bytes = g_usb_device_event_get_bytes(event);
@@ -2165,6 +2179,16 @@ g_usb_device_bulk_transfer_async(GUsbDevice *self,
 						event_id);
 			return;
 		}
+		if (g_usb_device_event_get_status(event) != LIBUSB_TRANSFER_COMPLETED) {
+			g_usb_device_libusb_status_to_gerror(g_usb_device_event_get_status(event),
+							     &error);
+			g_task_report_error(self,
+					    callback,
+					    user_data,
+					    g_usb_device_control_transfer_async,
+					    error);
+			return;
+		}
 		bytes = g_usb_device_event_get_bytes(event);
 		if (bytes == NULL) {
 			g_task_report_new_error(self,
@@ -2329,6 +2353,16 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 						G_IO_ERROR_INVALID_DATA,
 						"no matching event for %s",
 						event_id);
+			return;
+		}
+		if (g_usb_device_event_get_status(event) != LIBUSB_TRANSFER_COMPLETED) {
+			g_usb_device_libusb_status_to_gerror(g_usb_device_event_get_status(event),
+							     &error);
+			g_task_report_error(self,
+					    callback,
+					    user_data,
+					    g_usb_device_control_transfer_async,
+					    error);
 			return;
 		}
 		bytes = g_usb_device_event_get_bytes(event);

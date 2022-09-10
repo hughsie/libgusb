@@ -18,6 +18,8 @@ const gchar *
 g_usb_device_event_get_id(GUsbDeviceEvent *self);
 GBytes *
 g_usb_device_event_get_bytes(GUsbDeviceEvent *self);
+gint
+g_usb_device_event_get_status(GUsbDeviceEvent *self);
 void
 g_usb_device_event_set_bytes(GUsbDeviceEvent *self, GBytes *bytes);
 
