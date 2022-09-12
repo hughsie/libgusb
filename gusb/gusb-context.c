@@ -357,7 +357,7 @@ g_usb_context_remove_device(GUsbContext *self, struct libusb_device *dev)
 
 /**
  * g_usb_context_load:
- * @context: a #GUsbContext
+ * @self: a #GUsbContext
  * @json_object: a #JsonObject
  * @error: a #GError, or %NULL
  *
@@ -403,7 +403,7 @@ g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error)
 
 /**
  * g_usb_context_save:
- * @context: a #GUsbContext
+ * @self: a #GUsbContext
  * @json_builder: a #JsonBuilder
  * @error: a #GError, or %NULL
  *
