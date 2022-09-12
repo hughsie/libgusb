@@ -42,7 +42,10 @@ typedef struct {
 	GPtrArray *interfaces;	    /* of GUsbInterface */
 	GPtrArray *bos_descriptors; /* of GUsbBosDescriptor */
 	GPtrArray *events;	    /* of GUsbDeviceEvent */
+	GPtrArray *tags;	    /* of utf-8 */
 	guint event_idx;
+	guint64 ts_created;
+	guint64 ts_removed;
 } GUsbDevicePrivate;
 
 enum { PROP_0, PROP_LIBUSB_DEVICE, PROP_CONTEXT, PROP_PLATFORM_ID, N_PROPERTIES };
@@ -85,6 +88,7 @@ g_usb_device_finalize(GObject *object)
 	g_ptr_array_unref(priv->interfaces);
 	g_ptr_array_unref(priv->bos_descriptors);
 	g_ptr_array_unref(priv->events);
+	g_ptr_array_unref(priv->tags);
 
 	G_OBJECT_CLASS(g_usb_device_parent_class)->finalize(object);
 }
@@ -211,9 +215,11 @@ static void
 g_usb_device_init(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	priv->ts_created = g_get_real_time();
 	priv->interfaces = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->events = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	priv->tags = g_ptr_array_new_with_free_func(g_free);
 }
 
 gboolean
@@ -299,6 +305,17 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		}
 	}
 
+	/* array of tags */
+	if (json_object_has_member(json_object, "Tags")) {
+		JsonArray *json_array = json_object_get_array_member(json_object, "Tags");
+		for (guint i = 0; i < json_array_get_length(json_array); i++) {
+			JsonNode *node_tmp = json_array_get_element(json_array, i);
+			const gchar *str = json_node_get_string(node_tmp);
+			if (str != NULL && str[0] != '\0')
+				g_ptr_array_add(priv->tags, g_strdup(str));
+		}
+	}
+
 	/* success */
 	priv->interfaces_valid = TRUE;
 	priv->bos_descriptors_valid = TRUE;
@@ -327,6 +344,26 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 		json_builder_set_member_name(json_builder, "PlatformId");
 		json_builder_add_string_value(json_builder, priv->platform_id);
 	}
+	if (priv->ts_created != 0) {
+		json_builder_set_member_name(json_builder, "Created");
+		json_builder_add_int_value(json_builder, priv->ts_created);
+	}
+	if (priv->ts_removed != 0) {
+		json_builder_set_member_name(json_builder, "Removed");
+		json_builder_add_int_value(json_builder, priv->ts_removed);
+	}
+
+	/* tags */
+	if (priv->tags->len > 0) {
+		json_builder_set_member_name(json_builder, "Tags");
+		json_builder_begin_array(json_builder);
+		for (guint i = 0; i < priv->tags->len; i++) {
+			const gchar *tag = g_ptr_array_index(priv->tags, i);
+			json_builder_add_string_value(json_builder, tag);
+		}
+		json_builder_end_array(json_builder);
+	}
+
 	if (priv->desc.idVendor != 0) {
 		json_builder_set_member_name(json_builder, "IdVendor");
 		json_builder_add_int_value(json_builder, priv->desc.idVendor);
@@ -413,6 +450,54 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 	/* success */
 	json_builder_end_object(json_builder);
 	return TRUE;
+}
+
+gboolean
+_g_usb_device_has_tag(GUsbDevice *self, const gchar *tag)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
+	g_return_val_if_fail(tag != NULL, FALSE);
+
+	for (guint i = 0; i < priv->tags->len; i++) {
+		const gchar *tag_tmp = g_ptr_array_index(priv->tags, i);
+		if (g_strcmp0(tag_tmp, tag) == 0)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * g_usb_device_add_tag:
+ * @self: a #FuDevice
+ * @tag: a tag, for example `bootloader` or `runtime-reload`
+ *
+ * Adds a tag, which is included in the JSON log to identify the specific device.
+ *
+ * For instance, there might be a pre-update runtime, a bootloader and a post-update runtime
+ * and allowing tags to be saved to the backend object allows us to identify each version of
+ * the same physical device.
+ *
+ * Since: 0.4.1
+ **/
+void
+g_usb_device_add_tag(GUsbDevice *self, const gchar *tag)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+
+	g_return_if_fail(G_USB_IS_DEVICE(self));
+	g_return_if_fail(tag != NULL);
+
+	/* a special tag we do not actually add */
+	if (g_strcmp0(tag, "removed") == 0) {
+		priv->ts_removed = g_get_real_time();
+		return;
+	}
+
+	if (_g_usb_device_has_tag(self, tag))
+		return;
+	g_ptr_array_add(priv->tags, g_strdup(tag));
 }
 
 /* not defined in FreeBSD */
