@@ -13,6 +13,7 @@ BuildRequires: json-glib-devel
 BuildRequires: gobject-introspection-devel
 BuildRequires: gtk-doc
 BuildRequires: libusb1-devel >= 1.0.19
+BuildRequires: umockdev-devel
 BuildRequires: meson
 BuildRequires: vala
 
