@@ -23,14 +23,14 @@ jobs:
       - run: docker run -t -v `pwd`:/build libgusb-${{ matrix.distro }} ./contrib/ci/build_and_test.sh -Dtests=false
 
   build-freebsd:
-    runs-on: macos-10.15
+    runs-on: macos-12
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build
       id: test
-      uses: vmactions/freebsd-vm@v0.1.5
+      uses: vmactions/freebsd-vm@v0.2.6
       with:
         usesh: true
         mem: 8192
