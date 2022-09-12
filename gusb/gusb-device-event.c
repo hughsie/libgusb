@@ -152,7 +152,7 @@ g_usb_device_event_get_id(GUsbDeviceEvent *self)
  *
  * Gets any status data from the event.
  *
- * Return value: (transfer none): a `enum libusb_transfer_status`, or -1 for failure
+ * Return value: a `enum libusb_transfer_status`, or -1 for failure
  *
  * Since: 0.4.0
  **/
