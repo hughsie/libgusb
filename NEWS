@@ -1,3 +1,21 @@
+Version 0.4.0
+~~~~~~~~~~~~~
+Released: 2022-09-12
+
+Notes:
+ - The JSON format used to serialising devices is not yet stable, and might change.
+
+New Features:
+ - Add support for getting BOS descriptors (Richard Hughes)
+ - Allow emulating devices by saving and replaying device events (Richard Hughes)
+ - Cache the list of interfaces and descriptors (Richard Hughes)
+ - Serialize the GUsbDevice to and from JSON format (Richard Hughes)
+
+Bugfixes:
+ - Ignore usb.ids classes, subclasses and protocols (Richard Hughes)
+ - Never dispatch idle events after the context has been destroyed (Richard Hughes)
+ - Skip some functionality when emulating (Richard Hughes)
+
 Version 0.3.10
 ~~~~~~~~~~~~~~
 Released: 2021-01-10
