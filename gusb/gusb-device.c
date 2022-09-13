@@ -344,7 +344,7 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 		json_builder_set_member_name(json_builder, "PlatformId");
 		json_builder_add_string_value(json_builder, priv->platform_id);
 	}
-#if GLIB_CHECK_VERSION(2,62,0)
+#if GLIB_CHECK_VERSION(2, 62, 0)
 	if (priv->created != NULL) {
 		g_autofree gchar *str = g_date_time_format_iso8601(priv->created);
 		json_builder_set_member_name(json_builder, "Created");
