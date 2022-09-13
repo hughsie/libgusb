@@ -37,6 +37,7 @@ enum { DEVICE_ADDED_SIGNAL, DEVICE_REMOVED_SIGNAL, LAST_SIGNAL };
 typedef struct {
 	GMainContext *main_ctx;
 	GPtrArray *devices;
+	GPtrArray *devices_removed;
 	GHashTable *dict_usb_ids;
 	GHashTable *dict_replug;
 	GThread *thread_event;
@@ -134,6 +135,7 @@ g_usb_context_dispose(GObject *object)
 
 	g_clear_pointer(&priv->main_ctx, g_main_context_unref);
 	g_clear_pointer(&priv->devices, g_ptr_array_unref);
+	g_clear_pointer(&priv->devices_removed, g_ptr_array_unref);
 	g_clear_pointer(&priv->dict_usb_ids, g_hash_table_unref);
 	g_clear_pointer(&priv->dict_replug, g_hash_table_unref);
 	g_clear_pointer(&priv->ctx, libusb_exit);
@@ -340,6 +342,11 @@ g_usb_context_remove_device(GUsbContext *self, struct libusb_device *dev)
 		return;
 	}
 
+	/* save this to a lookaside */
+	if (priv->flags & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		g_ptr_array_add(priv->devices_removed, g_object_ref(device));
+	}
+
 	/* remove from enumerated list */
 	g_ptr_array_remove(priv->devices, device);
 
@@ -429,6 +436,11 @@ g_usb_context_save(GUsbContext *self, JsonBuilder *json_builder, GError **error)
 	/* array of devices */
 	json_builder_set_member_name(json_builder, "UsbDevices");
 	json_builder_begin_array(json_builder);
+	for (guint i = 0; i < priv->devices_removed->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(priv->devices_removed, i);
+		if (!_g_usb_device_save(device, json_builder, error))
+			return FALSE;
+	}
 	for (guint i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
 		if (!_g_usb_device_save(device, json_builder, error))
@@ -755,6 +767,7 @@ g_usb_context_init(GUsbContext *self)
 	priv->flags = G_USB_CONTEXT_FLAGS_NONE;
 	priv->hotplug_poll_interval = G_USB_CONTEXT_HOTPLUG_POLL_INTERVAL_DEFAULT;
 	priv->devices = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	priv->devices_removed = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->dict_usb_ids = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 	priv->dict_replug = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
