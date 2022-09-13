@@ -43,6 +43,7 @@ typedef struct {
 	GPtrArray *bos_descriptors; /* of GUsbBosDescriptor */
 	GPtrArray *events;	    /* of GUsbDeviceEvent */
 	guint event_idx;
+	GDateTime *created;
 } GUsbDevicePrivate;
 
 enum { PROP_0, PROP_LIBUSB_DEVICE, PROP_CONTEXT, PROP_PLATFORM_ID, N_PROPERTIES };
@@ -82,6 +83,7 @@ g_usb_device_finalize(GObject *object)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	g_free(priv->platform_id);
+	g_date_time_unref(priv->created);
 	g_ptr_array_unref(priv->interfaces);
 	g_ptr_array_unref(priv->bos_descriptors);
 	g_ptr_array_unref(priv->events);
@@ -211,6 +213,7 @@ static void
 g_usb_device_init(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	priv->created = g_date_time_new_now_utc();
 	priv->interfaces = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->events = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
@@ -327,6 +330,13 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 		json_builder_set_member_name(json_builder, "PlatformId");
 		json_builder_add_string_value(json_builder, priv->platform_id);
 	}
+#if GLIB_CHECK_VERSION(2,62,0)
+	if (priv->created != NULL) {
+		g_autofree gchar *str = g_date_time_format_iso8601(priv->created);
+		json_builder_set_member_name(json_builder, "Created");
+		json_builder_add_string_value(json_builder, str);
+	}
+#endif
 	if (priv->desc.idVendor != 0) {
 		json_builder_set_member_name(json_builder, "IdVendor");
 		json_builder_add_int_value(json_builder, priv->desc.idVendor);
