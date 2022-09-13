@@ -382,7 +382,7 @@ g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error)
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
 	g_return_val_if_fail(json_object != NULL, FALSE);
-	g_return_val_if_fail(error == NULL || *error == NULL, -1);
+	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
 	/* remove existing devices */
 	g_ptr_array_set_size(priv->devices, 0);
