@@ -377,6 +377,28 @@ g_usb_context_remove_device(GUsbContext *self, struct libusb_device *dev)
 gboolean
 g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error)
 {
+	return g_usb_context_load_with_tag(self, json_object, NULL, error);
+}
+
+/**
+ * g_usb_context_load_with_tag:
+ * @self: a #GUsbContext
+ * @json_object: a #JsonObject
+ * @tag: a string tag, e.g. `runtime-reload`, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Loads any devices with a specified tag into the context from a JSON object.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.1
+ **/
+gboolean
+g_usb_context_load_with_tag(GUsbContext *self,
+			    JsonObject *json_object,
+			    const gchar *tag,
+			    GError **error)
+{
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 	JsonArray *json_array;
 
@@ -403,6 +425,8 @@ g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error)
 		    g_object_new(G_USB_TYPE_DEVICE, "context", self, NULL);
 		if (!_g_usb_device_load(device, obj_tmp, error))
 			return FALSE;
+		if (tag != NULL && !_g_usb_device_has_tag(device, tag))
+			continue;
 		g_ptr_array_add(priv->devices, g_object_ref(device));
 		g_signal_emit(self, signals[DEVICE_ADDED_SIGNAL], 0, device);
 	}
@@ -427,6 +451,28 @@ g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error)
 gboolean
 g_usb_context_save(GUsbContext *self, JsonBuilder *json_builder, GError **error)
 {
+	return g_usb_context_save_with_tag(self, json_builder, NULL, error);
+}
+
+/**
+ * g_usb_context_save_with_tag:
+ * @self: a #GUsbContext
+ * @json_builder: a #JsonBuilder
+ * @tag: a string tag, e.g. `runtime-reload`, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Saves any devices with a specified tag into an existing JSON builder.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.1
+ **/
+gboolean
+g_usb_context_save_with_tag(GUsbContext *self,
+			    JsonBuilder *json_builder,
+			    const gchar *tag,
+			    GError **error)
+{
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
@@ -447,6 +493,8 @@ g_usb_context_save(GUsbContext *self, JsonBuilder *json_builder, GError **error)
 	}
 	for (guint i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
+		if (tag != NULL && !_g_usb_device_has_tag(device, tag))
+			continue;
 		if (!_g_usb_device_save(device, json_builder, error))
 			return FALSE;
 	}

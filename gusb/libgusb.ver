@@ -188,6 +188,8 @@ LIBGUSB_0.4.0 {
 
 LIBGUSB_0.4.1 {
   global:
+    g_usb_context_load_with_tag;
+    g_usb_context_save_with_tag;
     g_usb_device_add_tag;
   local: *;
 } LIBGUSB_0.4.0;
