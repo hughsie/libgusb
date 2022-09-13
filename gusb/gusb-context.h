@@ -74,7 +74,17 @@ g_usb_context_enumerate(GUsbContext *self);
 gboolean
 g_usb_context_load(GUsbContext *self, JsonObject *json_object, GError **error);
 gboolean
+g_usb_context_load_with_tag(GUsbContext *self,
+			    JsonObject *json_object,
+			    const gchar *tag,
+			    GError **error);
+gboolean
 g_usb_context_save(GUsbContext *self, JsonBuilder *json_builder, GError **error);
+gboolean
+g_usb_context_save_with_tag(GUsbContext *self,
+			    JsonBuilder *json_builder,
+			    const gchar *tag,
+			    GError **error);
 
 void
 g_usb_context_set_debug(GUsbContext *self, GLogLevelFlags flags);
