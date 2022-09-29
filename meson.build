@@ -130,6 +130,7 @@ add_project_arguments('-DGUSB_COMPILATION', language: 'c')
 
 prefix = get_option('prefix')
 bindir = join_paths(prefix, get_option('bindir'))
+datadir = join_paths(prefix, get_option('datadir'))
 
 configure_file(
   output : 'config.h',
@@ -140,4 +141,6 @@ root_incdir = include_directories('.')
 
 subdir('gusb')
 subdir('tools')
-subdir('docs')
+if get_option('docs')
+  subdir('docs')
+endif
