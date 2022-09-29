@@ -1,8 +1,8 @@
-FROM debian:buster
+FROM debian:testing
 
-RUN echo "deb-src http://deb.debian.org/debian/ buster main" >> /etc/apt/sources.list
+RUN echo "deb-src http://deb.debian.org/debian/ testing main" >> /etc/apt/sources.list
 RUN apt-get update -qq
-RUN apt-get install -yq --no-install-recommends meson libjson-glib-dev
+RUN apt-get install -yq --no-install-recommends meson libjson-glib-dev gi-docgen
 RUN apt-get build-dep --allow-unauthenticated -yq libgusb
 
 RUN mkdir /build
