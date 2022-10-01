@@ -1,3 +1,14 @@
+Version 0.4.1
+~~~~~~~~~~~~~
+Released: 2022-10-01
+
+New Features:
+ - Allow loading and saving only devices with specific tags (Richard Hughes)
+ - Include removed devices in the JSON dump (Richard Hughes)
+
+Bugfixes:
+ - Port from gtkdoc to gi-docgen (Richard Hughes)
+
 Version 0.4.0
 ~~~~~~~~~~~~~
 Released: 2022-09-12
