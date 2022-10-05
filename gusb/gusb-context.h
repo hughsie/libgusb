@@ -56,7 +56,6 @@ g_usb_context_set_flags(GUsbContext *self, GUsbContextFlags flags);
 GUsbContextFlags
 g_usb_context_get_flags(GUsbContext *self);
 
-G_DEPRECATED
 GUsbSource *
 g_usb_context_get_source(GUsbContext *self, GMainContext *main_ctx);
 GMainContext *
