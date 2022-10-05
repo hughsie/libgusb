@@ -516,10 +516,13 @@ main(int argc, char *argv[])
 	}
 
 	/* GUsbContext */
-	priv->usb_ctx = g_usb_context_new(NULL);
 	if (save_events)
 		context_flags |= G_USB_CONTEXT_FLAGS_SAVE_EVENTS;
-	g_usb_context_set_flags(priv->usb_ctx, context_flags);
+	priv->usb_ctx = g_usb_context_new_full(context_flags, NULL, &error);
+	if (priv->usb_ctx == NULL) {
+		g_printerr("%s\n", error->message);
+		return 1;
+	}
 
 	/* add commands */
 	priv->cmd_array = g_ptr_array_new_with_free_func((GDestroyNotify)gusb_cmd_item_free);

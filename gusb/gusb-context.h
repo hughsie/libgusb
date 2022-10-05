@@ -41,6 +41,7 @@ typedef enum {
 	G_USB_CONTEXT_FLAGS_NONE = 0,
 	G_USB_CONTEXT_FLAGS_AUTO_OPEN_DEVICES = 1 << 0,
 	G_USB_CONTEXT_FLAGS_SAVE_EVENTS = 1 << 1,
+	G_USB_CONTEXT_FLAGS_USE_HOTPLUG_THREAD = 1 << 2,
 	/*< private >*/
 	G_USB_CONTEXT_FLAGS_LAST
 } GUsbContextFlags;
@@ -50,13 +51,14 @@ g_usb_context_error_quark(void);
 
 GUsbContext *
 g_usb_context_new(GError **error);
+GUsbContext *
+g_usb_context_new_full(GUsbContextFlags flags, GCancellable *cancellable, GError **error);
 
 void
 g_usb_context_set_flags(GUsbContext *self, GUsbContextFlags flags);
 GUsbContextFlags
 g_usb_context_get_flags(GUsbContext *self);
 
-G_DEPRECATED
 GUsbSource *
 g_usb_context_get_source(GUsbContext *self, GMainContext *main_ctx);
 GMainContext *
