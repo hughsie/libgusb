@@ -146,6 +146,10 @@ gusb_main_device_open(GUsbDevice *device)
 		}
 		g_print("product: %s\n", product);
 	}
+	if (!g_usb_device_close(device, &error)) {
+		g_print("failed to close: %s\n", error->message);
+		return;
+	}
 }
 
 static void
@@ -246,6 +250,7 @@ gusb_cmd_show_cb(GNode *node, gpointer data)
 	g_string_append_printf(str, "%s - %s", vendor, product);
 
 	g_print("%s\n", str->str);
+	g_usb_device_close(device, NULL);
 	return FALSE;
 }
 
