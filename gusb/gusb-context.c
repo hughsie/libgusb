@@ -519,17 +519,35 @@ g_usb_context_idle_helper_free(GUsbContextIdleHelper *helper)
 	g_free(helper);
 }
 
+static gpointer
+g_usb_context_idle_helper_copy(gconstpointer src, gpointer user_data)
+{
+	GUsbContextIdleHelper *helper_src = (GUsbContextIdleHelper *)src;
+	GUsbContextIdleHelper *helper_dst = g_new0(GUsbContextIdleHelper, 1);
+	helper_dst->self = g_object_ref(helper_src->self);
+	helper_dst->dev = libusb_ref_device(helper_src->dev);
+	helper_dst->event = helper_src->event;
+	return helper_dst;
+}
+
+/* always in the main thread */
 static gboolean
 g_usb_context_idle_hotplug_cb(gpointer user_data)
 {
 	GUsbContext *self = G_USB_CONTEXT(user_data);
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
+	g_autoptr(GPtrArray) idle_events = NULL;
 
-	g_assert(locker != NULL);
+	/* drain the idle events with the lock held */
+	g_mutex_lock(&priv->idle_events_mutex);
+	idle_events = g_ptr_array_copy(priv->idle_events, g_usb_context_idle_helper_copy, NULL);
+	g_ptr_array_set_size(priv->idle_events, 0);
+	priv->idle_events_id = 0;
+	g_mutex_unlock(&priv->idle_events_mutex);
 
-	for (guint i = 0; i < priv->idle_events->len; i++) {
-		GUsbContextIdleHelper *helper = g_ptr_array_index(priv->idle_events, i);
+	/* run the callbacks when not locked */
+	for (guint i = 0; i < idle_events->len; i++) {
+		GUsbContextIdleHelper *helper = g_ptr_array_index(idle_events, i);
 		switch (helper->event) {
 		case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
 			g_usb_context_add_device(helper->self, helper->dev);
@@ -543,8 +561,6 @@ g_usb_context_idle_hotplug_cb(gpointer user_data)
 	}
 
 	/* all done */
-	g_ptr_array_set_size(priv->idle_events, 0);
-	priv->idle_events_id = 0;
 	return FALSE;
 }
 
