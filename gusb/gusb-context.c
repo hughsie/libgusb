@@ -50,7 +50,7 @@ typedef struct {
 	libusb_context *ctx;
 	libusb_hotplug_callback_handle hotplug_id;
 	GPtrArray *idle_events;
-	GRecMutex idle_events_mutex;
+	GMutex idle_events_mutex;
 	guint idle_events_id;
 } GUsbContextPrivate;
 
@@ -140,17 +140,9 @@ g_usb_context_dispose(GObject *object)
 	g_clear_pointer(&priv->dict_replug, g_hash_table_unref);
 	g_clear_pointer(&priv->ctx, libusb_exit);
 	g_clear_pointer(&priv->idle_events, g_ptr_array_unref);
+	g_mutex_clear(&priv->idle_events_mutex);
 
 	G_OBJECT_CLASS(g_usb_context_parent_class)->dispose(object);
-}
-
-static void
-g_usb_context_finalize(GObject *object)
-{
-	GUsbContext *self = G_USB_CONTEXT(object);
-	GUsbContextPrivate *priv = GET_PRIVATE(self);
-	g_rec_mutex_clear(&priv->idle_events_mutex);
-	G_OBJECT_CLASS(g_usb_context_parent_class)->finalize(object);
 }
 
 static void
@@ -199,7 +191,6 @@ g_usb_context_class_init(GUsbContextClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
 	object_class->dispose = g_usb_context_dispose;
-	object_class->finalize = g_usb_context_finalize;
 	object_class->get_property = g_usb_context_get_property;
 	object_class->set_property = g_usb_context_set_property;
 
@@ -533,7 +524,7 @@ g_usb_context_idle_hotplug_cb(gpointer user_data)
 {
 	GUsbContext *self = G_USB_CONTEXT(user_data);
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
-	g_autoptr(GRecMutexLocker) locker = g_rec_mutex_locker_new(&priv->idle_events_mutex);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
 
 	g_assert(locker != NULL);
 
@@ -567,7 +558,7 @@ g_usb_context_hotplug_cb(struct libusb_context *ctx,
 	GUsbContext *self = G_USB_CONTEXT(user_data);
 	GUsbContextIdleHelper *helper;
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
-	g_autoptr(GRecMutexLocker) locker = g_rec_mutex_locker_new(&priv->idle_events_mutex);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->idle_events_mutex);
 
 	g_assert(locker != NULL);
 
@@ -833,7 +824,7 @@ g_usb_context_init(GUsbContext *self)
 	priv->dict_replug = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
 	/* to escape the thread into the mainloop */
-	g_rec_mutex_init(&priv->idle_events_mutex);
+	g_mutex_init(&priv->idle_events_mutex);
 	priv->idle_events =
 	    g_ptr_array_new_with_free_func((GDestroyNotify)g_usb_context_idle_helper_free);
 }
