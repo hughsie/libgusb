@@ -1,18 +1,17 @@
 GUsb Release Notes
 ==================
 
-git log --format="%s" --cherry-pick --right-only 0.4.1... | grep -i -v trivial | grep -v Merge | sort | uniq
+git log --format="%s" --cherry-pick --right-only 0.4.2... | grep -i -v trivial | grep -v Merge | sort | uniq
 Add any user visible changes into ../contrib/org.freedesktop.GUsb.metainfo.xml
 appstream-util appdata-to-news ../contrib/org.freedesktop.GUsb.metainfo.xml > ../NEWS
 
 Update library version if new ABI or API in `meson.build`, commit, and build tarball:
 
     # MAKE SURE THIS IS CORRECT
-    export release_ver="0.4.2"
+    export release_ver="0.4.3"
 
     git commit -a -m "Release version ${release_ver}"
     git tag -s -f -m "Release ${release_ver}" "${release_ver}"
-    <gpg password>
     ninja dist
     git push --tags
     git push
@@ -30,7 +29,7 @@ Do post release version bump in `meson.build` and commit changes:
 Send an email to devkit-devel@lists.freedesktop.org
 
     =================================================
-    GUsb 0.4.2 released!
+    GUsb 0.4.3 released!
 
     GUsb is a GObject wrapper for libusb1 that makes it easy to do
     asynchronous control, bulk and interrupt transfers with proper
