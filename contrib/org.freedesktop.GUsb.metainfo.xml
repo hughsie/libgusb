@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2022 Richard Hughes <richard@hughsie.com> -->
+<component type="console-application">
+  <id>org.freedesktop.GUsb</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LGPL-2.0+</project_license>
+  <name>GUsb</name>
+  <summary>A GObject wrapper for libusb1</summary>
+  <description>
+    <p>
+      GUsb is a GObject wrapper for libusb1 that makes it easy to do asynchronous control,
+      bulk and interrupt transfers with proper cancellation and integration into a mainloop.
+      This makes it easy to integrate low level USB transfers with your high-level application or
+      system daemon.
+    </p>
+  </description>
+  <url type="bugtracker">https://github.com/hughsie/libgusb/issues</url>
+  <url type="homepage">https://github.com/hughsie/libgusb</url>
+  <content_rating type="oars-1.0"/>
+  <provides>
+    <binary>gusbcmd</binary>
+  </provides>
+  <releases>
+    <release version="0.4.2" date="2022-10-18">
+      <description>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Close the GUsbDevice objects in gusbcmd</li>
+          <li>Do not call the hotplug callback with the mutex held</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.1" date="2022-10-01">
+      <description>
+        <p>This release adds the following features:</p>
+        <ul>
+          <li>Allow loading and saving only devices with specific tags</li>
+          <li>Include removed devices in the JSON dump</li>
+        </ul>
+        <p>This release fixes the following bug:</p>
+        <ul>
+          <li>Port from gtkdoc to gi-docgen</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.0" date="2022-09-12">
+      <description>
+        <p>
+          The JSON format used to serialising devices is not yet stable, and
+          might change.
+        </p>
+        <p>This release adds the following features:</p>
+        <ul>
+          <li>Add support for getting BOS descriptors</li>
+          <li>Allow emulating devices by saving and replaying device events</li>
+          <li>Cache the list of interfaces and descriptors</li>
+          <li>Serialize the GUsbDevice to and from JSON format</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Ignore usb.ids classes, subclasses and protocols</li>
+          <li>Never dispatch idle events after the context has been destroyed</li>
+          <li>Skip some functionality when emulating</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.10" date="2021-01-10">
+      <description>
+        <p>This release adds the following feature:</p>
+        <ul>
+          <li>Add API to change the hotplug poll interval</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.9" date="2021-12-07">
+      <description>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Don&apos;t hard-code the list of OS supporting --version-script</li>
+          <li>Fix hotplug after threaded device removal</li>
+          <li>Fix version script check for GNU BFD linker on FreeBSD</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.8" date="2021-10-06">
+      <description>
+        <p>This release adds the following feature:</p>
+        <ul>
+          <li>Add g_usb_device_get_string_descriptor_bytes_full</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Add the GUsbEndpoint methods to the docs</li>
+          <li>Fix hotplug handling and signal emission during enumerate</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.7" date="2021-05-24">
+      <description>
+        <p>This release adds the following feature:</p>
+        <ul>
+          <li>Add a FreeBSD CI target</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Do not depend on libusb_get_parent() to fix FreeBSD compile</li>
+          <li>Do not depend on libusb_get_port_number() to fix DragonFlyBSD compile</li>
+          <li>Do not double-reference USB devices</li>
+          <li>Do not run the tests on FreeBSD</li>
+          <li>Require *any* python3 to fix FreeBSD build</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.6" date="2021-03-12">
+      <description>
+        <p>This release adds the following feature:</p>
+        <ul>
+          <li>Add g_usb_device_get_string_descriptor_bytes()</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Properly set dylib versions on darwin</li>
+          <li>Fix cancellation if cancellable is already cancelled</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+</component>

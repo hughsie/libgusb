@@ -1,20 +1,9 @@
 GUsb Release Notes
 ==================
 
-Write `NEWS` entries for GUsb in the same format as usual.
-
-    git shortlog 0.4.1.. | grep -i -v trivial | grep -v Merge > NEWS.new
-    =================================================
-    Version 0.4.2
-    ~~~~~~~~~~~~~
-    Released: 2022-xx-xx
-
-    Notes:
-
-    New Features:
-
-    Bugfixes:
-    =================================================
+git log --format="%s" --cherry-pick --right-only 0.4.1... | grep -i -v trivial | grep -v Merge | sort | uniq
+Add any user visible changes into ../contrib/org.freedesktop.GUsb.metainfo.xml
+appstream-util appdata-to-news ../contrib/org.freedesktop.GUsb.metainfo.xml > ../NEWS
 
 Update library version if new ABI or API in `meson.build`, commit, and build tarball:
 

@@ -1,414 +1,88 @@
+Version 0.4.2
+=============
+Released: 2022-10-18
+
+This release fixes the following bugs:
+ * Close the GUsbDevice objects in gusbcmd
+ * Do not call the hotplug callback with the mutex held
+
 Version 0.4.1
-~~~~~~~~~~~~~
+=============
 Released: 2022-10-01
 
-New Features:
- - Allow loading and saving only devices with specific tags (Richard Hughes)
- - Include removed devices in the JSON dump (Richard Hughes)
+This release adds the following features:
+ * Allow loading and saving only devices with specific tags
+ * Include removed devices in the JSON dump
 
-Bugfixes:
- - Port from gtkdoc to gi-docgen (Richard Hughes)
+This release fixes the following bug:
+ * Port from gtkdoc to gi-docgen
 
 Version 0.4.0
-~~~~~~~~~~~~~
+=============
 Released: 2022-09-12
 
-Notes:
- - The JSON format used to serialising devices is not yet stable, and might change.
+The JSON format used to serialising devices is not yet stable, and might
+change.
 
-New Features:
- - Add support for getting BOS descriptors (Richard Hughes)
- - Allow emulating devices by saving and replaying device events (Richard Hughes)
- - Cache the list of interfaces and descriptors (Richard Hughes)
- - Serialize the GUsbDevice to and from JSON format (Richard Hughes)
+This release adds the following features:
+ * Add support for getting BOS descriptors
+ * Allow emulating devices by saving and replaying device events
+ * Cache the list of interfaces and descriptors
+ * Serialize the GUsbDevice to and from JSON format
 
-Bugfixes:
- - Ignore usb.ids classes, subclasses and protocols (Richard Hughes)
- - Never dispatch idle events after the context has been destroyed (Richard Hughes)
- - Skip some functionality when emulating (Richard Hughes)
+This release fixes the following bugs:
+ * Ignore usb.ids classes, subclasses and protocols
+ * Never dispatch idle events after the context has been destroyed
+ * Skip some functionality when emulating
 
 Version 0.3.10
-~~~~~~~~~~~~~~
+==============
 Released: 2021-01-10
 
-New Features:
- - Add API to change the hotplug poll interval (Richard Hughes)
+This release adds the following feature:
+ * Add API to change the hotplug poll interval
 
 Version 0.3.9
-~~~~~~~~~~~~~
+=============
 Released: 2021-12-07
 
-Bugfixes:
- - Don't hard-code the list of OS supporting --version-script (Ting-Wei Lan)
- - Fix hotplug after threaded device removal (Richard Hughes)
- - Fix version script check for GNU BFD linker on FreeBSD (Ting-Wei Lan)
+This release fixes the following bugs:
+ * Don't hard-code the list of OS supporting --version-script
+ * Fix hotplug after threaded device removal
+ * Fix version script check for GNU BFD linker on FreeBSD
 
 Version 0.3.8
-~~~~~~~~~~~~~
+=============
 Released: 2021-10-06
 
-New Features:
- - Add g_usb_device_get_string_descriptor_bytes_full (Ricardo Cañuelo)
+This release adds the following feature:
+ * Add g_usb_device_get_string_descriptor_bytes_full
 
-Bugfixes:
- - Add the GUsbEndpoint methods to the docs (Richard Hughes)
- - Fix hotplug handling and signal emission during enumerate (Benjamin Berg)
+This release fixes the following bugs:
+ * Add the GUsbEndpoint methods to the docs
+ * Fix hotplug handling and signal emission during enumerate
 
 Version 0.3.7
-~~~~~~~~~~~~~
+=============
 Released: 2021-05-24
 
-New Features:
- - Add a FreeBSD CI target (Richard Hughes)
+This release adds the following feature:
+ * Add a FreeBSD CI target
 
-Bugfixes:
- - Do not depend on libusb_get_parent() to fix FreeBSD compile (Richard Hughes)
- - Do not depend on libusb_get_port_number() to fix DragonFlyBSD compile (Richard Hughes)
- - Do not double-reference USB devices (Marco Trevisan)
- - Do not run the tests on FreeBSD (Richard Hughes)
- - Require *any* python3 to fix FreeBSD build (Richard Hughes)
+This release fixes the following bugs:
+ * Do not depend on libusb_get_parent() to fix FreeBSD compile
+ * Do not depend on libusb_get_port_number() to fix DragonFlyBSD compile
+ * Do not double-reference USB devices
+ * Do not run the tests on FreeBSD
+ * Require *any* python3 to fix FreeBSD build
 
 Version 0.3.6
-~~~~~~~~~~~~~
+=============
 Released: 2021-03-12
 
-New Features:
- - Add g_usb_device_get_string_descriptor_bytes() (Richard Hughes)
-
-Bugfixes:
- - Properly set dylib versions on darwin (Caleb Xu)
- - Fix cancellation if cancellable is already cancelled (Benjamin Berg)
-
-Version 0.3.5
-~~~~~~~~~~~~~
-Released: 2020-07-30
-
-Notes:
-
-New Features:
- - Add a way to get iConfiguration (Benson Leung)
-
-Bugfixes:
- - Allow building GtkDoc when building as a subproject (Richard Hughes)
- - Fix version script to be more portable (Laurent Bigonville, Ting-Wei Lan)
- - Include methods on plain structs in the version script (Simon McVittie)
-
-Version 0.3.4
-~~~~~~~~~~~~~
-Released: 2020-02-20
-
-Notes:
- - This fixes the symbol version for g_usb_version_string() to be in the right
-   place, so update this library alongside with external programs if you've
-   already started using this symbol for example in fwupd. We've put a mechanism
-   in place so this kind of thing can't happen again. Sorry!
-
-New Features:
- - Validate the exported symbol list during check (Richard Hughes)
-
-Bugfixes:
- - Include the USB bus in the generated platform_id (Richard Hughes)
-
-Version 0.3.3
-~~~~~~~~~~~~~
-Released: 2020-01-30
-
-New Features:
- - Add a thin glib wrapper around libusb_endpoint_descriptor (Emmanuel Pacaud)
-
-Bugfixes:
- - Fix high number of wakeups when checking the GUsbContext (Richard Hughes)
- - Use '#pragma once' to reduce boilerplate (Richard Hughes)
- - Wrap the upstream libusb_strerror() (Richard Hughes)
-
-Version 0.3.2
-~~~~~~~~~~~~~
-Released: 2020-01-06
-
-Bugfixes:
- - Do not use deprecated libusb API (Richard Hughes)
- - Fix compilation on macOS (Richard Hughes)
- - Use a 1ms timeout in the Windows event thread (Richard Hughes)
- - Use has_link_argument() to detect linker flags (Richard Hughes)
-
-Version 0.3.1
-~~~~~~~~~~~~~
-Released: 2019-11-16
-
-New Features:
- - Add g_usb_device_get_spec() (Richard Hughes)
- - Add g_usb_version_string() for fwupd (Richard Hughes)
-
-Bugfixes:
- - Add -Wswitch-enum (Benjamin Berg)
- - Fix GI length introspection annotations (grindhold)
- - Make gir generation optional (maxice8)
-
-Version 0.3.0
-~~~~~~~~~~~~~
-Released: 2018-02-14
-
-New Features:
- - Add Travis integration (Richard Hughes)
- - Allow changing the path to usb.ids file (Ting-Wei Lan)
- - Port to the Meson build system (Richard Hughes)
-
-Bugfixes:
- - Replace libusb-1.0/libusb.h with libusb.h (Ting-Wei Lan)
-
-Version 0.2.11
-~~~~~~~~~~~~~~
-Released: 2017-07-24
-
-New Features:
- - Add g_usb_context_set_flags() (Richard Hughes)
-
-Bugfixes:
- - Fix the actual required GLib version (Richard Hughes)
-
-Version 0.2.10
-~~~~~~~~~~~~~~
-Released: 2017-04-10
-
-Bugfixes:
- - Correctly detect removed devices when rescanning (Richard Hughes)
- - Fix a memory leak when using control transfers (Richard Hughes)
- - Fix gtk-doc build when builddir != srcdir (Ting-Wei Lan)
- - Fix symbol version table up to version 0.2.9 (Dominique Leuenberger)
-
-Version 0.2.9
-~~~~~~~~~~~~~
-Released: 2016-03-21
-
-New Features:
- - Add g_usb_context_wait_for_replug() (Richard Hughes)
- - Install gusbcmd as a debugging aid (Richard Hughes)
-
-Version 0.2.8
-~~~~~~~~~~~~~
-Released: 2015-12-01
-
-New Features:
- - Add a PERMISSION_DENIED error enum (Richard Hughes)
- - Add a thin glib wrapper around a libusb_interface_descriptor (Richard Hughes)
- - Add g_usb_device_get_interfaces() (Richard Hughes)
- - Add g_usb_device_get_release() (Richard Hughes)
- - Add g_usb_device_set_interface_alt() (Richard Hughes)
-
-Bugfixes:
- - Ignore the not-found error when resetting a device (Richard Hughes)
-
-Version 0.2.7
-~~~~~~~~~~~~~
-Released: 2015-09-15
-
-New Features:
- - Support g_autoptr() for all gusb object types (Kalev Lember)
-
-Bugfixes:
- - Add missing element-type annotations (Robert Ancell)
-
-Version 0.2.6
-~~~~~~~~~~~~~
-Released: 2015-07-06
-
-Bugfixes:
- - Do not unref the GMainContext after each request (Richard Hughes)
-
-Version 0.2.5
-~~~~~~~~~~~~~
-Released: 2015-05-28
-
-New Features:
- - Add g_usb_device_get_custom_index() (Richard Hughes)
- - Allow setting the GMainContext when used for sync methods (Richard Hughes)
- - Include all the USB device class codes (Richard Hughes)
- - Use symbol versioning (Pass Automated Testing Suite)
-
-Version 0.2.4
-~~~~~~~~~~~~~
-Released: 2015-01-09
-
-Notes:
- - Bump glib build requirement to 2.38 (Ignacio Casal Quinteiro)
-
-New Features:
- - Add g_usb_context_find_by_platform_id() (Richard Hughes)
- - Add g_usb_device_get_children() (Richard Hughes)
- - Add g_usb_device_get_device_subclass and get_device_protocol methods (Ignacio Casal Quinteiro)
- - Add g_usb_device_get_parent() (Richard Hughes)
- - Add g_usb_device_get_port_number() (Richard Hughes)
- - Add g_usb_device_get_vid_as_str() (Richard Hughes)
- - Show more helpful output for 'gusb show' (Richard Hughes)
-
-Bugfixes:
- - Don't filter out hub devices when getting the device list (Richard Hughes)
- - Make the platform ID persistent across re-plug (Richard Hughes)
- - Port to GTask (Ignacio Casal Quinteiro)
- - Use new Glib features for various code cleanups (Ignacio Casal Quinteiro)
-
-Version 0.2.3
-~~~~~~~~~~~~~
-Released: 2014-12-01
-
-Bugfixes:
- - Correctly terminate the libusb event thread (Richard Hughes)
-
-Version 0.2.2
-~~~~~~~~~~~~~
-Released: 2014-11-26
-
-New Features:
- - Official Windows support!
-
-Bugfixes:
- - No longer require G_USB_API_IS_SUBJECT_TO_CHANGE (Richard Hughes)
- - Use a thread to process libusb1 events (Richard Hughes)
-
-Version 0.2.1
-~~~~~~~~~~~~~
-Released: 2014-11-24
-
-Bugfixes:
- - Always set a device platform ID (Richard Hughes)
- - Ignore 'unsupported' as a return value for kernel drivers (Richard Hughes)
-
-Version 0.2.0
-~~~~~~~~~~~~~
-Released: 2014-11-20
-
-Notes:
- - This release raises the GLib requirement to 2.32 and libusb to 1.0.19
- - No GUdev functionality is now required
-
-New Features:
- - Add g_usb_device_get_device_class() (Richard Hughes)
- - Use the native hotplug support in libusb 1.0.19 (Richard Hughes)
-
-Bugfixes:
- - Fix a crash where libusb_get_pollfds() is unavailable (Richard Hughes)
- - Manually coldplug devices and poll if hotplugging is not available (Richard Hughes)
-
-Version 0.1.6
-~~~~~~~~~~~~~
-Released: 2013-03-05
-
-Bugfixes:
- - Do not use deprecated GLib functionality (Richard Hughes)
- - Remove duplicate gtk-doc check in configure (David King)
- - Unref the GMainloop after it has been run, not when just quit (Richard Hughes)
-
-Version 0.1.5
-~~~~~~~~~~~~~
-Released: 2013-02-05
-
-Bugfixes:
- - Don't use the deprecated INCLUDES in Makefile.am (Richard Hughes)
- - Fix documentation build (Christopher James Halse Rogers)
- - Fix obvious typo in README (Hans Ulrich Niedermann)
-
-Version 0.1.4
-~~~~~~~~~~~~~
-Released: 2012-11-06
-
-New Features:
- - Add GObject Introspection support (Evan Nemerson)
- - Add g_usb_device_reset() to reset a connected device (Richard Hughes)
- - Add Vala bindings (Evan Nemerson)
-
-Bugfixes:
- - Assorted introspection annotation fixes (Evan Nemerson)
- - Rename inconsistently named gusb_* symbols to g_usb_* (Evan Nemerson)
-
-Version 0.1.3
-~~~~~~~~~~~~~
-Released: 2011-12-05
-
-Bugfixes:
- - Do not build with -Werror by default (Richard Hughes)
- - Add a missing error enum value (Richard Hughes)
-
-Version 0.1.2
-~~~~~~~~~~~~~
-Released: 2011-11-11
-
-New Features:
- - Call g_usb_device_list_coldplug() automatically (Richard Hughes)
-
-Bugfixes:
- - Ignore EBUSY when trying to detach a kernel driver (Richard Hughes)
- - Fix a build failure on Debian (Richard Hughes)
-
-Version 0.1.1
-~~~~~~~~~~~~~
-Released: 2011-11-01
-
-Notes:
- - This release bumps soname to remove GUdevDevice from the public API.
-
-New Features:
- - Add g_usb_device_get_platform_id (Richard Hughes)
-
-Bugfixes:
- - Add usb-1.0 to the gusb.pc 'Requires' (Richard Hughes)
- - Do not leak the GUdev API into the public API of GUsb (Richard Hughes)
- - Do not try to set the currently running device configuration twice (Richard Hughes)
- - Do not use g_simple_async_result_is_valid() as it fails for sync methods (Richard Hughes)
-
-Version 0.1.0
-~~~~~~~~~~~~~
-Released: 2011-09-15
-
-Notes:
- - This is the first public release of GUsb!
- - The library is not API or ABI stable -- you also have to define
-   G_USB_API_IS_SUBJECT_TO_CHANGE before including the header to
-   acknowlegde this.
- - Quite a lot of functionality has been added by Richard, Debarshi and
-   Hans for this release, and we're open to new API ideas, patches and
-   bugreports.
-
-New Features:
- - Add a debugging tool to exercise the API that is not installed (Richard Hughes)
- - Add a simple self test framework (Richard Hughes)
- - Build: AM_PROG_CC_C_O required (Javier Jardón)
- - Build: Honor aclocal flags (Javier Jardón)
- - Build: Use new libtool syntax only (Javier Jardón)
- - Build: xz tarballs generation (Javier Jardón)
- - Generate gtk-doc files and add some gtk-doc markup (Richard Hughes)
- - GUsbContext: Ensure that there is only one GUsbSource for each GUsbContext (Debarshi Ray)
- - GUsbContext: fix mapping of GLogLevelFlags to libusb debug level (Hans de Goede)
- - GUsbContext: Turn into a proper gobject derived class (Hans de Goede)
- - GUsbDevice: Add asynchronous bulk and control transfer (Debarshi Ray)
- - GUsbDevice: Add functionality to do sync bulk, control and interrupt transfers (Richard Hughes)
- - GUsbDevice: Add functions to get string descriptors (Hans de Goede)
- - GUsbDevice: Add get bus / address methods (Hans de Goede)
- - GUsbDevice: Add g_usb_device_interrupt_transfer_async() (Richard Hughes)
- - GUsbDevice: Add GUsbDeviceList (Hans de Goede)
- - GUsbDevice: Add g_usb_device_open() and g_usb_device_close() (Richard Hughes)
- - GUsbDevice: Add some helpers for reporting not open functionality (Hans de Goede)
- - GUsbDevice: Add some more detailed error codes (Richard Hughes)
- - GUsbDevice: Add the ability to get elements of the device descriptor (Richard Hughes)
- - GUsbDevice: Call g_usb_device_req_free only after we are done with the instance (Debarshi Ray)
- - GUsbDevice: Check several methods for unopened device (Debarshi Ray)
- - GUsbDevice: Ensure the new async methods return the correct exit codes on failure (Richard Hughes)
- - GUsbDevice: Ensure we have the device descriptor before getting the vendor and product ID's (Richard Hughes)
- - GUsbDevice: g_usb_device_bulk_transfer_finish: Use g_simple_async_result_is_valid (Debarshi Ray)
- - GUsbDevice: g_usb_device_*_transfer_async: Report if the submission failed (Debarshi Ray)
- - GUsbDeviceList: Add g_usb_device_list_find_by_vid_pid() as it's required in colord (Richard Hughes)
- - GUsbDeviceList: Add g_usb_device_list_get_devices() to get the complete device list (Richard Hughes)
- - GUsbDeviceList: Do not duplicate all devices if the user calls coldplug() twice (Richard Hughes)
- - GUsbDeviceList: Make g_usb_device_list_add_dev() return TRUE if the device was added (Richard Hughes)
- - GUsbDeviceList: Ref the device returned by g_usb_device_list_get_dev_by_bus_n_address() (Richard Hughes)
- - GUsbDevice: Make several methods cancellable (Debarshi Ray)
- - GUsbDevice: Move setting config / claiming of interface to their own methods (Hans de Goede)
- - GUsbDevice: Set the GUsbContext for install use in GUsbDevice (Richard Hughes)
- - GUsbDevice: Turn into a wrapper around libusb_device (Hans de Goede)
- - GUsbSource: Add a GError parameter to g_usb_source_new() (Richard Hughes)
- - GUsbSource: g_usb_source_new won't return NULL (Debarshi Ray)
- - GUsbSource: Make ref / unref the context it uses (Hans de Goede)
- - Provide our own gusb_strerror function (Hans de Goede)
- - Require users specify G_USB_API_IS_SUBJECT_TO_CHANGE when using libusb (Richard Hughes)
- - Simplify the reference counting of the GSimpleAsyncResult instances (Debarshi Ray)
- - Use standard GLogLevelFlags when setting the debug flags (Richard Hughes)
- - Use the slice allocator for fixed size structs (Debarshi Ray)
+This release adds the following feature:
+ * Add g_usb_device_get_string_descriptor_bytes()
+
+This release fixes the following bugs:
+ * Properly set dylib versions on darwin
+ * Fix cancellation if cancellable is already cancelled
