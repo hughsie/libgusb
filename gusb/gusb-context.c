@@ -19,9 +19,10 @@
 
 #include "gusb-context-private.h"
 #include "gusb-device-private.h"
+#include "gusb-source-private.h"
 #include "gusb-util.h"
 
-enum { PROP_0, PROP_LIBUSB_CONTEXT, PROP_DEBUG_LEVEL, N_PROPERTIES };
+enum { PROP_0, PROP_LIBUSB_CONTEXT, PROP_DEBUG_LEVEL, PROP_FLAGS, N_PROPERTIES };
 
 enum { DEVICE_ADDED_SIGNAL, DEVICE_REMOVED_SIGNAL, LAST_SIGNAL };
 
@@ -43,6 +44,8 @@ typedef struct {
 	GThread *thread_event;
 	gboolean done_enumerate;
 	volatile gint thread_event_run;
+	GMutex source_mutex;
+	GUsbSource *source;
 	guint hotplug_poll_id;
 	guint hotplug_poll_interval;
 	int debug_level;
@@ -119,7 +122,7 @@ g_usb_context_dispose(GObject *object)
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 
 	/* this is safe to call even when priv->hotplug_id is unset */
-	if (g_atomic_int_dec_and_test(&priv->thread_event_run)) {
+	if (priv->thread_event != NULL && g_atomic_int_dec_and_test(&priv->thread_event_run)) {
 		libusb_hotplug_deregister_callback(priv->ctx, priv->hotplug_id);
 		g_thread_join(priv->thread_event);
 	}
@@ -131,6 +134,10 @@ g_usb_context_dispose(GObject *object)
 	if (priv->idle_events_id > 0) {
 		g_source_remove(priv->idle_events_id);
 		priv->idle_events_id = 0;
+	}
+	if (priv->source != NULL) {
+		_g_usb_source_destroy(priv->source);
+		priv->source = NULL;
 	}
 
 	g_clear_pointer(&priv->main_ctx, g_main_context_unref);
@@ -158,6 +165,9 @@ g_usb_context_get_property(GObject *object, guint prop_id, GValue *value, GParam
 	case PROP_DEBUG_LEVEL:
 		g_value_set_int(value, priv->debug_level);
 		break;
+	case PROP_FLAGS:
+		g_value_set_uint64(value, priv->flags);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
 		break;
@@ -178,6 +188,9 @@ g_usb_context_set_property(GObject *object, guint prop_id, const GValue *value, 
 #else
 		libusb_set_debug(priv->ctx, priv->debug_level);
 #endif
+		break;
+	case PROP_FLAGS:
+		g_usb_context_set_flags(self, g_value_get_uint64(value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
@@ -205,6 +218,12 @@ g_usb_context_class_init(GUsbContextClass *klass)
 	 */
 	pspecs[PROP_DEBUG_LEVEL] =
 	    g_param_spec_int("debug_level", NULL, NULL, 0, 3, 0, G_PARAM_READWRITE);
+
+	/**
+	 * GUsbContext:flags:
+	 */
+	pspecs[PROP_FLAGS] =
+	    g_param_spec_uint64("flags", NULL, NULL, 0, G_MAXUINT64, 0, G_PARAM_READWRITE);
 
 	g_object_class_install_properties(object_class, N_PROPERTIES, pspecs);
 
@@ -774,6 +793,9 @@ g_usb_context_enumerate(GUsbContext *self)
 			      g_ptr_array_index(priv->devices, i));
 	}
 
+	/* setup with the default mainloop if not already done */
+	g_usb_context_get_source(self, NULL);
+
 	/* any queued up hotplug events are queued as idle handlers */
 }
 
@@ -791,7 +813,10 @@ void
 g_usb_context_set_flags(GUsbContext *self, GUsbContextFlags flags)
 {
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
+	if (priv->flags == flags)
+		return;
 	priv->flags = flags;
+	g_object_notify_by_pspec(G_OBJECT(self), pspecs[PROP_FLAGS]);
 }
 
 /**
@@ -838,6 +863,7 @@ g_usb_context_init(GUsbContext *self)
 	priv->devices_removed = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->dict_usb_ids = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 	priv->dict_replug = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	g_mutex_init(&priv->source_mutex);
 
 	/* to escape the thread into the mainloop */
 	g_mutex_init(&priv->idle_events_mutex);
@@ -866,8 +892,13 @@ g_usb_context_initable_init(GInitable *initable, GCancellable *cancellable, GErr
 
 	priv->main_ctx = g_main_context_ref(g_main_context_default());
 	priv->ctx = ctx;
-	priv->thread_event_run = 1;
-	priv->thread_event = g_thread_new("GUsbEventThread", g_usb_context_event_thread_cb, self);
+
+	/* FreeBSD cannot use libusb_set_pollfd_notifiers(), so use a thread instead */
+	if (priv->flags & G_USB_CONTEXT_FLAGS_USE_HOTPLUG_THREAD) {
+		priv->thread_event_run = 1;
+		priv->thread_event =
+		    g_thread_new("GUsbEventThread", g_usb_context_event_thread_cb, self);
+	}
 
 	/* watch for add/remove */
 	if (libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG)) {
@@ -917,7 +948,11 @@ _g_usb_context_get_context(GUsbContext *self)
  * @self: a #GUsbContext
  * @main_ctx: a #GMainContext, or %NULL
  *
- * This function does nothing.
+ * Returns a source for this context. The first call actually creates the source and the result
+ * is returned in all future calls, unless threading is being used.
+ *
+ * If the platform does not support libusb_set_pollfd_notifiers() then a thread is being used,
+ * and this function returns %NULL.
  *
  * Return value: (transfer none): the #GUsbSource.
  *
@@ -926,7 +961,16 @@ _g_usb_context_get_context(GUsbContext *self)
 GUsbSource *
 g_usb_context_get_source(GUsbContext *self, GMainContext *main_ctx)
 {
-	return NULL;
+	GUsbContextPrivate *priv = GET_PRIVATE(self);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new(&priv->source_mutex);
+
+	g_assert(locker != NULL);
+
+	if (priv->thread_event != NULL)
+		return NULL;
+	if (priv->source == NULL)
+		priv->source = _g_usb_source_new(main_ctx, self);
+	return priv->source;
 }
 
 /**
@@ -1321,5 +1365,23 @@ g_usb_context_wait_for_replug(GUsbContext *self,
 GUsbContext *
 g_usb_context_new(GError **error)
 {
-	return g_initable_new(G_USB_TYPE_CONTEXT, NULL, error, NULL);
+	return g_usb_context_new_full(G_USB_CONTEXT_FLAGS_USE_HOTPLUG_THREAD, NULL, error);
+}
+
+/**
+ * g_usb_context_new_full:
+ * @flags: a #GUsbContextFlags, e.g. %G_USB_CONTEXT_FLAGS_SAVE_EVENTS
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Creates a new context for accessing USB devices.
+ *
+ * Return value: a new %GUsbContext object or %NULL on error.
+ *
+ * Since: 0.4.2
+ **/
+GUsbContext *
+g_usb_context_new_full(GUsbContextFlags flags, GCancellable *cancellable, GError **error)
+{
+	return g_initable_new(G_USB_TYPE_CONTEXT, cancellable, error, "flags", flags, NULL);
 }

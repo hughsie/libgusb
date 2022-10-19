@@ -2164,6 +2164,9 @@ g_usb_device_control_transfer_async(GUsbDevice *self,
 							    req,
 							    NULL);
 	}
+
+	/* setup with the default mainloop */
+	g_usb_context_get_source(priv->context, NULL);
 }
 
 /**
@@ -2340,6 +2343,9 @@ g_usb_device_bulk_transfer_async(GUsbDevice *self,
 							    req,
 							    NULL);
 	}
+
+	/* setup with the default mainloop */
+	g_usb_context_get_source(priv->context, NULL);
 }
 
 /**
@@ -2516,6 +2522,9 @@ g_usb_device_interrupt_transfer_async(GUsbDevice *self,
 							    req,
 							    NULL);
 	}
+
+	/* setup with the default mainloop */
+	g_usb_context_get_source(priv->context, NULL);
 }
 
 /**
