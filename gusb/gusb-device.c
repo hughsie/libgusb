@@ -477,7 +477,7 @@ g_usb_device_has_tag(GUsbDevice *self, const gchar *tag)
 
 /**
  * g_usb_device_add_tag:
- * @self: a #FuDevice
+ * @self: a #GUsbDevice
  * @tag: a tag, for example `bootloader` or `runtime-reload`
  *
  * Adds a tag, which is included in the JSON log to identify the specific device.
