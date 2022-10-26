@@ -172,6 +172,8 @@ g_usb_device_get_device_protocol(GUsbDevice *self);
 
 void
 g_usb_device_add_tag(GUsbDevice *self, const gchar *tag);
+gboolean
+g_usb_device_has_tag(GUsbDevice *self, const gchar *tag);
 
 guint8
 g_usb_device_get_configuration_index(GUsbDevice *self);
