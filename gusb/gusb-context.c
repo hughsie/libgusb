@@ -425,7 +425,7 @@ g_usb_context_load_with_tag(GUsbContext *self,
 		    g_object_new(G_USB_TYPE_DEVICE, "context", self, NULL);
 		if (!_g_usb_device_load(device, obj_tmp, error))
 			return FALSE;
-		if (tag != NULL && !_g_usb_device_has_tag(device, tag))
+		if (tag != NULL && !g_usb_device_has_tag(device, tag))
 			continue;
 		g_ptr_array_add(priv->devices, g_object_ref(device));
 		g_signal_emit(self, signals[DEVICE_ADDED_SIGNAL], 0, device);
@@ -493,7 +493,7 @@ g_usb_context_save_with_tag(GUsbContext *self,
 	}
 	for (guint i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
-		if (tag != NULL && !_g_usb_device_has_tag(device, tag))
+		if (tag != NULL && !g_usb_device_has_tag(device, tag))
 			continue;
 		if (!_g_usb_device_save(device, json_builder, error))
 			return FALSE;

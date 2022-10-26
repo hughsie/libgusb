@@ -22,7 +22,5 @@ libusb_device *
 _g_usb_device_get_device(GUsbDevice *self);
 gboolean
 _g_usb_device_open_internal(GUsbDevice *self, GError **error);
-gboolean
-_g_usb_device_has_tag(GUsbDevice *self, const gchar *tag);
 
 G_END_DECLS

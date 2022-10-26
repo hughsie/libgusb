@@ -193,3 +193,9 @@ LIBGUSB_0.4.1 {
     g_usb_device_add_tag;
   local: *;
 } LIBGUSB_0.4.0;
+
+LIBGUSB_0.4.3 {
+  global:
+    g_usb_device_has_tag;
+  local: *;
+} LIBGUSB_0.4.1;

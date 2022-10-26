@@ -448,8 +448,19 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 	return TRUE;
 }
 
+/**
+ * g_usb_device_has_tag:
+ * @self: a #GUsbDevice
+ * @tag: a tag, for example `bootloader` or `runtime-reload`
+ *
+ * Checks if a tag has been used to identify the specific device.
+ *
+ * Return value: %TRUE on success
+ *
+ * Since: 0.4.3
+ **/
 gboolean
-_g_usb_device_has_tag(GUsbDevice *self, const gchar *tag)
+g_usb_device_has_tag(GUsbDevice *self, const gchar *tag)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
@@ -485,7 +496,7 @@ g_usb_device_add_tag(GUsbDevice *self, const gchar *tag)
 	g_return_if_fail(G_USB_IS_DEVICE(self));
 	g_return_if_fail(tag != NULL);
 
-	if (_g_usb_device_has_tag(self, tag))
+	if (g_usb_device_has_tag(self, tag))
 		return;
 	g_ptr_array_add(priv->tags, g_strdup(tag));
 }
