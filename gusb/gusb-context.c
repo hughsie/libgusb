@@ -578,6 +578,12 @@ g_usb_context_hotplug_cb(struct libusb_context *ctx,
 
 	g_assert(locker != NULL);
 
+	/* libusb is returning devices but LIBUSB_HOTPLUG_ENUMERATE is not set! */
+	if (!priv->done_enumerate) {
+		g_debug("ignoring device as no enumerate!!");
+		return 0;
+	}
+
 	helper = g_new0(GUsbContextIdleHelper, 1);
 	helper->self = g_object_ref(self);
 	helper->dev = libusb_ref_device(dev);
