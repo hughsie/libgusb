@@ -21,6 +21,15 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.3" date="2022-12-20">
+      <description>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Export g_usb_device_has_tag()</li>
+          <li>Work around a libusb issue which causes devices to appear twice</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.2" date="2022-10-18">
       <description>
         <p>This release fixes the following bugs:</p>

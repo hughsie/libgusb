@@ -1,3 +1,11 @@
+Version 0.4.3
+=============
+Released: 2022-12-20
+
+This release fixes the following bugs:
+ * Export g_usb_device_has_tag()
+ * Work around a libusb issue which causes devices to appear twice
+
 Version 0.4.2
 =============
 Released: 2022-10-18
