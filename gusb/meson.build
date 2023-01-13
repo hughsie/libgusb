@@ -64,6 +64,7 @@ gusb = library(
     'gusb-source.c',
     'gusb-util.c',
     'gusb-version.c',
+    'gusb-json-common.c',
   ],
   soversion : lt_current,
   version : lt_version,
@@ -214,6 +215,7 @@ if get_option('tests')
       'gusb-self-test.c',
       'gusb-source.c',
       'gusb-util.c',
+      'gusb-json-common.c'
     ],
     include_directories : [
       root_incdir,

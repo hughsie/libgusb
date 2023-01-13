@@ -25,6 +25,7 @@
 #include "gusb-device-private.h"
 #include "gusb-interface-private.h"
 #include "gusb-util.h"
+#include "gusb-json-common.h"
 
 /**
  * GUsbDevicePrivate:
@@ -242,7 +243,6 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-#if JSON_CHECK_VERSION(1, 6, 0)
 	/* optional properties */
 	tmp = json_object_get_string_member_with_default(json_object, "PlatformId", NULL);
 	if (tmp != NULL) {
@@ -281,13 +281,6 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 	priv->desc.iProduct = json_object_get_int_member_with_default(json_object, "Product", 0x0);
 	priv->desc.iSerialNumber =
 	    json_object_get_int_member_with_default(json_object, "SerialNumber", 0x0);
-#else
-	g_set_error_literal(error,
-			    G_IO_ERROR,
-			    G_IO_ERROR_NOT_SUPPORTED,
-			    "json-glib version too old");
-	return FALSE;
-#endif
 
 	/* array of BOS descriptors */
 	if (json_object_has_member(json_object, "UsbBosDescriptors")) {
