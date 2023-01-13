@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "gusb-bos-descriptor-private.h"
+#include "gusb-json-common.h"
 
 struct _GUsbBosDescriptor {
 	GObject parent_instance;
@@ -62,7 +63,6 @@ _g_usb_bos_descriptor_load(GUsbBosDescriptor *self, JsonObject *json_object, GEr
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
-#if JSON_CHECK_VERSION(1, 6, 0)
 	/* optional properties */
 	self->bos_cap.bDevCapabilityType =
 	    json_object_get_int_member_with_default(json_object, "DevCapabilityType", 0x0);
@@ -76,13 +76,6 @@ _g_usb_bos_descriptor_load(GUsbBosDescriptor *self, JsonObject *json_object, GEr
 			g_bytes_unref(self->extra);
 		self->extra = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
 	}
-#else
-	g_set_error_literal(error,
-			    G_IO_ERROR,
-			    G_IO_ERROR_NOT_SUPPORTED,
-			    "json-glib version too old");
-	return FALSE;
-#endif
 
 	/* success */
 	return TRUE;

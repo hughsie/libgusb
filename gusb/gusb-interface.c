@@ -22,6 +22,7 @@
 
 #include "gusb-endpoint-private.h"
 #include "gusb-interface-private.h"
+#include "gusb-json-common.h"
 
 struct _GUsbInterface {
 	GObject parent_instance;
@@ -69,7 +70,6 @@ _g_usb_interface_load(GUsbInterface *self, JsonObject *json_object, GError **err
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
-#if JSON_CHECK_VERSION(1, 6, 0)
 	/* optional properties */
 	self->iface.bLength = json_object_get_int_member_with_default(json_object, "Length", 0x0);
 	self->iface.bDescriptorType =
@@ -110,13 +110,6 @@ _g_usb_interface_load(GUsbInterface *self, JsonObject *json_object, GError **err
 			g_bytes_unref(self->extra);
 		self->extra = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
 	}
-#else
-	g_set_error_literal(error,
-			    G_IO_ERROR,
-			    G_IO_ERROR_NOT_SUPPORTED,
-			    "json-glib version too old");
-	return FALSE;
-#endif
 
 	/* success */
 	return TRUE;

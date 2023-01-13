@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include "gusb-endpoint-private.h"
+#include "gusb-json-common.h"
 
 struct _GUsbEndpoint {
 	GObject parent_instance;
@@ -62,7 +63,6 @@ _g_usb_endpoint_load(GUsbEndpoint *self, JsonObject *json_object, GError **error
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-#if JSON_CHECK_VERSION(1, 6, 0)
 	/* optional properties */
 	self->endpoint_descriptor.bDescriptorType =
 	    json_object_get_int_member_with_default(json_object, "DescriptorType", 0x0);
@@ -86,13 +86,6 @@ _g_usb_endpoint_load(GUsbEndpoint *self, JsonObject *json_object, GError **error
 			g_bytes_unref(self->extra);
 		self->extra = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
 	}
-#else
-	g_set_error_literal(error,
-			    G_IO_ERROR,
-			    G_IO_ERROR_NOT_SUPPORTED,
-			    "json-glib version too old");
-	return FALSE;
-#endif
 
 	/* success */
 	return TRUE;

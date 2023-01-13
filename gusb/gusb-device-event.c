@@ -13,6 +13,7 @@
 #include "config.h"
 
 #include "gusb-device-event-private.h"
+#include "gusb-json-common.h"
 
 struct _GUsbDeviceEvent {
 	GObject parent_instance;
@@ -57,7 +58,6 @@ _g_usb_device_event_load(GUsbDeviceEvent *self, JsonObject *json_object, GError 
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, -1);
 
-#if JSON_CHECK_VERSION(1, 6, 0)
 	/* optional properties */
 	self->id = g_strdup(json_object_get_string_member_with_default(json_object, "Id", NULL));
 	self->status = json_object_get_int_member_with_default(json_object,
@@ -72,13 +72,6 @@ _g_usb_device_event_load(GUsbDeviceEvent *self, JsonObject *json_object, GError 
 		g_autofree guchar *buf = g_base64_decode(str, &bufsz);
 		self->bytes = g_bytes_new_take(g_steal_pointer(&buf), bufsz);
 	}
-#else
-	g_set_error_literal(error,
-			    G_IO_ERROR,
-			    G_IO_ERROR_NOT_SUPPORTED,
-			    "json-glib version too old");
-	return FALSE;
-#endif
 
 	/* success */
 	return TRUE;
