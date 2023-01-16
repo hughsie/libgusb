@@ -152,7 +152,7 @@ _g_usb_interface_save(GUsbInterface *self, JsonBuilder *json_builder, GError **e
 	}
 
 	/* array of endpoints */
-	if (self->endpoints->len > 0) {
+	if (self->endpoints != NULL && self->endpoints->len > 0) {
 		json_builder_set_member_name(json_builder, "UsbEndpoints");
 		json_builder_begin_array(json_builder);
 		for (guint i = 0; i < self->endpoints->len; i++) {
