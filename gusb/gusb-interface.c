@@ -86,6 +86,21 @@ _g_usb_interface_load(GUsbInterface *self, JsonObject *json_object, GError **err
 	self->iface.iInterface =
 	    json_object_get_int_member_with_default(json_object, "Interface", 0x0);
 
+	/* array of endpoints */
+	if (json_object_has_member(json_object, "UsbEndpoints")) {
+		self->endpoints = g_ptr_array_new_with_free_func(g_object_unref);
+		JsonArray *json_array = json_object_get_array_member(json_object, "UsbEndpoints");
+		for (guint i = 0; i < json_array_get_length(json_array); i++) {
+			JsonNode *node_tmp = json_array_get_element(json_array, i);
+			JsonObject *obj_tmp = json_node_get_object(node_tmp);
+			g_autoptr(GUsbEndpoint) endpoint =
+			    g_object_new(G_USB_TYPE_ENDPOINT, NULL);
+			if (!_g_usb_endpoint_load(endpoint, obj_tmp, error))
+				return FALSE;
+			g_ptr_array_add(self->endpoints, g_object_ref(endpoint));
+		}
+	}
+
 	/* extra data */
 	str = json_object_get_string_member_with_default(json_object, "ExtraData", NULL);
 	if (str != NULL) {
