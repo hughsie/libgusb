@@ -486,10 +486,12 @@ g_usb_context_save_with_tag(GUsbContext *self,
 	/* array of devices */
 	json_builder_set_member_name(json_builder, "UsbDevices");
 	json_builder_begin_array(json_builder);
-	for (guint i = 0; i < priv->devices_removed->len; i++) {
-		GUsbDevice *device = g_ptr_array_index(priv->devices_removed, i);
-		if (!_g_usb_device_save(device, json_builder, error))
-			return FALSE;
+	if (priv->flags & G_USB_CONTEXT_FLAGS_SAVE_REMOVED_DEVICES) {
+		for (guint i = 0; i < priv->devices_removed->len; i++) {
+			GUsbDevice *device = g_ptr_array_index(priv->devices_removed, i);
+			if (!_g_usb_device_save(device, json_builder, error))
+				return FALSE;
+		}
 	}
 	for (guint i = 0; i < priv->devices->len; i++) {
 		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
