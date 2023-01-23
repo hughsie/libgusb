@@ -501,6 +501,32 @@ g_usb_device_add_tag(GUsbDevice *self, const gchar *tag)
 	g_ptr_array_add(priv->tags, g_strdup(tag));
 }
 
+/**
+ * g_usb_device_remove_tag:
+ * @self: a #GUsbDevice
+ * @tag: a tag, for example `bootloader` or `runtime-reload`
+ *
+ * Removes a tag, which is included in the JSON log to identify the specific device.
+ *
+ * Since: 0.4.4
+ **/
+void
+g_usb_device_remove_tag(GUsbDevice *self, const gchar *tag)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+
+	g_return_if_fail(G_USB_IS_DEVICE(self));
+	g_return_if_fail(tag != NULL);
+
+	for (guint i = 0; i < priv->tags->len; i++) {
+		const gchar *tag_tmp = g_ptr_array_index(priv->tags, i);
+		if (g_strcmp0(tag_tmp, tag) == 0) {
+			g_ptr_array_remove_index(priv->tags, i);
+			return;
+		}
+	}
+}
+
 /* not defined in FreeBSD */
 #ifndef HAVE_LIBUSB_GET_PARENT
 static libusb_device *
