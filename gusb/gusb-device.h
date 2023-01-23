@@ -139,6 +139,8 @@ g_usb_device_error_quark(void);
 
 const gchar *
 g_usb_device_get_platform_id(GUsbDevice *self);
+gboolean
+g_usb_device_is_emulated(GUsbDevice *self);
 GUsbDevice *
 g_usb_device_get_parent(GUsbDevice *self);
 GPtrArray *
