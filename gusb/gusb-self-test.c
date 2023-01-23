@@ -35,6 +35,13 @@ gusb_device_func(void)
 
 	g_assert_cmpint(g_usb_device_get_vid(device), >, 0x0000);
 	g_assert_cmpint(g_usb_device_get_pid(device), >, 0x0000);
+
+	g_assert_false(g_usb_device_has_tag(device, "foobar"));
+	g_usb_device_add_tag(device, "foobar");
+	g_usb_device_add_tag(device, "foobar");
+	g_assert_true(g_usb_device_has_tag(device, "foobar"));
+	g_usb_device_remove_tag(device, "foobar");
+	g_assert_false(g_usb_device_has_tag(device, "foobar"));
 }
 
 static void
