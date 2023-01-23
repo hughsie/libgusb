@@ -401,14 +401,23 @@ g_usb_context_load_with_tag(GUsbContext *self,
 {
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 	JsonArray *json_array;
+	g_autoptr(GPtrArray) devices_to_remove = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	/* remove existing devices */
-	g_ptr_array_set_size(priv->devices, 0);
-	g_ptr_array_set_size(priv->devices_removed, 0);
+	/* remove existing devices with this tag: two step */
+	for (guint i = 0; i < priv->devices->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
+		if (tag == NULL || g_usb_device_has_tag(device, tag))
+			g_ptr_array_add(devices_to_remove, g_object_ref(device));
+	}
+	for (guint i = 0; i < devices_to_remove->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(devices_to_remove, i);
+		g_usb_context_emit_device_remove(self, device);
+		g_ptr_array_remove(priv->devices, device);
+	}
 
 	if (!json_object_has_member(json_object, "UsbDevices")) {
 		g_set_error_literal(error,
