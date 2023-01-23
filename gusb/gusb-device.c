@@ -641,6 +641,23 @@ _g_usb_device_get_device(GUsbDevice *self)
 	return priv->device;
 }
 
+/**
+ * g_usb_device_is_emulated:
+ * @self: a #GUsbDevice instance
+ *
+ * Gets if the device is emulated.
+ *
+ * Return value: %TRUE if the device is emulated and not backed by a physical device.
+ *
+ * Since: 0.4.4
+ **/
+gboolean
+g_usb_device_is_emulated(GUsbDevice *self)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	return priv->device == NULL;
+}
+
 static gboolean
 g_usb_device_libusb_error_to_gerror(GUsbDevice *self, gint rc, GError **error)
 {
