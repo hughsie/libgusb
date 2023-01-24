@@ -449,6 +449,24 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 }
 
 /**
+ * g_usb_device_get_tags:
+ * @self: a #GUsbDevice
+ *
+ * Gets all the tags.
+ *
+ * Returns: (transfer container) (element-type utf8): string tags
+ *
+ * Since: 0.4.4
+ **/
+GPtrArray *
+g_usb_device_get_tags(GUsbDevice *self)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
+	return g_ptr_array_ref(priv->tags);
+}
+
+/**
  * g_usb_device_has_tag:
  * @self: a #GUsbDevice
  * @tag: a tag, for example `bootloader` or `runtime-reload`
