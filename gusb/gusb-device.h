@@ -178,6 +178,8 @@ void
 g_usb_device_remove_tag(GUsbDevice *self, const gchar *tag);
 gboolean
 g_usb_device_has_tag(GUsbDevice *self, const gchar *tag);
+GPtrArray *
+g_usb_device_get_tags(GUsbDevice *self);
 
 guint8
 g_usb_device_get_configuration_index(GUsbDevice *self);
