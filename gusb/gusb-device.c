@@ -1100,6 +1100,22 @@ g_usb_device_get_events(GUsbDevice *self)
 }
 
 /**
+ * g_usb_device_clear_events:
+ * @self: a #GUsbDevice
+ *
+ * Clear all the events saved by the device.
+ *
+ * Since: 0.4.4
+ **/
+void
+g_usb_device_clear_events(GUsbDevice *self)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_if_fail(G_USB_IS_DEVICE(self));
+	g_ptr_array_set_size(priv->events, 0);
+}
+
+/**
  * g_usb_device_invalidate:
  * @self: a #GUsbDevice
  *
