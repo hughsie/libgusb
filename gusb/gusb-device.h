@@ -207,6 +207,8 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error);
 
 GPtrArray *
 g_usb_device_get_events(GUsbDevice *self);
+void
+g_usb_device_clear_events(GUsbDevice *self);
 
 GPtrArray *
 g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error);

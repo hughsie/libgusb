@@ -202,6 +202,7 @@ LIBGUSB_0.4.3 {
 
 LIBGUSB_0.4.4 {
   global:
+    g_usb_device_clear_events;
     g_usb_device_get_tags;
     g_usb_device_is_emulated;
     g_usb_device_remove_tag;
