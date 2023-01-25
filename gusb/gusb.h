@@ -11,6 +11,7 @@
 
 #include <gusb/gusb-bos-descriptor.h>
 #include <gusb/gusb-context.h>
+#include <gusb/gusb-device-event.h>
 #include <gusb/gusb-device-list.h>
 #include <gusb/gusb-device.h>
 #include <gusb/gusb-endpoint.h>
