@@ -519,6 +519,8 @@ main(int argc, char *argv[])
 	priv->usb_ctx = g_usb_context_new(NULL);
 	if (save_events)
 		context_flags |= G_USB_CONTEXT_FLAGS_SAVE_EVENTS;
+	if (verbose)
+		context_flags |= G_USB_CONTEXT_FLAGS_DEBUG;
 	g_usb_context_set_flags(priv->usb_ctx, context_flags);
 
 	/* add commands */

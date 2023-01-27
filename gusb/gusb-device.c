@@ -404,7 +404,8 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 	/* array of BOS descriptors */
 	bos_descriptors = g_usb_device_get_bos_descriptors(self, &error_bos);
 	if (bos_descriptors == NULL) {
-		g_debug("%s", error_bos->message);
+		if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
+			g_debug("%s", error_bos->message);
 	} else if (bos_descriptors->len > 0) {
 		json_builder_set_member_name(json_builder, "UsbBosDescriptors");
 		json_builder_begin_array(json_builder);
@@ -419,7 +420,8 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 	/* array of interfaces */
 	interfaces = g_usb_device_get_interfaces(self, &error_interfaces);
 	if (interfaces == NULL) {
-		g_debug("%s", error_interfaces->message);
+		if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
+			g_debug("%s", error_interfaces->message);
 	} else if (interfaces->len > 0) {
 		json_builder_set_member_name(json_builder, "UsbInterfaces");
 		json_builder_begin_array(json_builder);
@@ -829,7 +831,8 @@ g_usb_device_load_event(GUsbDevice *self, const gchar *id)
 	for (guint i = priv->event_idx; i < priv->events->len; i++) {
 		GUsbDeviceEvent *event = g_ptr_array_index(priv->events, i);
 		if (g_strcmp0(g_usb_device_event_get_id(event), id) == 0) {
-			g_debug("found in-order %s at position %u", id, i);
+			if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
+				g_debug("found in-order %s at position %u", id, i);
 			priv->event_idx = i + 1;
 			return event;
 		}
@@ -839,7 +842,8 @@ g_usb_device_load_event(GUsbDevice *self, const gchar *id)
 	for (guint i = 0; i < priv->events->len; i++) {
 		GUsbDeviceEvent *event = g_ptr_array_index(priv->events, i);
 		if (g_strcmp0(g_usb_device_event_get_id(event), id) == 0) {
-			g_debug("found out-of-order %s at position %u", id, i);
+			if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
+				g_debug("found out-of-order %s at position %u", id, i);
 			return event;
 		}
 	}
