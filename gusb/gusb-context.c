@@ -826,6 +826,13 @@ g_usb_context_get_flags(GUsbContext *self)
 	return priv->flags;
 }
 
+gboolean
+_g_usb_context_has_flag(GUsbContext *self, GUsbContextFlags flag)
+{
+	GUsbContextPrivate *priv = GET_PRIVATE(self);
+	return (priv->flags & flag) > 0;
+}
+
 static gpointer
 g_usb_context_event_thread_cb(gpointer data)
 {
