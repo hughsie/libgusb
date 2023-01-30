@@ -1,3 +1,15 @@
+Version 0.4.4
+=============
+Released: 2023-01-30
+
+This release adds the following features:
+ * Add new API to make emulation easier to use
+
+This release fixes the following bugs:
+ * Emit remove devices with matching tags when loading contexts
+ * Fix a critical warning when finalizing devices without endpoints
+ * Reduce the debugging level when emulating firmware
+
 Version 0.4.3
 =============
 Released: 2022-12-20

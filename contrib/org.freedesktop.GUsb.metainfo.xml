@@ -21,6 +21,20 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.4" date="2023-01-30">
+      <description>
+        <p>This release adds the following features:</p>
+        <ul>
+          <li>Add new API to make emulation easier to use</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Emit remove devices with matching tags when loading contexts</li>
+          <li>Fix a critical warning when finalizing devices without endpoints</li>
+          <li>Reduce the debugging level when emulating firmware</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.3" date="2022-12-20">
       <description>
         <p>This release fixes the following bugs:</p>
