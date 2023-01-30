@@ -1,5 +1,5 @@
 project('libgusb', 'c',
-  version : '0.4.4',
+  version : '0.4.5',
   license : 'LGPL-2.1+',
   meson_version : '>=0.49.0',
   default_options : ['c_std=c99']
