@@ -239,6 +239,22 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		g_free(priv->platform_id);
 		priv->platform_id = g_strdup(tmp);
 	}
+	tmp = json_object_get_string_member_with_default(json_object, "Created", NULL);
+	if (tmp != NULL) {
+		g_autoptr(GDateTime) created_new = g_date_time_new_from_iso8601(tmp, NULL);
+		if (created_new == NULL) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_INVALID_DATA,
+				    "Cannot parse ISO8601 date: %s",
+				    tmp);
+			return FALSE;
+		}
+		if (!g_date_time_equal(priv->created, created_new)) {
+			g_date_time_unref(priv->created);
+			priv->created = g_steal_pointer(&created_new);
+		}
+	}
 	priv->desc.idVendor = json_object_get_int_member_with_default(json_object, "IdVendor", 0x0);
 	priv->desc.idProduct =
 	    json_object_get_int_member_with_default(json_object, "IdProduct", 0x0);
@@ -448,6 +464,27 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 	/* success */
 	json_builder_end_object(json_builder);
 	return TRUE;
+}
+
+/**
+ * g_usb_device_get_created:
+ * @self: a #GUsbDevice
+ *
+ * Gets the date and time that the #GUsbDevice was created.
+ *
+ * This can be used as an indicator if the device replugged, as the vendor and product IDs may not
+ * change for some devices. Use `g_date_time_equal()` to verify equality.
+ *
+ * Returns: (transfer none): a #GDateTime
+ *
+ * Since: 0.4.5
+ **/
+GDateTime *
+g_usb_device_get_created(GUsbDevice *self)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
+	return priv->created;
 }
 
 /**
