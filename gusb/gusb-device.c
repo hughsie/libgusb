@@ -861,8 +861,11 @@ g_usb_device_load_event(GUsbDevice *self, const gchar *id)
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
 	/* reset back to the beginning */
-	if (priv->event_idx >= priv->events->len)
+	if (priv->event_idx >= priv->events->len) {
+		if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
+			g_debug("resetting event index");
 		priv->event_idx = 0;
+	}
 
 	/* look for the next event in the sequence */
 	for (guint i = priv->event_idx; i < priv->events->len; i++) {
