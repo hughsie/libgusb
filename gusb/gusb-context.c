@@ -401,7 +401,8 @@ g_usb_context_load_with_tag(GUsbContext *self,
 {
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 	JsonArray *json_array;
-	g_autoptr(GPtrArray) devices_to_remove = g_ptr_array_new_with_free_func((GDestroyNotify) g_object_unref);
+	g_autoptr(GPtrArray) devices_to_remove =
+	    g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
 	g_return_val_if_fail(json_object != NULL, FALSE);
