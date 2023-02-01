@@ -18,6 +18,7 @@ struct _GUsbDeviceEvent {
 	GObject parent_instance;
 	gchar *id;
 	gint status;
+	gint rc;
 	GBytes *bytes;
 };
 
@@ -62,6 +63,7 @@ _g_usb_device_event_load(GUsbDeviceEvent *self, JsonObject *json_object, GError 
 	self->status = json_object_get_int_member_with_default(json_object,
 							       "Status",
 							       LIBUSB_TRANSFER_COMPLETED);
+	self->rc = json_object_get_int_member_with_default(json_object, "Error", LIBUSB_SUCCESS);
 
 	/* extra data */
 	str = json_object_get_string_member_with_default(json_object, "Data", NULL);
@@ -99,6 +101,10 @@ _g_usb_device_event_save(GUsbDeviceEvent *self, JsonBuilder *json_builder, GErro
 	if (self->status != LIBUSB_TRANSFER_COMPLETED) {
 		json_builder_set_member_name(json_builder, "Status");
 		json_builder_add_int_value(json_builder, self->status);
+	}
+	if (self->rc != LIBUSB_SUCCESS) {
+		json_builder_set_member_name(json_builder, "Error");
+		json_builder_add_int_value(json_builder, self->rc);
 	}
 	if (self->bytes != NULL) {
 		g_autofree gchar *str = g_base64_encode(g_bytes_get_data(self->bytes, NULL),
@@ -177,6 +183,40 @@ _g_usb_device_event_set_status(GUsbDeviceEvent *self, gint status)
 {
 	g_return_if_fail(G_USB_IS_DEVICE_EVENT(self));
 	self->status = status;
+}
+
+/**
+ * g_usb_device_event_get_rc:
+ * @self: a #GUsbDeviceEvent
+ *
+ * Gets any return code from the event.
+ *
+ * Return value: a `enum libusb_error`
+ *
+ * Since: 0.4.5
+ **/
+gint
+g_usb_device_event_get_rc(GUsbDeviceEvent *self)
+{
+	g_return_val_if_fail(G_USB_IS_DEVICE_EVENT(self), LIBUSB_ERROR_OTHER);
+	return self->rc;
+}
+
+/**
+ * _g_usb_device_event_set_rc:
+ * @self: a #GUsbDeviceEvent
+ * @status: `enum libusb_error`
+ *
+ * Set the return code of the event, e.g. `LIBUSB_ERROR_TIMEOUT`.
+ *
+ * Since: 0.4.5
+ **/
+void
+_g_usb_device_event_set_rc(GUsbDeviceEvent *self, gint rc)
+{
+	g_return_if_fail(G_USB_IS_DEVICE_EVENT(self));
+	g_return_if_fail(rc <= 0);
+	self->rc = rc;
 }
 
 /**

@@ -20,6 +20,8 @@ GBytes *
 g_usb_device_event_get_bytes(GUsbDeviceEvent *self);
 gint
 g_usb_device_event_get_status(GUsbDeviceEvent *self);
+gint
+g_usb_device_event_get_rc(GUsbDeviceEvent *self);
 void
 g_usb_device_event_set_bytes(GUsbDeviceEvent *self, GBytes *bytes);
 
