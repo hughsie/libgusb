@@ -23,7 +23,7 @@
 
 enum { PROP_0, PROP_LIBUSB_CONTEXT, PROP_DEBUG_LEVEL, N_PROPERTIES };
 
-enum { DEVICE_ADDED_SIGNAL, DEVICE_REMOVED_SIGNAL, LAST_SIGNAL };
+enum { DEVICE_ADDED_SIGNAL, DEVICE_REMOVED_SIGNAL, DEVICE_CHANGED_SIGNAL, LAST_SIGNAL };
 
 #define G_USB_CONTEXT_HOTPLUG_POLL_INTERVAL_DEFAULT 1000 /* ms */
 
@@ -244,6 +244,25 @@ g_usb_context_class_init(GUsbContextClass *klass)
 			 G_TYPE_NONE,
 			 1,
 			 G_USB_TYPE_DEVICE);
+
+	/**
+	 * GUsbContext::device-changed:
+	 * @self: the #GUsbContext instance that emitted the signal
+	 * @device: A #GUsbDevice
+	 *
+	 * This signal is emitted when a USB device is changed.
+	 **/
+	signals[DEVICE_CHANGED_SIGNAL] =
+	    g_signal_new("device-changed",
+			 G_TYPE_FROM_CLASS(klass),
+			 G_SIGNAL_RUN_LAST,
+			 G_STRUCT_OFFSET(GUsbContextClass, device_changed),
+			 NULL,
+			 NULL,
+			 g_cclosure_marshal_VOID__OBJECT,
+			 G_TYPE_NONE,
+			 1,
+			 G_USB_TYPE_DEVICE);
 }
 
 static void
@@ -255,6 +274,8 @@ g_usb_context_emit_device_add(GUsbContext *self, GUsbDevice *device)
 	if (!priv->done_enumerate)
 		return;
 
+	if (_g_usb_context_has_flag(self, G_USB_CONTEXT_FLAGS_DEBUG))
+		g_debug("emitting ::device-added(%s)", g_usb_device_get_platform_id(device));
 	g_signal_emit(self, signals[DEVICE_ADDED_SIGNAL], 0, device);
 }
 
@@ -267,7 +288,23 @@ g_usb_context_emit_device_remove(GUsbContext *self, GUsbDevice *device)
 	if (!priv->done_enumerate)
 		return;
 
+	if (_g_usb_context_has_flag(self, G_USB_CONTEXT_FLAGS_DEBUG))
+		g_debug("emitting ::device-removed(%s)", g_usb_device_get_platform_id(device));
 	g_signal_emit(self, signals[DEVICE_REMOVED_SIGNAL], 0, device);
+}
+
+static void
+g_usb_context_emit_device_changed(GUsbContext *self, GUsbDevice *device)
+{
+	GUsbContextPrivate *priv = GET_PRIVATE(self);
+
+	/* should not happen, if it does we would not fire any signal */
+	if (!priv->done_enumerate)
+		return;
+
+	if (_g_usb_context_has_flag(self, G_USB_CONTEXT_FLAGS_DEBUG))
+		g_debug("emitting ::device-changed(%s)", g_usb_device_get_platform_id(device));
+	g_signal_emit(self, signals[DEVICE_CHANGED_SIGNAL], 0, device);
 }
 
 static void
@@ -401,25 +438,19 @@ g_usb_context_load_with_tag(GUsbContext *self,
 {
 	GUsbContextPrivate *priv = GET_PRIVATE(self);
 	JsonArray *json_array;
-	g_autoptr(GPtrArray) devices_to_remove =
+	g_autoptr(GPtrArray) devices_added =
+	    g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	g_autoptr(GPtrArray) devices_remove =
 	    g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 
 	g_return_val_if_fail(G_USB_IS_CONTEXT(self), FALSE);
 	g_return_val_if_fail(json_object != NULL, FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
 
-	/* remove existing devices with this tag: two step */
-	for (guint i = 0; i < priv->devices->len; i++) {
-		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
-		if (tag == NULL || g_usb_device_has_tag(device, tag))
-			g_ptr_array_add(devices_to_remove, g_object_ref(device));
-	}
-	for (guint i = 0; i < devices_to_remove->len; i++) {
-		GUsbDevice *device = g_ptr_array_index(devices_to_remove, i);
-		g_usb_context_emit_device_remove(self, device);
-		g_ptr_array_remove(priv->devices, device);
-	}
+	/* if not already set */
+	priv->done_enumerate = TRUE;
 
+	/* sanity check */
 	if (!json_object_has_member(json_object, "UsbDevices")) {
 		g_set_error_literal(error,
 				    G_IO_ERROR,
@@ -427,22 +458,68 @@ g_usb_context_load_with_tag(GUsbContext *self,
 				    "no UsbDevices array");
 		return FALSE;
 	}
+
+	/* four steps:
+	 *
+	 * 1. store all the existing devices matching the tag in devices_remove
+	 * 2. read the devices in the array:
+	 *    - if the platform-id exists: replace the event data & remove from devices_remove
+	 *    - otherwise add to devices_added
+	 * 3. emit devices in devices_remove
+	 * 4. emit devices in devices_added
+	 */
+	for (guint i = 0; i < priv->devices->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(priv->devices, i);
+		if (tag == NULL || g_usb_device_has_tag(device, tag))
+			g_ptr_array_add(devices_remove, g_object_ref(device));
+	}
 	json_array = json_object_get_array_member(json_object, "UsbDevices");
 	for (guint i = 0; i < json_array_get_length(json_array); i++) {
 		JsonNode *node_tmp = json_array_get_element(json_array, i);
 		JsonObject *obj_tmp = json_node_get_object(node_tmp);
-		g_autoptr(GUsbDevice) device =
+		g_autoptr(GUsbDevice) device_old = NULL;
+		g_autoptr(GUsbDevice) device_tmp =
 		    g_object_new(G_USB_TYPE_DEVICE, "context", self, NULL);
-		if (!_g_usb_device_load(device, obj_tmp, error))
+		if (!_g_usb_device_load(device_tmp, obj_tmp, error))
 			return FALSE;
-		if (tag != NULL && !g_usb_device_has_tag(device, tag))
+		if (tag != NULL && !g_usb_device_has_tag(device_tmp, tag))
 			continue;
+
+		/* does a device with this platform ID [and the same created date] already exist */
+		device_old =
+		    g_usb_context_find_by_platform_id(self,
+						      g_usb_device_get_platform_id(device_tmp),
+						      NULL);
+		if (device_old != NULL && g_date_time_equal(g_usb_device_get_created(device_old),
+							    g_usb_device_get_created(device_tmp))) {
+			g_autoptr(GPtrArray) events = g_usb_device_get_events(device_tmp);
+			g_usb_device_clear_events(device_old);
+			for (guint j = 0; j < events->len; j++) {
+				GUsbDeviceEvent *event = g_ptr_array_index(events, j);
+				_g_usb_device_add_event(device_old, event);
+			}
+			g_usb_context_emit_device_changed(self, device_old);
+			g_ptr_array_remove(devices_remove, device_old);
+			continue;
+		}
+
+		/* new to us! */
+		g_ptr_array_add(devices_added, g_object_ref(device_tmp));
+	}
+
+	/* emit removes then adds */
+	for (guint i = 0; i < devices_remove->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(devices_remove, i);
+		g_usb_context_emit_device_remove(self, device);
+		g_ptr_array_remove(priv->devices, device);
+	}
+	for (guint i = 0; i < devices_added->len; i++) {
+		GUsbDevice *device = g_ptr_array_index(devices_added, i);
 		g_ptr_array_add(priv->devices, g_object_ref(device));
-		g_signal_emit(self, signals[DEVICE_ADDED_SIGNAL], 0, device);
+		g_usb_context_emit_device_add(self, device);
 	}
 
 	/* success */
-	priv->done_enumerate = TRUE;
 	return TRUE;
 }
 

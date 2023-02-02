@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <gusb/gusb-device-event.h>
 #include <gusb/gusb-device.h>
 
 G_BEGIN_DECLS
@@ -17,6 +18,8 @@ gboolean
 _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error);
 gboolean
 _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error);
+void
+_g_usb_device_add_event(GUsbDevice *self, GUsbDeviceEvent *event);
 
 libusb_device *
 _g_usb_device_get_device(GUsbDevice *self);

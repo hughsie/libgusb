@@ -22,12 +22,13 @@ struct _GUsbContextClass {
 	GObjectClass parent_class;
 	void (*device_added)(GUsbContext *self, GUsbDevice *device);
 	void (*device_removed)(GUsbContext *self, GUsbDevice *device);
+	void (*device_changed)(GUsbContext *self, GUsbDevice *device);
 	/*< private >*/
 	/*
 	 * If adding fields to this struct, remove corresponding
 	 * amount of padding to avoid changing overall struct size
 	 */
-	gchar _gusb_reserved[62];
+	gchar _gusb_reserved[61];
 };
 
 typedef enum { G_USB_CONTEXT_ERROR_INTERNAL } GUsbContextError;
