@@ -222,6 +222,16 @@ g_usb_device_init(GUsbDevice *self)
 	priv->tags = g_ptr_array_new_with_free_func(g_free);
 }
 
+/* private */
+void
+_g_usb_device_add_event(GUsbDevice *self, GUsbDeviceEvent *event)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_return_if_fail(G_USB_IS_DEVICE(self));
+	g_return_if_fail(G_USB_IS_DEVICE_EVENT(event));
+	g_ptr_array_add(priv->events, g_object_ref(event));
+}
+
 gboolean
 _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 {

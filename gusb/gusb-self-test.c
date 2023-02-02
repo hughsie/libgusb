@@ -408,21 +408,47 @@ gusb_device_munki_func(void)
 }
 
 static void
-gusb_device_json_func(void)
+_context_signal_count_cb(GUsbContext *ctx, GUsbDevice *usb_device, gpointer user_data)
+{
+	guint *cnt = (guint *)user_data;
+	(*cnt)++;
+}
+
+static gboolean
+_g_usb_context_load_json(GUsbContext *ctx, const gchar *json, GError **error)
 {
 	JsonObject *json_obj;
+	g_autoptr(JsonParser) parser = json_parser_new();
+
+	if (!json_parser_load_from_data(parser, json, -1, error))
+		return FALSE;
+	json_obj = json_node_get_object(json_parser_get_root(parser));
+	return g_usb_context_load_with_tag(ctx, json_obj, "emulation", error);
+}
+
+static void
+gusb_device_json_func(void)
+{
 	gboolean ret;
 	guint8 idx;
+	guint added_cnt = 0;
+	guint changed_cnt = 0;
+	guint removed_cnt = 0;
 	g_autoptr(GUsbDevice) device = NULL;
+	g_autoptr(GUsbDevice) device2 = NULL;
+	g_autoptr(GUsbDevice) device3 = NULL;
 	g_autofree gchar *tmp = NULL;
 	g_autoptr(GUsbContext) ctx = NULL;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(JsonParser) parser = json_parser_new();
 	const gchar *json =
 	    "{"
 	    "  \"UsbDevices\" : ["
 	    "    {"
-	    "      \"PlatformId\" : \"usb:01:00:06\","
+	    "      \"PlatformId\" : \"usb:AA:AA:06\","
+	    "      \"Created\" : \"2023-02-01T16:35:03.302027Z\","
+	    "      \"Tags\" : ["
+	    "        \"emulation\""
+	    "      ],"
 	    "      \"IdVendor\" : 10047,"
 	    "      \"IdProduct\" : 4100,"
 	    "      \"Device\" : 2,"
@@ -490,23 +516,55 @@ gusb_device_json_func(void)
 	    "    }"
 	    "  ]"
 	    "}";
+	const gchar *json_new = "{"
+				"  \"UsbDevices\" : ["
+				"    {"
+				"      \"PlatformId\" : \"usb:FF:FF:06\","
+				"      \"Created\" : \"2099-02-01T16:35:03.302027Z\","
+				"      \"Tags\" : ["
+				"        \"emulation\""
+				"      ],"
+				"      \"IdVendor\" : 10047,"
+				"      \"IdProduct\" : 4101,"
+				"      \"Device\" : 2,"
+				"      \"USB\" : 512,"
+				"      \"Manufacturer\" : 1"
+				"    }"
+				"  ]"
+				"}";
 	ctx = g_usb_context_new(&error);
+	g_usb_context_set_flags(ctx, G_USB_CONTEXT_FLAGS_DEBUG);
 	g_assert_no_error(error);
 	g_assert(ctx != NULL);
 
+	/* watch events */
+	g_usb_context_enumerate(ctx);
+	g_signal_connect(G_USB_CONTEXT(ctx),
+			 "device-added",
+			 G_CALLBACK(_context_signal_count_cb),
+			 &added_cnt);
+	g_signal_connect(G_USB_CONTEXT(ctx),
+			 "device-removed",
+			 G_CALLBACK(_context_signal_count_cb),
+			 &removed_cnt);
+	g_signal_connect(G_USB_CONTEXT(ctx),
+			 "device-changed",
+			 G_CALLBACK(_context_signal_count_cb),
+			 &changed_cnt);
+
 	/* parse */
-	ret = json_parser_load_from_data(parser, json, -1, &error);
+	ret = _g_usb_context_load_json(ctx, json, &error);
 	g_assert_no_error(error);
 	g_assert(ret);
-	json_obj = json_node_get_object(json_parser_get_root(parser));
-	ret = g_usb_context_load(ctx, json_obj, &error);
-	g_assert_no_error(error);
-	g_assert(ret);
+	g_assert_cmpint(added_cnt, ==, 1);
+	g_assert_cmpint(removed_cnt, ==, 0);
+	g_assert_cmpint(changed_cnt, ==, 0);
 
 	/* get vendor data */
 	device = g_usb_context_find_by_vid_pid(ctx, 0x273f, 0x1004, &error);
 	g_assert_no_error(error);
 	g_assert(device != NULL);
+	g_assert_true(g_usb_device_has_tag(device, "emulation"));
 	idx = g_usb_device_get_custom_index(device,
 					    G_USB_DEVICE_CLASS_VENDOR_SPECIFIC,
 					    'F',
@@ -537,6 +595,30 @@ gusb_device_json_func(void)
 	tmp = g_usb_device_get_string_descriptor(device, idx, &error);
 	g_assert_no_error(error);
 	g_assert_cmpstr(tmp, ==, "2.0.7");
+
+	/* load the same data */
+	ret = _g_usb_context_load_json(ctx, json, &error);
+	g_assert_no_error(error);
+	g_assert(ret);
+	g_assert_cmpint(added_cnt, ==, 1);
+	g_assert_cmpint(removed_cnt, ==, 0);
+	g_assert_cmpint(changed_cnt, ==, 1);
+	device2 = g_usb_context_find_by_vid_pid(ctx, 0x273f, 0x1004, &error);
+	g_assert_no_error(error);
+	g_assert(device2 != NULL);
+	g_assert_true(g_usb_device_has_tag(device2, "emulation"));
+
+	/* load a different device */
+	ret = _g_usb_context_load_json(ctx, json_new, &error);
+	g_assert_no_error(error);
+	g_assert(ret);
+	g_assert_cmpint(added_cnt, ==, 2);
+	g_assert_cmpint(changed_cnt, ==, 1);
+	g_assert_cmpint(removed_cnt, ==, 1);
+	device3 = g_usb_context_find_by_vid_pid(ctx, 0x273f, 0x1005, &error);
+	g_assert_no_error(error);
+	g_assert(device3 != NULL);
+	g_assert_true(g_usb_device_has_tag(device3, "emulation"));
 }
 
 static void
