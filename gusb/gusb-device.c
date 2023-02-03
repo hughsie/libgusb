@@ -2980,20 +2980,41 @@ guint8
 g_usb_device_get_configuration_index(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	GUsbDeviceEvent *event = NULL;
 	struct libusb_config_descriptor *config;
 	gint rc;
 	guint8 index;
+	g_autofree gchar *event_id = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), 0);
 
-	/* sanity check */
-	if (priv->device == NULL)
-		return 0x0;
+	/* build event key either for load or save */
+	if (priv->device == NULL ||
+	    g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS)
+		event_id = g_strdup_printf("GetConfigurationIndex");
+
+	/* emulated */
+	if (priv->device == NULL) {
+		GBytes *bytes;
+		event = g_usb_device_load_event(self, event_id);
+		if (event == NULL)
+			return 0x0;
+		bytes = g_usb_device_event_get_bytes(event);
+		if (bytes == NULL && g_bytes_get_size(bytes) != 1)
+			return 0x0;
+		return ((const guint8 *) g_bytes_get_data(bytes, NULL))[0];
+	}
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);
 	g_return_val_if_fail(rc == 0, 0);
 
 	index = config->iConfiguration;
+
+	/* save */
+	if (g_usb_context_get_flags(priv->context) & G_USB_CONTEXT_FLAGS_SAVE_EVENTS) {
+		event = g_usb_device_save_event(self, event_id);
+		_g_usb_device_event_set_bytes_raw(event, &index, sizeof(index));
+	}
 
 	libusb_free_config_descriptor(config);
 	return index;
