@@ -260,7 +260,6 @@ _g_usb_device_event_set_bytes_raw(GUsbDeviceEvent *self, gconstpointer buf, gsiz
 {
 	g_return_if_fail(G_USB_IS_DEVICE_EVENT(self));
 	g_return_if_fail(buf != NULL);
-	g_return_if_fail(bufsz > 0);
 	if (self->bytes != NULL)
 		g_bytes_unref(self->bytes);
 	self->bytes = g_bytes_new(buf, bufsz);
