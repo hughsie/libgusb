@@ -39,7 +39,8 @@ g_usb_interface_finalize(GObject *object)
 {
 	GUsbInterface *self = G_USB_INTERFACE(object);
 
-	g_bytes_unref(self->extra);
+	if (self->extra != NULL)
+		g_bytes_unref(self->extra);
 	if (self->endpoints != NULL)
 		g_ptr_array_unref(self->endpoints);
 
