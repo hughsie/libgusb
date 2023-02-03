@@ -1170,6 +1170,7 @@ g_usb_device_clear_events(GUsbDevice *self)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(G_USB_IS_DEVICE(self));
+	priv->event_idx = 0;
 	g_ptr_array_set_size(priv->events, 0);
 }
 
