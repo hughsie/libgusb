@@ -376,8 +376,8 @@ g_usb_interface_get_extra(GUsbInterface *self)
  *
  * Gets interface endpoints.
  *
- * Return value: (transfer container) (element-type GUsbEndpoint): an array of endpoints, or %NULL
- *on failure
+ * Return value: (transfer container) (element-type GUsbEndpoint): an array of endpoints,
+ * or %NULL on failure.
  *
  * Since: 0.3.3
  **/
@@ -385,5 +385,7 @@ GPtrArray *
 g_usb_interface_get_endpoints(GUsbInterface *self)
 {
 	g_return_val_if_fail(G_USB_IS_INTERFACE(self), NULL);
+	if (self->endpoints == NULL)
+		return NULL;
 	return g_ptr_array_ref(self->endpoints);
 }
