@@ -1,3 +1,16 @@
+Version 0.4.5
+=============
+Released: 2023-02-08
+
+This release adds the following features:
+ * Add new API to better detect emulated replug
+
+This release fixes the following bugs:
+ * Do not emit spurious ::device-removed events when emulating
+ * Record zero-sized device events
+ * Reset the in-order event index when clearing the event array
+ * Save the libusb error if libusb_submit_transfer() fails
+
 Version 0.4.4
 =============
 Released: 2023-01-30

@@ -21,6 +21,21 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.5" date="2023-02-08">
+      <description>
+        <p>This release adds the following features:</p>
+        <ul>
+          <li>Add new API to better detect emulated replug</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Do not emit spurious ::device-removed events when emulating</li>
+          <li>Record zero-sized device events</li>
+          <li>Reset the in-order event index when clearing the event array</li>
+          <li>Save the libusb error if libusb_submit_transfer() fails</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.4" date="2023-01-30">
       <description>
         <p>This release adds the following features:</p>
