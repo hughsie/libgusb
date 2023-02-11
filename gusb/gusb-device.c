@@ -323,11 +323,11 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		for (guint i = 0; i < json_array_get_length(json_array); i++) {
 			JsonNode *node_tmp = json_array_get_element(json_array, i);
 			JsonObject *obj_tmp = json_node_get_object(node_tmp);
-			g_autoptr(GUsbInterface) interface =
+			g_autoptr(GUsbInterface) iface =
 			    g_object_new(G_USB_TYPE_INTERFACE, NULL);
-			if (!_g_usb_interface_load(interface, obj_tmp, error))
+			if (!_g_usb_interface_load(iface, obj_tmp, error))
 				return FALSE;
-			g_ptr_array_add(priv->interfaces, g_object_ref(interface));
+			g_ptr_array_add(priv->interfaces, g_object_ref(iface));
 		}
 	}
 
@@ -485,8 +485,8 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 		json_builder_set_member_name(json_builder, "UsbInterfaces");
 		json_builder_begin_array(json_builder);
 		for (guint i = 0; i < interfaces->len; i++) {
-			GUsbInterface *interface = g_ptr_array_index(interfaces, i);
-			if (!_g_usb_interface_save(interface, json_builder, error))
+			GUsbInterface *iface = g_ptr_array_index(interfaces, i);
+			if (!_g_usb_interface_save(iface, json_builder, error))
 				return FALSE;
 		}
 		json_builder_end_array(json_builder);
@@ -1093,14 +1093,14 @@ g_usb_device_get_interface(GUsbDevice *self,
 	if (interfaces == NULL)
 		return NULL;
 	for (guint i = 0; i < interfaces->len; i++) {
-		GUsbInterface *interface = g_ptr_array_index(interfaces, i);
-		if (g_usb_interface_get_class(interface) != class_id)
+		GUsbInterface *iface = g_ptr_array_index(interfaces, i);
+		if (g_usb_interface_get_class(iface) != class_id)
 			continue;
-		if (g_usb_interface_get_subclass(interface) != subclass_id)
+		if (g_usb_interface_get_subclass(iface) != subclass_id)
 			continue;
-		if (g_usb_interface_get_protocol(interface) != protocol_id)
+		if (g_usb_interface_get_protocol(iface) != protocol_id)
 			continue;
-		return g_object_ref(interface);
+		return g_object_ref(iface);
 	}
 
 	/* nothing matched */
@@ -1160,8 +1160,8 @@ g_usb_device_get_interfaces(GUsbDevice *self, GError **error)
 			for (guint j = 0; j < (guint)config->interface[i].num_altsetting; j++) {
 				const struct libusb_interface_descriptor *ifp =
 				    &config->interface[i].altsetting[j];
-				GUsbInterface *interface = _g_usb_interface_new(ifp);
-				g_ptr_array_add(priv->interfaces, interface);
+				GUsbInterface *iface = _g_usb_interface_new(ifp);
+				g_ptr_array_add(priv->interfaces, iface);
 			}
 		}
 		libusb_free_config_descriptor(config);
@@ -1671,7 +1671,7 @@ g_usb_device_set_configuration(GUsbDevice *self, gint configuration, GError **er
 /**
  * g_usb_device_claim_interface:
  * @self: a #GUsbDevice
- * @interface: bInterfaceNumber of the interface you wish to claim
+ * @iface: bInterfaceNumber of the interface you wish to claim
  * @flags: #GUsbDeviceClaimInterfaceFlags
  * @error: a #GError, or %NULL
  *
@@ -1683,7 +1683,7 @@ g_usb_device_set_configuration(GUsbDevice *self, gint configuration, GError **er
  **/
 gboolean
 g_usb_device_claim_interface(GUsbDevice *self,
-			     gint interface,
+			     gint iface,
 			     GUsbDeviceClaimInterfaceFlags flags,
 			     GError **error)
 {
@@ -1701,21 +1701,21 @@ g_usb_device_claim_interface(GUsbDevice *self,
 		return g_usb_device_not_open_error(self, error);
 
 	if (flags & G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER) {
-		rc = libusb_detach_kernel_driver(priv->handle, interface);
+		rc = libusb_detach_kernel_driver(priv->handle, iface);
 		if (rc != LIBUSB_SUCCESS && rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
 		    rc != LIBUSB_ERROR_NOT_SUPPORTED &&			    /* win32 */
 		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
 			return g_usb_device_libusb_error_to_gerror(self, rc, error);
 	}
 
-	rc = libusb_claim_interface(priv->handle, interface);
+	rc = libusb_claim_interface(priv->handle, iface);
 	return g_usb_device_libusb_error_to_gerror(self, rc, error);
 }
 
 /**
  * g_usb_device_release_interface:
  * @self: a #GUsbDevice
- * @interface: bInterfaceNumber of the interface you wish to release
+ * @iface: bInterfaceNumber of the interface you wish to release
  * @flags: #GUsbDeviceClaimInterfaceFlags
  * @error: a #GError, or %NULL
  *
@@ -1727,7 +1727,7 @@ g_usb_device_claim_interface(GUsbDevice *self,
  **/
 gboolean
 g_usb_device_release_interface(GUsbDevice *self,
-			       gint interface,
+			       gint iface,
 			       GUsbDeviceClaimInterfaceFlags flags,
 			       GError **error)
 {
@@ -1744,12 +1744,12 @@ g_usb_device_release_interface(GUsbDevice *self,
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
 
-	rc = libusb_release_interface(priv->handle, interface);
+	rc = libusb_release_interface(priv->handle, iface);
 	if (rc != LIBUSB_SUCCESS)
 		return g_usb_device_libusb_error_to_gerror(self, rc, error);
 
 	if (flags & G_USB_DEVICE_CLAIM_INTERFACE_BIND_KERNEL_DRIVER) {
-		rc = libusb_attach_kernel_driver(priv->handle, interface);
+		rc = libusb_attach_kernel_driver(priv->handle, iface);
 		if (rc != LIBUSB_SUCCESS && rc != LIBUSB_ERROR_NOT_FOUND && /* No driver attached */
 		    rc != LIBUSB_ERROR_NOT_SUPPORTED &&			    /* win32 */
 		    rc != LIBUSB_ERROR_BUSY /* driver rebound already */)
@@ -1762,7 +1762,7 @@ g_usb_device_release_interface(GUsbDevice *self,
 /**
  * g_usb_device_set_interface_alt:
  * @self: a #GUsbDevice
- * @interface: bInterfaceNumber of the interface you wish to release
+ * @iface: bInterfaceNumber of the interface you wish to release
  * @alt: alternative setting number
  * @error: a #GError, or %NULL
  *
@@ -1773,7 +1773,7 @@ g_usb_device_release_interface(GUsbDevice *self,
  * Since: 0.2.8
  **/
 gboolean
-g_usb_device_set_interface_alt(GUsbDevice *self, gint interface, guint8 alt, GError **error)
+g_usb_device_set_interface_alt(GUsbDevice *self, gint iface, guint8 alt, GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	gint rc;
@@ -1788,7 +1788,7 @@ g_usb_device_set_interface_alt(GUsbDevice *self, gint interface, guint8 alt, GEr
 	if (priv->handle == NULL)
 		return g_usb_device_not_open_error(self, error);
 
-	rc = libusb_set_interface_alt_setting(priv->handle, interface, (gint)alt);
+	rc = libusb_set_interface_alt_setting(priv->handle, iface, (gint)alt);
 	if (rc != LIBUSB_SUCCESS)
 		return g_usb_device_libusb_error_to_gerror(self, rc, error);
 

@@ -252,16 +252,16 @@ g_usb_device_set_configuration(GUsbDevice *self, gint configuration, GError **er
 
 gboolean
 g_usb_device_claim_interface(GUsbDevice *self,
-			     gint interface,
+			     gint iface,
 			     GUsbDeviceClaimInterfaceFlags flags,
 			     GError **error);
 gboolean
 g_usb_device_release_interface(GUsbDevice *self,
-			       gint interface,
+			       gint iface,
 			       GUsbDeviceClaimInterfaceFlags flags,
 			       GError **error);
 gboolean
-g_usb_device_set_interface_alt(GUsbDevice *self, gint interface, guint8 alt, GError **error);
+g_usb_device_set_interface_alt(GUsbDevice *self, gint iface, guint8 alt, GError **error);
 
 gchar *
 g_usb_device_get_string_descriptor(GUsbDevice *self, guint8 desc_index, GError **error);
