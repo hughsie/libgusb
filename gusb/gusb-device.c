@@ -887,6 +887,7 @@ g_usb_device_load_event(GUsbDevice *self, const gchar *id)
 		if (g_strcmp0(g_usb_device_event_get_id(event), id) == 0) {
 			if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
 				g_debug("found out-of-order %s at position %u", id, i);
+			priv->event_idx = i + 1;
 			return event;
 		}
 	}
