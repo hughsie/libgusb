@@ -176,7 +176,7 @@ mapfile_target = custom_target('gusb_mapfile',
   output: 'libgusb.ver',
   command: [
     py_installation,
-    join_paths(meson.source_root(), 'contrib', 'generate-version-script.py'),
+    join_paths(meson.project_source_root(), 'contrib', 'generate-version-script.py'),
     'LIBGUSB',
     '@INPUT@',
     '@OUTPUT@',
