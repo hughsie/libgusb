@@ -1,3 +1,12 @@
+Version 0.4.6
+=============
+Released: 2023-06-08
+
+This release fixes the following bugs:
+ * Add JSON compatibility helpers for old json-glib versions
+ * Fix emulation of devices using out-of-order BulkTransfer replies
+ * Use project_source_root to fix building as a subproject
+
 Version 0.4.5
 =============
 Released: 2023-02-08

@@ -21,6 +21,16 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.6" date="2023-06-08">
+      <description>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Add JSON compatibility helpers for old json-glib versions</li>
+          <li>Fix emulation of devices using out-of-order BulkTransfer replies</li>
+          <li>Use project_source_root to fix building as a subproject</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.5" date="2023-02-08">
       <description>
         <p>This release adds the following features:</p>
