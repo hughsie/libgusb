@@ -24,8 +24,8 @@
 #include "gusb-device-event-private.h"
 #include "gusb-device-private.h"
 #include "gusb-interface-private.h"
-#include "gusb-util.h"
 #include "gusb-json-common.h"
+#include "gusb-util.h"
 
 /**
  * GUsbDevicePrivate:
@@ -2996,7 +2996,7 @@ g_usb_device_get_configuration_index(GUsbDevice *self)
 		bytes = g_usb_device_event_get_bytes(event);
 		if (bytes == NULL && g_bytes_get_size(bytes) != 1)
 			return 0x0;
-		return ((const guint8 *) g_bytes_get_data(bytes, NULL))[0];
+		return ((const guint8 *)g_bytes_get_data(bytes, NULL))[0];
 	}
 
 	rc = libusb_get_active_config_descriptor(priv->device, &config);

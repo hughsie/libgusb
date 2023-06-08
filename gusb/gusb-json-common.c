@@ -10,15 +10,21 @@
 
 #include "gusb-json-common.h"
 
-#if ! JSON_CHECK_VERSION(1, 6, 0)
-const char *json_object_get_string_member_with_default(JsonObject *json_object, const char* member_name, const char* default_value)
+#if !JSON_CHECK_VERSION(1, 6, 0)
+const char *
+json_object_get_string_member_with_default(JsonObject *json_object,
+					   const char *member_name,
+					   const char *default_value)
 {
 	if (!json_object_has_member(json_object, member_name))
 		return default_value;
 	return json_object_get_string_member(json_object, member_name);
 }
 
-gint64 json_object_get_int_member_with_default(JsonObject *json_object, const char* member_name, gint64 default_value)
+gint64
+json_object_get_int_member_with_default(JsonObject *json_object,
+					const char *member_name,
+					gint64 default_value)
 {
 	if (!json_object_has_member(json_object, member_name))
 		return default_value;

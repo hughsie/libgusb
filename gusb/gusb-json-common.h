@@ -13,9 +13,15 @@
 
 G_BEGIN_DECLS
 
-#if ! JSON_CHECK_VERSION(1, 6, 0)
-const char *json_object_get_string_member_with_default(JsonObject *json_object, const char* member_name, const char* default_value);
-gint64 json_object_get_int_member_with_default(JsonObject *json_object, const char* member_name, gint64 default_value);
+#if !JSON_CHECK_VERSION(1, 6, 0)
+const char *
+json_object_get_string_member_with_default(JsonObject *json_object,
+					   const char *member_name,
+					   const char *default_value);
+gint64
+json_object_get_int_member_with_default(JsonObject *json_object,
+					const char *member_name,
+					gint64 default_value);
 #endif
 
 G_END_DECLS
