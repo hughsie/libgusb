@@ -654,7 +654,7 @@ g_usb_context_idle_hotplug_cb(gpointer user_data)
 }
 
 /* this is run in the libusb thread */
-static int
+static int LIBUSB_CALL
 g_usb_context_hotplug_cb(struct libusb_context *ctx,
 			 struct libusb_device *dev,
 			 libusb_hotplug_event event,
