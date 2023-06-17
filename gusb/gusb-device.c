@@ -2049,7 +2049,7 @@ g_usb_device_libusb_status_to_gerror(gint status, GError **error)
 	return ret;
 }
 
-static void
+static void LIBUSB_CALL
 g_usb_device_async_transfer_cb(struct libusb_transfer *transfer)
 {
 	GTask *task = transfer->user_data;
@@ -2081,7 +2081,7 @@ g_usb_device_cancelled_cb(GCancellable *cancellable, GcmDeviceReq *req)
 	libusb_cancel_transfer(req->transfer);
 }
 
-static void
+static void LIBUSB_CALL
 g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
 {
 	GTask *task = transfer->user_data;
