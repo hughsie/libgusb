@@ -213,6 +213,11 @@ void
 g_usb_device_clear_events(GUsbDevice *self);
 
 GPtrArray *
+g_usb_device_get_hid_descriptors(GUsbDevice *self, GError **error);
+GBytes *
+g_usb_device_get_hid_descriptor_default(GUsbDevice *self, GError **error);
+
+GPtrArray *
 g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error);
 GUsbBosDescriptor *
 g_usb_device_get_bos_descriptor(GUsbDevice *self, guint8 capability, GError **error);

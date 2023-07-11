@@ -215,3 +215,10 @@ LIBGUSB_0.4.5 {
     g_usb_device_get_created;
   local: *;
 } LIBGUSB_0.4.4;
+
+LIBGUSB_0.4.7 {
+  global:
+    g_usb_device_get_hid_descriptor_default;
+    g_usb_device_get_hid_descriptors;
+  local: *;
+} LIBGUSB_0.4.5;

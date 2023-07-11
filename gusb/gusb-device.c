@@ -40,8 +40,10 @@ typedef struct {
 	struct libusb_device_descriptor desc;
 	gboolean interfaces_valid;
 	gboolean bos_descriptors_valid;
+	gboolean hid_descriptors_valid;
 	GPtrArray *interfaces;	    /* of GUsbInterface */
 	GPtrArray *bos_descriptors; /* of GUsbBosDescriptor */
+	GPtrArray *hid_descriptors; /* of GBytes */
 	GPtrArray *events;	    /* of GUsbDeviceEvent */
 	GPtrArray *tags;	    /* of utf-8 */
 	guint event_idx;
@@ -88,6 +90,7 @@ g_usb_device_finalize(GObject *object)
 	g_date_time_unref(priv->created);
 	g_ptr_array_unref(priv->interfaces);
 	g_ptr_array_unref(priv->bos_descriptors);
+	g_ptr_array_unref(priv->hid_descriptors);
 	g_ptr_array_unref(priv->events);
 	g_ptr_array_unref(priv->tags);
 
@@ -219,6 +222,7 @@ g_usb_device_init(GUsbDevice *self)
 	priv->created = g_date_time_new_now_utc();
 	priv->interfaces = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->bos_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
+	priv->hid_descriptors = g_ptr_array_new_with_free_func((GDestroyNotify)g_bytes_unref);
 	priv->events = g_ptr_array_new_with_free_func((GDestroyNotify)g_object_unref);
 	priv->tags = g_ptr_array_new_with_free_func(g_free);
 }
@@ -297,6 +301,22 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		}
 	}
 
+	/* array of HID descriptors */
+	if (json_object_has_member(json_object, "UsbHidDescriptors")) {
+		JsonArray *json_array =
+		    json_object_get_array_member(json_object, "UsbHidDescriptors");
+		for (guint i = 0; i < json_array_get_length(json_array); i++) {
+			JsonNode *node_tmp = json_array_get_element(json_array, i);
+			tmp = json_node_get_string(node_tmp);
+			if (tmp != NULL) {
+				gsize bufsz = 0;
+				g_autofree guchar *buf = g_base64_decode(tmp, &bufsz);
+				g_ptr_array_add(priv->hid_descriptors,
+						g_bytes_new_take(g_steal_pointer(&buf), bufsz));
+			}
+		}
+	}
+
 	/* array of interfaces */
 	if (json_object_has_member(json_object, "UsbInterfaces")) {
 		JsonArray *json_array = json_object_get_array_member(json_object, "UsbInterfaces");
@@ -338,6 +358,7 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 	/* success */
 	priv->interfaces_valid = TRUE;
 	priv->bos_descriptors_valid = TRUE;
+	priv->hid_descriptors_valid = TRUE;
 	priv->event_idx = 0;
 	return TRUE;
 }
@@ -347,8 +368,10 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 {
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 	g_autoptr(GPtrArray) bos_descriptors = NULL;
+	g_autoptr(GPtrArray) hid_descriptors = NULL;
 	g_autoptr(GPtrArray) interfaces = NULL;
 	g_autoptr(GError) error_bos = NULL;
+	g_autoptr(GError) error_hid = NULL;
 	g_autoptr(GError) error_interfaces = NULL;
 
 	g_return_val_if_fail(G_USB_IS_DEVICE(self), FALSE);
@@ -432,6 +455,23 @@ _g_usb_device_save(GUsbDevice *self, JsonBuilder *json_builder, GError **error)
 			GUsbBosDescriptor *bos_descriptor = g_ptr_array_index(bos_descriptors, i);
 			if (!_g_usb_bos_descriptor_save(bos_descriptor, json_builder, error))
 				return FALSE;
+		}
+		json_builder_end_array(json_builder);
+	}
+
+	/* array of HID descriptors */
+	hid_descriptors = g_usb_device_get_hid_descriptors(self, &error_hid);
+	if (hid_descriptors == NULL) {
+		if (_g_usb_context_has_flag(priv->context, G_USB_CONTEXT_FLAGS_DEBUG))
+			g_debug("%s", error_hid->message);
+	} else if (hid_descriptors->len > 0) {
+		json_builder_set_member_name(json_builder, "UsbHidDescriptors");
+		json_builder_begin_array(json_builder);
+		for (guint i = 0; i < hid_descriptors->len; i++) {
+			GBytes *bytes = g_ptr_array_index(hid_descriptors, i);
+			g_autofree gchar *str =
+			    g_base64_encode(g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
+			json_builder_add_string_value(json_builder, str);
 		}
 		json_builder_end_array(json_builder);
 	}
@@ -1185,6 +1225,7 @@ g_usb_device_invalidate(GUsbDevice *self)
 	priv->bos_descriptors_valid = FALSE;
 	g_ptr_array_set_size(priv->interfaces, 0);
 	g_ptr_array_set_size(priv->bos_descriptors, 0);
+	g_ptr_array_set_size(priv->hid_descriptors, 0);
 }
 
 /**
@@ -1290,6 +1331,181 @@ g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 
 	/* success */
 	return g_ptr_array_ref(priv->bos_descriptors);
+}
+
+static GBytes *
+g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *intf, GError **error)
+{
+	GBytes *extra;
+	gsize bufsz = 0;
+	const guint8 *buf;
+	gsize actual_length = 0;
+	gsize buf2sz;
+	g_autofree guint8 *buf2 = NULL;
+
+	extra = g_usb_interface_get_extra(intf);
+	if (extra == NULL) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_FOUND,
+			    "no data found on HID interface 0x%x",
+			    g_usb_interface_get_number(intf));
+		return NULL;
+	}
+	buf = g_bytes_get_data(extra, &bufsz);
+	if (bufsz < 9) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_FOUND,
+			    "invalid data on HID interface 0x%x",
+			    g_usb_interface_get_number(intf));
+		return NULL;
+	}
+	if (buf[1] != LIBUSB_DT_HID) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_FOUND,
+			    "invalid data on HID interface 0x%x, got 0x%x and expected 0x%x",
+			    g_usb_interface_get_number(intf),
+			    buf[1],
+			    (guint)LIBUSB_DT_HID);
+		return NULL;
+	}
+	if (buf[7] == 0) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_FOUND,
+			    "missing data on HID interface 0x%x",
+			    g_usb_interface_get_number(intf));
+		return NULL;
+	}
+	buf2sz = buf[7];
+	g_debug("get 0x%x bytes of HID descriptor", (guint)buf2sz);
+
+	/* get HID descriptor */
+	buf2 = g_malloc0(buf2sz);
+	if (!g_usb_device_control_transfer(self,
+					   G_USB_DEVICE_DIRECTION_DEVICE_TO_HOST,
+					   G_USB_DEVICE_REQUEST_TYPE_STANDARD,
+					   G_USB_DEVICE_RECIPIENT_INTERFACE,
+					   LIBUSB_REQUEST_GET_DESCRIPTOR,
+					   LIBUSB_DT_REPORT << 8,
+					   g_usb_interface_get_number(intf),
+					   buf2,
+					   buf2sz,
+					   &actual_length,
+					   5000,
+					   NULL,
+					   error)) {
+		g_prefix_error(error, "failed to get HID report descriptor: ");
+		return NULL;
+	}
+	if (actual_length < buf2sz) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_FOUND,
+			    "invalid data on HID interface 0x%x, got 0x%x and expected 0x%x",
+			    g_usb_interface_get_number(intf),
+			    (guint)actual_length,
+			    (guint)buf2sz);
+		return NULL;
+	}
+
+	/* success */
+	return g_bytes_new_take(g_steal_pointer(&buf2), actual_length);
+}
+
+/**
+ * g_usb_device_get_hid_descriptors:
+ * @self: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Gets all the HID descriptors exported by the device.
+ *
+ * The first time this method is used the hardware is queried and then after that cached results
+ * are returned. To invalidate the caches use g_usb_device_invalidate().
+ *
+ * Return value: (transfer container) (element-type GBytes): an array of HID descriptors
+ *
+ * Since: 0.4.7
+ **/
+GPtrArray *
+g_usb_device_get_hid_descriptors(GUsbDevice *self, GError **error)
+{
+	GUsbDevicePrivate *priv = GET_PRIVATE(self);
+	g_autoptr(GPtrArray) interfaces = NULL;
+
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
+	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
+
+	/* sanity check */
+	if (!priv->hid_descriptors_valid) {
+		if (priv->device == NULL) {
+			g_set_error_literal(error,
+					    G_IO_ERROR,
+					    G_IO_ERROR_NOT_SUPPORTED,
+					    "not supported for emulated device");
+			return NULL;
+		}
+		if (priv->handle == NULL) {
+			g_usb_device_not_open_error(self, error);
+			return NULL;
+		}
+
+		interfaces = g_usb_device_get_interfaces(self, error);
+		if (interfaces == NULL)
+			return NULL;
+		for (guint i = 0; i < interfaces->len; i++) {
+			GUsbInterface *intf = g_ptr_array_index(interfaces, i);
+			g_autoptr(GBytes) blob = NULL;
+			if (g_usb_interface_get_class(intf) != G_USB_DEVICE_CLASS_HID)
+				continue;
+			blob = g_usb_device_get_hid_descriptor_for_interface(self, intf, error);
+			if (blob == NULL)
+				return NULL;
+			g_ptr_array_add(priv->hid_descriptors, g_steal_pointer(&blob));
+		}
+		priv->hid_descriptors_valid = TRUE;
+	}
+
+	/* success */
+	return g_ptr_array_ref(priv->hid_descriptors);
+}
+
+/**
+ * g_usb_device_get_hid_descriptor_default:
+ * @self: a #GUsbDevice
+ * @error: a #GError, or %NULL
+ *
+ * Gets the default HID descriptors exported by the device.
+ *
+ * If more than one interface exports a HID descriptor, use g_usb_device_get_hid_descriptors()
+ * instead.
+ *
+ * Return value: (transfer full): a HID descriptor, or %NULL
+ *
+ * Since: 0.4.7
+ **/
+GBytes *
+g_usb_device_get_hid_descriptor_default(GUsbDevice *self, GError **error)
+{
+	g_autoptr(GPtrArray) hid_descriptors = NULL;
+
+	g_return_val_if_fail(G_USB_IS_DEVICE(self), NULL);
+	g_return_val_if_fail(error == NULL || *error == NULL, NULL);
+
+	hid_descriptors = g_usb_device_get_hid_descriptors(self, error);
+	if (hid_descriptors == NULL)
+		return NULL;
+	if (hid_descriptors->len != 1) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_NOT_SUPPORTED,
+			    "no default descriptor, got %u",
+			    hid_descriptors->len);
+		return NULL;
+	}
+	return g_bytes_ref(g_ptr_array_index(hid_descriptors, 0));
 }
 
 /**
