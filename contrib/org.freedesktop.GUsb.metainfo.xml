@@ -21,6 +21,18 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.7" date="2023-10-09">
+      <description>
+        <p>This release adds the following features:</p>
+        <ul>
+          <li>Add new API to get the HID descriptor data</li>
+        </ul>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Add calling convention to libusb callback functions</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.6" date="2023-06-08">
       <description>
         <p>This release fixes the following bugs:</p>

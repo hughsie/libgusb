@@ -1,3 +1,13 @@
+Version 0.4.7
+=============
+Released: 2023-10-09
+
+This release adds the following features:
+ * Add new API to get the HID descriptor data
+
+This release fixes the following bugs:
+ * Add calling convention to libusb callback functions
+
 Version 0.4.6
 =============
 Released: 2023-06-08
