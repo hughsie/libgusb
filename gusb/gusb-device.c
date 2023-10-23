@@ -791,8 +791,10 @@ g_usb_device_libusb_error_to_gerror(GUsbDevice *self, gint rc, GError **error)
 		error_code = G_USB_DEVICE_ERROR_PERMISSION_DENIED;
 		break;
 	case LIBUSB_ERROR_NO_DEVICE:
-	case LIBUSB_ERROR_BUSY:
 		error_code = G_USB_DEVICE_ERROR_NO_DEVICE;
+		break;
+	case LIBUSB_ERROR_BUSY:
+		error_code = G_USB_DEVICE_ERROR_BUSY;
 		break;
 	default:
 		break;

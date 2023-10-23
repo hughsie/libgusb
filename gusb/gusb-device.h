@@ -57,6 +57,17 @@ typedef enum {
 
 /**
  * GUsbDeviceError:
+ * @G_USB_DEVICE_ERROR_INTERNAL:		Internal error
+ * @G_USB_DEVICE_ERROR_IO:			IO error
+ * @G_USB_DEVICE_ERROR_TIMED_OUT:		Operation timed out
+ * @G_USB_DEVICE_ERROR_NOT_SUPPORTED:		Operation not supported
+ * @G_USB_DEVICE_ERROR_NO_DEVICE:		No device found
+ * @G_USB_DEVICE_ERROR_NOT_OPEN:		Device is not open
+ * @G_USB_DEVICE_ERROR_ALREADY_OPEN:		Device is already open
+ * @G_USB_DEVICE_ERROR_CANCELLED:		Operation was cancelled
+ * @G_USB_DEVICE_ERROR_FAILED:			Operation failed
+ * @G_USB_DEVICE_ERROR_PERMISSION_DENIED:	Permission denied
+ * @G_USB_DEVICE_ERROR_BUSY:			Device was busy
  *
  * The error code.
  **/
@@ -71,6 +82,8 @@ typedef enum {
 	G_USB_DEVICE_ERROR_CANCELLED,
 	G_USB_DEVICE_ERROR_FAILED,
 	G_USB_DEVICE_ERROR_PERMISSION_DENIED,
+	G_USB_DEVICE_ERROR_BUSY,
+	/*< private >*/
 	G_USB_DEVICE_ERROR_LAST
 } GUsbDeviceError;
 
