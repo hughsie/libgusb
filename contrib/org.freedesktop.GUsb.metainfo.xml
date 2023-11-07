@@ -21,6 +21,14 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.8" date="2023-11-07">
+      <description>
+        <p>This release adds the following feature:</p>
+        <ul>
+          <li>Add an device error code for 'busy'</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.7" date="2023-10-09">
       <description>
         <p>This release adds the following features:</p>
