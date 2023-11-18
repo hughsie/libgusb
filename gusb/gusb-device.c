@@ -2329,6 +2329,7 @@ g_usb_device_control_transfer_cb(struct libusb_transfer *transfer)
 	g_object_unref(task);
 }
 
+/* copy @dstsz bytes of @bytes into @dst */
 static gboolean
 gusb_memcpy_bytes_safe(guint8 *dst, gsize dstsz, GBytes *bytes, GError **error)
 {
@@ -2345,11 +2346,11 @@ gusb_memcpy_bytes_safe(guint8 *dst, gsize dstsz, GBytes *bytes, GError **error)
 	}
 
 	/* data is the same */
-	if (memcmp(dst, g_bytes_get_data(bytes, NULL), dstsz) == 0)
+	if (memcmp(dst, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes)) == 0)
 		return TRUE;
 
 	/* if this explodes it's because the caller has cast an immutable buffer to a guint8* */
-	memcpy(dst, g_bytes_get_data(bytes, NULL), dstsz);
+	memcpy(dst, g_bytes_get_data(bytes, NULL), g_bytes_get_size(bytes));
 	return TRUE;
 }
 
