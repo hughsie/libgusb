@@ -863,7 +863,15 @@ _g_usb_device_open_internal(GUsbDevice *self, GError **error)
 
 	/* open device */
 	rc = libusb_open(priv->device, &priv->handle);
-	return g_usb_device_libusb_error_to_gerror(self, rc, error);
+	if (!g_usb_device_libusb_error_to_gerror(self, rc, error)) {
+		if (priv->handle != NULL)
+			libusb_close(priv->handle);
+		priv->handle = NULL;
+		return FALSE;
+	}
+
+	/* success */
+	return TRUE;
 }
 
 /**
