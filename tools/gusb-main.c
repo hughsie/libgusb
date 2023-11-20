@@ -357,12 +357,8 @@ gusb_cmd_replug(GUsbCmdPrivate *priv, gchar **values, GError **error)
 static gboolean
 gusb_cmd_load(GUsbCmdPrivate *priv, gchar **values, GError **error)
 {
-	JsonObject *json_obj;
-	JsonNode *json_node;
-	g_autoptr(JsonParser) parser = json_parser_new();
-
 	/* check args */
-	if (g_strv_length(values) != 1) {
+	if (g_strv_length(values) == 0) {
 		g_set_error_literal(error,
 				    G_IO_ERROR,
 				    G_IO_ERROR_INVALID_ARGUMENT,
@@ -370,24 +366,30 @@ gusb_cmd_load(GUsbCmdPrivate *priv, gchar **values, GError **error)
 		return FALSE;
 	}
 
-	/* parse */
-	if (!json_parser_load_from_file(parser, values[0], error))
-		return FALSE;
+	for (guint i = 0; values[i] != NULL; i++) {
+		JsonObject *json_obj;
+		JsonNode *json_node;
+		g_autoptr(JsonParser) parser = json_parser_new();
 
-	/* sanity check */
-	json_node = json_parser_get_root(parser);
-	if (!JSON_NODE_HOLDS_OBJECT(json_node)) {
-		g_set_error_literal(error,
-				    G_IO_ERROR,
-				    G_IO_ERROR_INVALID_DATA,
-				    "not a JSON object");
-		return FALSE;
+		/* parse */
+		if (!json_parser_load_from_file(parser, values[i], error))
+			return FALSE;
+
+		/* sanity check */
+		json_node = json_parser_get_root(parser);
+		if (!JSON_NODE_HOLDS_OBJECT(json_node)) {
+			g_set_error_literal(error,
+					    G_IO_ERROR,
+					    G_IO_ERROR_INVALID_DATA,
+					    "not a JSON object");
+			return FALSE;
+		}
+
+		/* not supplied */
+		json_obj = json_node_get_object(json_node);
+		if (!g_usb_context_load(priv->usb_ctx, json_obj, error))
+			return FALSE;
 	}
-
-	/* not supplied */
-	json_obj = json_node_get_object(json_node);
-	if (!g_usb_context_load(priv->usb_ctx, json_obj, error))
-		return FALSE;
 
 	/* success */
 	return gusb_cmd_show(priv, NULL, error);
