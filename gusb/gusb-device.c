@@ -1343,6 +1343,7 @@ g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *i
 	const guint8 *buf;
 	gsize actual_length = 0;
 	gsize buf2sz;
+	guint16 buf2szle = 0;
 	g_autofree guint8 *buf2 = NULL;
 
 	extra = g_usb_interface_get_extra(intf);
@@ -1373,7 +1374,9 @@ g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *i
 			    (guint)LIBUSB_DT_HID);
 		return NULL;
 	}
-	if (buf[7] == 0) {
+	memcpy(&buf2szle, buf + 7, sizeof(buf2szle));
+	buf2sz = GUINT16_FROM_LE(buf2szle);
+	if (buf2sz == 0) {
 		g_set_error(error,
 			    G_IO_ERROR,
 			    G_IO_ERROR_NOT_FOUND,
@@ -1381,8 +1384,9 @@ g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *i
 			    g_usb_interface_get_number(intf));
 		return NULL;
 	}
-	buf2sz = buf[7];
-	g_debug("get 0x%x bytes of HID descriptor", (guint)buf2sz);
+	g_debug("get 0x%x bytes of HID descriptor on iface 0x%x",
+		(guint)buf2sz,
+		g_usb_interface_get_number(intf));
 
 	/* get HID descriptor */
 	buf2 = g_malloc0(buf2sz);
