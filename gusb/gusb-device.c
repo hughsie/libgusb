@@ -323,8 +323,7 @@ _g_usb_device_load(GUsbDevice *self, JsonObject *json_object, GError **error)
 		for (guint i = 0; i < json_array_get_length(json_array); i++) {
 			JsonNode *node_tmp = json_array_get_element(json_array, i);
 			JsonObject *obj_tmp = json_node_get_object(node_tmp);
-			g_autoptr(GUsbInterface) iface =
-			    g_object_new(G_USB_TYPE_INTERFACE, NULL);
+			g_autoptr(GUsbInterface) iface = g_object_new(G_USB_TYPE_INTERFACE, NULL);
 			if (!_g_usb_interface_load(iface, obj_tmp, error))
 				return FALSE;
 			g_ptr_array_add(priv->interfaces, g_object_ref(iface));
@@ -1345,6 +1344,7 @@ g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *i
 	gsize buf2sz;
 	guint16 buf2szle = 0;
 	g_autofree guint8 *buf2 = NULL;
+	g_autoptr(GError) error_local = NULL;
 
 	extra = g_usb_interface_get_extra(intf);
 	if (extra == NULL) {
@@ -1384,9 +1384,10 @@ g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *i
 			    g_usb_interface_get_number(intf));
 		return NULL;
 	}
-	g_debug("get 0x%x bytes of HID descriptor on iface 0x%x",
+	g_debug("get 0x%x bytes of HID descriptor on iface=0x%x, index=0x%x",
 		(guint)buf2sz,
-		g_usb_interface_get_number(intf));
+		g_usb_interface_get_number(intf),
+		g_usb_interface_get_index(intf));
 
 	/* get HID descriptor */
 	buf2 = g_malloc0(buf2sz);
@@ -1395,15 +1396,24 @@ g_usb_device_get_hid_descriptor_for_interface(GUsbDevice *self, GUsbInterface *i
 					   G_USB_DEVICE_REQUEST_TYPE_STANDARD,
 					   G_USB_DEVICE_RECIPIENT_INTERFACE,
 					   LIBUSB_REQUEST_GET_DESCRIPTOR,
-					   LIBUSB_DT_REPORT << 8,
-					   g_usb_interface_get_number(intf),
+					   (LIBUSB_DT_REPORT << 8) |
+					       g_usb_interface_get_number(intf),
+					   g_usb_interface_get_index(intf),
 					   buf2,
 					   buf2sz,
 					   &actual_length,
 					   5000,
 					   NULL,
-					   error)) {
-		g_prefix_error(error, "failed to get HID report descriptor: ");
+					   &error_local)) {
+		if (g_error_matches(error_local,
+				    G_USB_DEVICE_ERROR,
+				    G_USB_DEVICE_ERROR_NOT_SUPPORTED)) {
+			g_debug("ignoring: %s", error_local->message);
+			return g_bytes_new(NULL, 0);
+		}
+		g_propagate_prefixed_error(error,
+					   g_steal_pointer(&error_local),
+					   "failed to get HID report descriptor: ");
 		return NULL;
 	}
 	if (actual_length < buf2sz) {
@@ -1469,6 +1479,8 @@ g_usb_device_get_hid_descriptors(GUsbDevice *self, GError **error)
 			blob = g_usb_device_get_hid_descriptor_for_interface(self, intf, error);
 			if (blob == NULL)
 				return NULL;
+			if (g_bytes_get_size(blob) == 0)
+				continue;
 			g_ptr_array_add(priv->hid_descriptors, g_steal_pointer(&blob));
 		}
 		priv->hid_descriptors_valid = TRUE;
