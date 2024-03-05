@@ -1319,6 +1319,14 @@ g_usb_device_get_bos_descriptors(GUsbDevice *self, GError **error)
 			g_usb_device_not_open_error(self, error);
 			return NULL;
 		}
+		if (g_usb_device_get_spec(self) <= 0x0200) {
+			g_set_error(error,
+				    G_IO_ERROR,
+				    G_IO_ERROR_NOT_SUPPORTED,
+				    "not available as bcdUSB 0x%04x <= 0x0200",
+				    g_usb_device_get_spec(self));
+			return NULL;
+		}
 
 		rc = libusb_get_bos_descriptor(priv->handle, &bos);
 		if (!g_usb_device_libusb_error_to_gerror(self, rc, error))
