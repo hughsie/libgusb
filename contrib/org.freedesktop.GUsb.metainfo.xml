@@ -21,6 +21,17 @@
     <binary>gusbcmd</binary>
   </provides>
   <releases>
+    <release version="0.4.9" date="2024-04-22">
+      <description>
+        <p>This release fixes the following bugs:</p>
+        <ul>
+          <li>Allow reading HID descriptors larger than 255 bytes</li>
+          <li>Close the libusb handle if returning open failure</li>
+          <li>Fix a buffer over-read when emulating devices</li>
+          <li>Only request the BOS descriptor when bcdUSB is new enough</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.4.8" date="2023-11-07">
       <description>
         <p>This release adds the following feature:</p>
