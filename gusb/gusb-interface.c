@@ -3,7 +3,7 @@
  * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2020 Emmanuel Pacaud <emmanuel@gnome.org>
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 /**
