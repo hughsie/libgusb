@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2022 Benjamin Berg <bberg@redhat.com>
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include <glib.h>

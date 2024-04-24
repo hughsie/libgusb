@@ -3,7 +3,7 @@
  * Copyright (C) 2023 Collabora Ltd.
  *    @author Frédéric Danis <frederic.danis@collabora.com>
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 #include "config.h"

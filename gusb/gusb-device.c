@@ -4,7 +4,7 @@
  * Copyright (C) 2011 Hans de Goede <hdegoede@redhat.com>
  * Copyright (C) 2011 Debarshi Ray <debarshir@src.gnome.org>
  *
- * SPDX-License-Identifier: LGPL-2.1+
+ * SPDX-License-Identifier: LGPL-2.1-or-later
  */
 
 /**
