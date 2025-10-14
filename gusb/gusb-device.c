@@ -103,6 +103,7 @@ g_usb_device_dispose(GObject *object)
 	GUsbDevice *self = G_USB_DEVICE(object);
 	GUsbDevicePrivate *priv = GET_PRIVATE(self);
 
+	g_clear_pointer(&priv->handle, libusb_close);
 	g_clear_pointer(&priv->device, libusb_unref_device);
 	g_clear_object(&priv->context);
 
